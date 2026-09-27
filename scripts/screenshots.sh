@@ -34,18 +34,31 @@ mkdir -p "$DATA/Documents"
 node scripts/widget-dev.mjs bundle "$DATA/Documents/demo.json" > build/bundle.txt
 cat build/bundle.txt
 
+mkdir -p "$OUT/crashes"
 shot() { # shot <file> <launch args…>
   local file=$1; shift
   xcrun simctl launch --terminate-running-process "$DEV" "$BUNDLE_ID" --demo "$@" >/dev/null
   sleep 4
   xcrun simctl io "$DEV" screenshot "$file" >/dev/null 2>&1
-  echo "  $file"
+  # The app hides the status bar; if it is gone from the process list, it crashed — keep the report.
+  if ! xcrun simctl spawn "$DEV" launchctl list | grep -q "$BUNDLE_ID"; then
+    echo "  ✗ $file: приложение не работает"
+    find ~/Library/Logs/DiagnosticReports -name 'PhoneScreen*' -newer build/bundle.txt -exec cp {} "$OUT/crashes/" \; 2>/dev/null || true
+  else
+    echo "  $file"
+  fi
 }
 
 # Every widget full screen.
 grep -E '^  [0-9]+: single custom:' build/bundle.txt | while read -r line; do
   n=$(echo "$line" | sed -E 's/^ *([0-9]+):.*/\1/'); id=$(echo "$line" | sed -E 's/.*custom:([^ ,]+).*/\1/')
   shot "$OUT/widgets/$id.png" --demo-bundle "$DATA/Documents/demo.json" --demo-theme builtin.dark --page "$n"
+done
+
+# Layout debug overlay (page and card frames with sizes) on the mixed pages.
+mkdir -p "$OUT/debug"
+for n in $(grep -E '^  [0-9]+: (grid|trio|split)' build/bundle.txt | sed -E 's/^ *([0-9]+):.*/\1/'); do
+  shot "$OUT/debug/layout-$n.png" --demo-bundle "$DATA/Documents/demo.json" --demo-theme builtin.dark --page "$n" --debug-layout
 done
 
 # Mixed pages in each built-in theme.
