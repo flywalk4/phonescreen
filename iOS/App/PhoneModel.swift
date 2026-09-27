@@ -34,6 +34,7 @@ final class PhoneModel: ObservableObject {
     let keyboard = KeyboardBridge()
     private let pool: ChannelPool
     private let listener: Listener
+    private let bluetooth: BLEPeripheral
     /// Set while applying a page change that came from the Mac, so it is not echoed back.
     private var applyingRemotePage = false
 
@@ -47,6 +48,7 @@ final class PhoneModel: ObservableObject {
         }
         self.pool = pool
         listener = Listener(name: name) { pool.add($0) }
+        bluetooth = BLEPeripheral(name: name) { pool.add($0) }
     }
 
     func start() {
@@ -70,9 +72,10 @@ final class PhoneModel: ObservableObject {
         pool.onMessage = { [weak self] in self?.handle($0) }
         pool.onStatus = { [weak self] in self?.status = $0 }
         #if DEBUG
-        if !ProcessInfo.processInfo.arguments.contains("--demo") { listener.start() }
+        if !ProcessInfo.processInfo.arguments.contains("--demo") { listener.start(); bluetooth.start() }
         #else
         listener.start()
+        bluetooth.start()
         #endif
         #if DEBUG
         // `--demo [--page N]`: all pages without a Mac, for layout checks in the Simulator.

@@ -339,4 +339,7 @@ public enum Protocol {
     public static let version = 1
     public static let bonjourType = "_phonescreen._tcp"
     public static let tcpPort: UInt16 = 47800
+    /// Bluetooth LE service the phone advertises; its one characteristic holds the L2CAP PSM (UInt16, little endian).
+    public static let bleService = "6E2B0001-7F3A-4C8E-9B51-5C1D0A7E3F10"
+    public static let blePSMCharacteristic = "6E2B0002-7F3A-4C8E-9B51-5C1D0A7E3F10"
 }

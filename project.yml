@@ -39,6 +39,7 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
         INFOPLIST_KEY_NSAppleEventsUsageDescription: "PhoneScreen читает текущий трек, заметки и команды и показывает их на iPhone."
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen находит iPhone в локальной сети и по прямому Wi-Fi."
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Запасной канал связи с iPhone, когда нет кабеля и Wi-Fi."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
     info:
@@ -65,6 +66,7 @@ targets:
         # Orientation comes from the Mac arrangement, not the accelerometer (the phone usually lies flat).
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen принимает подключение от Mac по Wi-Fi и напрямую."
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Запасной канал связи с Mac, когда нет кабеля и Wi-Fi."
         INFOPLIST_KEY_NSRemindersFullAccessUsageDescription: "Показывает и отмечает ваши напоминания на экране рядом с Mac."
         INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Показывает повестку дня из вашего календаря."
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Нужна для прогноза погоды там, где вы находитесь."

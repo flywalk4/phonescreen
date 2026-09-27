@@ -133,7 +133,7 @@ struct MenuBarView: View {
                 }
             }
         } else {
-            Label("Ищу iPhone… (USB, Wi-Fi, Wi-Fi P2P)", systemImage: "antenna.radiowaves.left.and.right")
+            Label("Ищу iPhone… (USB, Wi-Fi, Wi-Fi P2P, Bluetooth)", systemImage: "antenna.radiowaves.left.and.right")
                 .font(.headline)
         }
     }

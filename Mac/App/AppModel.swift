@@ -74,6 +74,7 @@ final class AppModel: ObservableObject {
     let pool: ChannelPool
     private var bonjour: BonjourBrowser?
     private var usb: USBMuxClient?
+    private var bluetooth: BLECentral?
     private let music = NowPlayingProvider()
     private let stats = SystemStatsProvider()
     private let hotKeys = HotKeys()
@@ -201,8 +202,10 @@ final class AppModel: ObservableObject {
         let pool = self.pool
         bonjour = BonjourBrowser { pool.add($0) }
         usb = USBMuxClient { pool.add($0) }
+        bluetooth = BLECentral { pool.add($0) }
         bonjour?.start()
         usb?.start()
+        bluetooth?.start()
 
         music.onChange = { [weak self] value in
             self?.nowPlaying = value
