@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Static checks for a PhoneScreen widget package (no app needed).
 
-    python3 scripts/validate-widget.py path/to/com.author.widget
+    python3 scripts/validate-widget.py path/to/com.author.widget [--hints]
+
+--hints also prints advice that is not an error (hex colours themes can't recolour, buttons in small tiles).
 
 Checks the three files, manifest fields and permissions, and that view.json only uses known node types and
 fields, with bindings that look right. Mirrors the rules of the app (WidgetManifest.validate, WidgetTemplate).
@@ -30,6 +32,8 @@ NODES = {
     "list": {"items", "template", "spacing", "align", "columns"},
     "box": {"children", "spacing", "align", "padding", "background", "opacity", "radius", "fit", "action", "aspect"},
     "grid": {"children", "columns", "spacing"},
+    "layers": {"children", "align"},
+    "scene": {"kind", "colors", "tints", "speed"},
 }
 WEIGHTS = {"ultraLight", "thin", "light", "regular", "medium", "semibold", "bold", "heavy", "black"}
 DESIGNS = {"default", "rounded", "monospaced", "serif"}
@@ -90,10 +94,11 @@ def validate(folder: Path) -> list[str]:
     if not isinstance(view, dict) or not (set(view) & SIZES):
         errors.append("view.json: объект с ключами full / medium / small")
     else:
-        for key in set(view) - SIZES:
+        for key in set(view) - SIZES - {"$schema"}:
             errors.append(f"view.json: неизвестный ключ «{key}» (нужны full / medium / small)")
         for size in SIZES & set(view):
             check_node(view[size], f"view.{size}", errors)
+            style_hints(view[size], f"view.{size}", size, WARNINGS)
 
     source = files["provider.js"].decode("utf-8", errors="replace")
     if not re.search(r"function\s+refresh\s*\(", source):
@@ -110,6 +115,26 @@ def validate(folder: Path) -> list[str]:
     if re.search(r"http://", source):
         errors.append("provider.js: http:// запрещён, только https://")
     return errors
+
+
+WARNINGS: list[str] = []
+HEX = re.compile(r"^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$")
+
+
+def style_hints(node, path: str, size: str, out: list[str]) -> None:
+    """Not errors — things that usually look wrong on the phone or in some theme."""
+    if not isinstance(node, dict):
+        return
+    t = node.get("type")
+    for key in ("color", "background"):
+        if t != "sprite" and HEX.match(str(node.get(key, ""))):
+            out.append(f"{path}.{key}: {node[key]} — темы не перекрасят hex; если это не фирменный цвет, лучше имя (accent, green…)")
+    if t == "button" and size == "small":
+        out.append(f"{path}: кнопка в small — тесно; лучше box с action (вся плитка нажимается)")
+    for i, child in enumerate(node.get("children") or []):
+        style_hints(child, f"{path}.children[{i}]", size, out)
+    if isinstance(node.get("template"), dict):
+        style_hints(node["template"], f"{path}.template", size, out)
 
 
 def check_node(node, path: str, errors: list[str]) -> None:
@@ -144,10 +169,13 @@ def check_node(node, path: str, errors: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    paths = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if len(paths) != 1:
         sys.exit(__doc__)
-    problems = validate(Path(sys.argv[1]).resolve())
+    problems = validate(Path(paths[0]).resolve())
     for p in problems:
         print("✗", p)
+    for w in WARNINGS if "--hints" in sys.argv else []:
+        print("⚠", w)
     print("OK" if not problems else f"{len(problems)} проблем(ы)")
     sys.exit(1 if problems else 0)

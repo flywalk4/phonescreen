@@ -61,16 +61,19 @@ private struct LauncherTile: View {
     let item: LauncherItem
     let flashed: Bool
     var compact = false
+    @Environment(\.theme) private var theme
 
     var body: some View {
         VStack(spacing: 6) {
             ZStack {
                 if let data = item.icon, let image = UIImage(data: data) {
                     Image(uiImage: image).resizable().scaledToFit()
+                } else if theme.style == .ascii {
+                    AsciiFrame(color: theme.secondaryText)
                 } else {
                     RoundedRectangle(cornerRadius: 14)
                         .fill(item.kind == .shortcut ? Color.indigo.gradient : Color.gray.opacity(0.35).gradient)
-                    Image(systemName: item.symbol ?? "questionmark").font(compact ? .body : .title2).foregroundStyle(.white)
+                    Glyph(systemName: item.symbol ?? "questionmark").font(compact ? .body : .title2).foregroundStyle(theme.style == .ascii ? theme.text : .white)
                 }
             }
             .frame(width: compact ? 40 : 56, height: compact ? 40 : 56)

@@ -125,6 +125,11 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         JSContextGroupSetExecutionTimeLimit(JSContextGetGroup(context.jsGlobalContextRef), 2, nil, nil)
         storage = hooks.loadStorage()
         install(into: context)
+        // `format` helpers shared with scripts/widget-dev.mjs (Mac/Widgets/prelude.js, bundled as a resource).
+        if let url = Bundle.main.url(forResource: "prelude", withExtension: "js"),
+           let prelude = try? String(contentsOf: url, encoding: .utf8) {
+            context.evaluateScript(prelude, withSourceURL: URL(string: "prelude.js"))
+        }
         lastError = nil
         context.evaluateScript(source, withSourceURL: URL(string: "provider.js"))
         if lastError != nil { return nil }

@@ -260,7 +260,7 @@
  },
  "small": {
   "type": "vstack",
-  "spacing": 6,
+  "spacing": 4,
   "align": "leading",
   "children": [
    {
@@ -270,7 +270,7 @@
       "type": "symbol",
       "name": "{{icon}}",
       "color": "{{color}}",
-      "size": 28
+      "size": 26
      },
      {
       "type": "spacer"
@@ -285,17 +285,45 @@
     ]
    },
    {
+    "type": "spacer"
+   },
+   {
     "type": "text",
-    "text": "{{headline}}",
-    "size": 20,
-    "weight": "bold",
-    "design": "rounded",
-    "lines": 3
+    "text": "{{bigLabel}}",
+    "style": "caption",
+    "weight": "semibold",
+    "color": "secondary",
+    "lines": 1
+   },
+   {
+    "type": "hstack",
+    "align": "baseline",
+    "spacing": 4,
+    "children": [
+     {
+      "type": "text",
+      "text": "{{bigValue}}",
+      "size": 44,
+      "weight": "bold",
+      "design": "rounded",
+      "lines": 1
+     },
+     {
+      "type": "text",
+      "text": "{{bigUnit}}",
+      "style": "headline",
+      "color": "secondary",
+      "lines": 1
+     },
+     {
+      "type": "spacer"
+     }
+    ]
    },
    {
     "type": "text",
     "text": "{{sub}}",
-    "style": "caption",
+    "style": "caption2",
     "color": "secondary",
     "lines": 2
    },
@@ -307,7 +335,7 @@
     "values": "{{chart}}",
     "color": "blue",
     "style": "bar",
-    "height": 50,
+    "height": 46,
     "if": "{{hasChart}}"
    }
   ]

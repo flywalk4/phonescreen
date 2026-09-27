@@ -3,6 +3,7 @@ import SwiftUI
 
 struct PagerView: View {
     @EnvironmentObject private var model: PhoneModel
+    private static let demo = ProcessInfo.processInfo.arguments.contains("--demo")
 
     var body: some View {
         ZStack {
@@ -47,8 +48,12 @@ struct PagerView: View {
                                                 removal: .opacity.combined(with: .scale(scale: 0.4))))
                 }
 
+            }
+            // An overlay, not a ZStack sibling: the badge and the dots must never make the pager wider than the screen
+            // (20 pages of 22-pt dots are 440 pt — wider than an iPhone — and pushed every page off both edges).
+            .overlay {
                 VStack {
-                    ConnectionBadge(status: model.status)
+                    if !Self.demo { ConnectionBadge(status: model.status) } // demo screenshots have no Mac
                     Spacer()
                     if !model.overview {
                         PageDots(count: model.pages.count, current: model.currentPage) { index in
@@ -139,12 +144,14 @@ struct PageDots: View {
     var select: (Int) -> Void = { _ in }
 
     var body: some View {
+        // Comfortable 22-pt targets for the Mac pointer, narrower when there are many pages.
+        let cell = min(22, 330 / CGFloat(max(count, 1)))
         HStack(spacing: 0) {
             ForEach(0..<count, id: \.self) { i in
                 Circle()
                     .fill(i == current ? Color.primary : Color.primary.opacity(0.3))
-                    .frame(width: 7, height: 7)
-                    .frame(width: 22, height: 22) // comfortable target for the Mac pointer
+                    .frame(width: min(7, cell - 3), height: min(7, cell - 3))
+                    .frame(width: cell, height: 22)
                     .contentShape(Rectangle())
                     .pointerTarget { select(i) }
             }
@@ -179,7 +186,7 @@ struct ConnectionBadge: View {
 private struct WaitingView: View {
     var body: some View {
         VStack(spacing: 16) {
-            ProgressView().controlSize(.large)
+            ThemedSpinner().controlSize(.large)
             Text("Жду Mac").font(.title2.weight(.semibold))
             Text("Подключите кабель или откройте PhoneScreen на Mac.\nWi-Fi сеть не обязательна — сработает прямое соединение.")
                 .font(.footnote)

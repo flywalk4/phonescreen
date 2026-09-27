@@ -112,6 +112,7 @@ struct WidgetView: View {
             case .notes: NotesPage()
             case .launcher: LauncherPage()
             case .weather: WeatherPage()
+            case .photos: PhotosPage()
             }
         case .custom(let id):
             CustomWidgetView(id: id)

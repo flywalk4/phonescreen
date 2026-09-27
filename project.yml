@@ -70,6 +70,7 @@ targets:
         INFOPLIST_KEY_NSRemindersFullAccessUsageDescription: "Показывает и отмечает ваши напоминания на экране рядом с Mac."
         INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Показывает повестку дня из вашего календаря."
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Нужна для прогноза погоды там, где вы находитесь."
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Показывает ваши избранные фото слайд-шоу на экране рядом с Mac."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
     info:

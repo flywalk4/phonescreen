@@ -32,7 +32,7 @@ struct NotesPage: View {
                 WidgetHeader(title: "Заметки", symbol: "note.text")
                 if size != .small {
                     Button { startComposing() } label: {
-                        Image(systemName: "square.and.pencil").font(size == .full ? .title2 : .body)
+                        Glyph(systemName: "square.and.pencil").font(size == .full ? .title2 : .body)
                             .frame(width: size == .full ? 40 : 28, height: size == .full ? 40 : 28)
                     }
                     .buttonStyle(.plain)
@@ -56,7 +56,7 @@ struct NotesPage: View {
                 .pointerScrollable()
             } else {
                 Spacer()
-                ProgressView().frame(maxWidth: .infinity)
+                ThemedSpinner().frame(maxWidth: .infinity)
                 Text("Загружаю заметки с Mac… При первом запуске macOS спросит разрешение для «Заметок».")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
@@ -103,7 +103,7 @@ private struct NoteRow: View {
             }
             .font(.subheadline)
             if let folder = note.folder {
-                Label(folder, systemImage: "folder").font(.caption2).foregroundStyle(.tertiary)
+                Label { Text(folder) } icon: { Glyph("folder") }.font(.caption2).foregroundStyle(.tertiary)
             }
         }
         .padding(12)
@@ -121,11 +121,11 @@ private struct NoteDetail: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Button(action: back) { Label("Заметки", systemImage: "chevron.left") }
+                Button(action: back) { Label { Text("Заметки") } icon: { Glyph("chevron.left") } }
                     .buttonStyle(.plain).foregroundStyle(.yellow)
                     .pointerTarget(action: back)
                 Spacer()
-                Button(action: showOnMac) { Label("Открыть на Mac", systemImage: "macbook") }
+                Button(action: showOnMac) { Label { Text("Открыть на Mac") } icon: { Glyph("macbook") } }
                     .buttonStyle(.bordered)
                     .pointerTarget(action: showOnMac)
             }
@@ -136,7 +136,7 @@ private struct NoteDetail: View {
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    ProgressView().frame(maxWidth: .infinity).padding(.top, 40)
+                    ThemedSpinner().frame(maxWidth: .infinity).padding(.top, 40)
                 }
             }
             .pointerScrollable()

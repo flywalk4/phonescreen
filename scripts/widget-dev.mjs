@@ -2,9 +2,11 @@
 // Widget development without a Mac: runs provider.js in an emulation of the app's sandbox (Node), resolves
 // view.json the way WidgetTemplate.swift does, draws an approximate PNG mock, and runs the widgets' fixtures.
 //
+//   node scripts/widget-dev.mjs new com.you.widget [--name "Имя"] [--dir catalog/widgets]  # a working starter widget
+//   node scripts/widget-dev.mjs watch <widget> [--theme …] [--fixture NAME]   # re-run + re-render preview.png on save
 //   node scripts/widget-dev.mjs run <widget> [--fixture NAME] [--setting k=v] [--secret k=v] [--action NAME]…
 //                                            [--now 2026-09-27T14:40:00Z] [--home DIR] [--views]
-//   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|catalog/themes/<id>] [--fixture NAME]
+//   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|all|catalog/themes/<id>] [--fixture NAME]
 //   node scripts/widget-dev.mjs test [<widget>…]        # every fixtures/*.json of every widget (default: catalog/widgets/*)
 //   node scripts/widget-dev.mjs bundle demo.json [--theme catalog/themes/<id>]  # all widgets + pages for the phone's
 //                                                        # `--demo --demo-bundle demo.json` (screenshots of the real UI)
@@ -137,6 +139,7 @@ export function sandbox(dir, options = {}) {
     sleep: (ms) => new Promise((r) => setTimeout(r, Math.max(0, Math.min(Number(ms) || 0, 60000)))),
     Date: FakeDate,
   });
+  vm.runInContext(fs.readFileSync(path.join(ROOT, "Mac/Widgets/prelude.js"), "utf8"), context, { filename: "prelude.js" });
   vm.runInContext(fs.readFileSync(path.join(dir, "provider.js"), "utf8"), context, { filename: "provider.js", timeout: 2000 });
 
   const settings = {};
@@ -234,6 +237,12 @@ function node(t, scope, budget) {
                action: action ? action.slice(0, 200) : undefined, aspect: asp === undefined ? undefined : clamp(asp, 0.2, 5), children: children() };
     }
     case "grid": return { type: "grid", columns: columns(num("columns")), spacing: num("spacing"), children: children() };
+    case "layers": return { type: "layers", align: str("align"), children: children() };
+    case "scene": {
+      const list = (k) => (Array.isArray(value(t[k], scope)) ? value(t[k], scope).slice(0, 6).map((c) => text(value(c, scope))) : undefined);
+      const sp = num("speed");
+      return { type: "scene", kind: str("kind") ?? "aurora", colors: list("colors"), tints: list("tints"), speed: sp === undefined ? undefined : clamp(sp, 0.1, 5) };
+    }
     case "list": {
       const items = value(t.items, scope);
       if (!t.template) throw new Error("У списка нет template");
@@ -305,7 +314,8 @@ function check(result, fx) {
 
 const THEMES = {
   dark: { bg: "#000", text: "#fff", sec: "#98989F", accent: "#0A84FF", card: "rgba(255,255,255,.07)", surface: "rgba(255,255,255,.07)", style: "flat", radius: 22 },
-  light: { bg: "#F2F2F7", text: "#000", sec: "#6C6C70", accent: "#007AFF", card: "#fff", surface: "rgba(0,0,0,.05)", style: "flat", radius: 22 },
+  light: { bg: "#F2F2F7", text: "#000", sec: "#6C6C70", accent: "#007AFF", card: "#fff", surface: "rgba(0,0,0,.05)", style: "flat", radius: 22,
+    palette: {"green": "#248A3D", "mint": "#0C817B", "teal": "#008299", "cyan": "#0071A4", "yellow": "#B25000", "orange": "#C93400"} }, // the light theme's darker variants (readable on white)
   glass: { bg: "linear-gradient(145deg,#1B2A6B,#6A2C8F,#0E7C86)", text: "#fff", sec: "rgba(255,255,255,.7)", accent: "#7FD4FF", card: "rgba(255,255,255,.12)", surface: "rgba(255,255,255,.14)", style: "glass", radius: 28 },
   ascii: { bg: "#050805", text: "#39FF14", sec: "#1FA30C", accent: "#39FF14", card: "transparent", surface: "transparent", style: "ascii", radius: 0 },
 };
@@ -338,6 +348,7 @@ function renderHTML(tree, themeName) {
     if (!n) return null;
     const l = String(n).toLowerCase();
     if (T.palette?.[l]) return T.palette[l];
+    if (l === "clear" || l === "none") return "transparent";
     if (l === "primary") return T.text;
     if (l === "secondary" || l === "tertiary") return T.sec;
     if (l === "accent") return T.accent;
@@ -360,7 +371,10 @@ function renderHTML(tree, themeName) {
       case "gauge": return `<div class="v" style="gap:4px;align-items:center"><svg width="56" height="56"><circle cx="28" cy="28" r="25" fill="none" stroke="${T.text}" stroke-opacity=".12" stroke-width="6"/><circle cx="28" cy="28" r="25" fill="none" stroke="${color(n.color) || T.accent}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${157 * n.value} 999" transform="rotate(-90 28 28)"/><text x="28" y="32" text-anchor="middle" font-size="12" font-weight="600" fill="${T.text}">${Math.round(n.value * 100)}%</text></svg>${n.label ? `<div class="t" style="font-size:11px;color:${T.sec}">${esc(n.label)}</div>` : ""}</div>`;
       case "progress": {
         const c = color(n.color) || T.accent;
-        if (T.style === "ascii") { const k = Math.round(24 * n.value); return `<div class="t mono" style="color:${c}">[${"#".repeat(k)}${".".repeat(24 - k)}]</div>`; }
+        if (T.style === "ascii") { // like AsciiBar: as many cells as fit the width
+          const run = (ch, w) => `<span style="flex:0 0 ${w}%;overflow:hidden;white-space:nowrap">${ch.repeat(120)}</span>`;
+          return `<div class="t mono" style="color:${c};display:flex;width:100%;overflow:hidden"><span>[</span><span style="flex:1;display:flex;min-width:0">${run("#", n.value * 100)}${run(".", 100 - n.value * 100)}</span><span>]</span></div>`;
+        }
         return `<div class="track"><div style="width:${n.value * 100}%;height:100%;border-radius:2px;background:${c}"></div></div>`;
       }
       case "chart": return chart(n.values, color(n.color) || T.accent, n.style || "line", n.height, T);
@@ -379,6 +393,18 @@ function renderHTML(tree, themeName) {
         const shape = n.aspect ? `aspect-ratio:${n.aspect};justify-content:center;align-items:center;` : `align-items:${align(n.align)};`;
         return `<div class="v box ${n.fit ? "fit" : "fill"}" style="gap:${n.spacing ?? 6}px;padding:${n.padding ?? 12}px;${shape}"><div class="surface" style="border-radius:${radius}px;${surface}"></div>${n.children.map(r).join("")}</div>`;
       }
+      case "layers": {
+        const pos = ({ top: "flex-start center", bottom: "flex-end center", leading: "center flex-start", trailing: "center flex-end", topLeading: "flex-start flex-start",
+                       topTrailing: "flex-start flex-end", bottomLeading: "flex-end flex-start", bottomTrailing: "flex-end flex-end" })[n.align] || "center center";
+        const [v, h] = pos.split(" ");
+        return `<div class="layers">${n.children.map((c) => `<div class="layer" style="align-items:${v};justify-content:${h}">${r(c)}</div>`).join("")}</div>`;
+      }
+      case "scene": {
+        const base = (n.colors || []).map(color).filter(Boolean), tints = (n.tints || [T.accent]).map((c) => color(c) || c);
+        const bg = base.length > 1 ? `linear-gradient(160deg,${base.join(",")})` : base[0] || T.bg;
+        const blobs = tints.map((c, i) => `radial-gradient(circle at ${20 + ((i * 37) % 70)}% ${25 + ((i * 53) % 60)}%, ${c}aa 0, transparent 45%)`).join(",");
+        return `<div class="scene" style="background:${blobs},${bg}" title="scene ${n.kind}"></div>`;
+      }
       case "grid": return `<div class="grid" style="grid-template-columns:repeat(${n.columns},minmax(0,1fr));gap:${n.spacing ?? 10}px">${n.children.map((c) => `<div class="v cell">${r(c)}</div>`).join("")}</div>`;
       default: return "";
     }
@@ -393,9 +419,11 @@ body{margin:0;background:#1c1c1e;font-family:${({ monospaced: "'DejaVu Sans Mono
 .label{position:absolute;top:22px;width:100%;text-align:center;color:${T.sec};font-size:12px}
 .v{display:flex;flex-direction:column;min-width:0;position:relative}.h{display:flex;width:100%;min-width:0}.t{line-height:1.2;min-width:0}
 .mono{font-family:'DejaVu Sans Mono',monospace;font-size:12px}.sp{flex:1 1 0;min-width:0;min-height:0}
-.h>.v{flex:0 1 auto}.v>.v{align-self:stretch}.h>.h{width:auto;flex:0 0 auto}.v>.box.fill{align-self:stretch}.h>.box.fill{flex:1 1 0}
+.h>.v{flex:0 1 auto}.h>.v:has(.grid),.h>.grid{flex:1 1 0}.v>.v{align-self:stretch}.h>.h{width:auto;flex:0 0 auto}.v>.box.fill{align-self:stretch}.h>.box.fill{flex:1 1 0}
 .box.fit{flex:0 0 auto}.v>.box.fit{align-self:flex-start}.box>*:not(.surface){position:relative}.surface{position:absolute;inset:0}
 .grid{display:grid;width:100%;align-items:start}.cell{align-items:stretch}
+.layers{display:grid;width:100%;flex:1 1 auto;min-height:0}.layer{grid-area:1/1;display:flex;flex-direction:column;min-height:0}
+.scene{width:100%;height:100%;min-height:60px;border-radius:14px}
 .track{width:100%;height:4px;border-radius:2px;background:${T.light ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.18)"}}
 .divider{height:1px;width:100%;background:${T.light ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.15)"}}
 .button{padding:7px 12px;border-radius:9px;background:${T.light ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.12)"};font-size:15px;font-weight:500;white-space:nowrap;align-self:flex-start}
@@ -491,6 +519,96 @@ function fixtureFor(dir, args) {
   };
 }
 
+/** A small but complete widget: settings, storage, an action, all three sizes, adaptive to every theme. */
+function scaffold(dir, id, name) {
+  const json = (v) => JSON.stringify(v, null, 2) + "\n";
+  const schema = (n) => `https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/${n}.schema.json`;
+  fs.mkdirSync(path.join(dir, "fixtures"), { recursive: true });
+  fs.writeFileSync(path.join(dir, "manifest.json"), json({
+    $schema: schema("manifest"), id, name, version: "1.0.0", author: id.split(".")[1] || "me",
+    description: "Счётчик с целью на день — стартовый шаблон: настройки, storage, кнопки и все три размера.",
+    symbol: "sparkles", refresh: 60,
+    settings: [{ key: "goal", title: "Цель на день", default: "8" }],
+  }));
+  const face = (big, extra = [], compact = false) => ({
+    type: "vstack", spacing: 10, children: [
+      { type: "hstack", children: [
+        { type: "symbol", name: "sparkles", color: "accent" },
+        { type: "text", text: "{{title}}", style: "headline" },
+        ...(compact ? [] : [{ type: "spacer" }, { type: "text", text: "{{updated}}", style: "caption", color: "secondary" }]),
+      ] },
+      { type: "text", text: "{{count}}", size: big, weight: "bold", design: "rounded" },
+      { type: "text", text: "{{left}}", style: "subheadline", color: "{{color}}" },
+      { type: "progress", value: "{{progress}}", color: "{{color}}" },
+      ...extra,
+    ],
+  });
+  const buttons = { type: "hstack", children: [
+    { type: "button", title: "+1", symbol: "plus", action: "add" },
+    { type: "button", title: "Сброс", symbol: "arrow.clockwise", action: "reset" },
+  ] };
+  fs.writeFileSync(path.join(dir, "view.json"), json({
+    $schema: schema("view"),
+    full: { type: "vstack", spacing: 16, children: [
+      face(96, [buttons]),
+      { type: "box", if: "{{history}}", children: [
+        { type: "text", text: "Последние 7 дней", style: "caption", color: "secondary" },
+        { type: "chart", values: "{{history}}", style: "bar", color: "accent", height: 80 },
+      ] },
+    ] },
+    medium: face(56, [buttons]),
+    small: { type: "box", action: "add", children: [face(40, [], true)] },
+  }));
+  fs.writeFileSync(path.join(dir, "provider.js"), `// ${name}: refresh(ctx) returns the data view.json binds to ({{count}} etc.). Runs on the Mac.
+// ctx.settings — from manifest.settings; storage — 64 KB that survive restarts; format — number/date helpers.
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function load() {
+  const state = storage.get("state") || { day: today(), count: 0, history: [] };
+  if (state.day !== today()) { // a new day: keep yesterday in the history
+    state.history = [...state.history, state.count].slice(-6);
+    state.day = today();
+    state.count = 0;
+  }
+  return state;
+}
+
+function refresh(ctx) {
+  const state = load();
+  storage.set("state", state);
+  const goal = Math.max(1, Number(ctx.settings.goal) || 8);
+  const left = goal - state.count;
+  return {
+    title: "Сегодня",
+    count: format.number(state.count, 0),
+    left: left > 0 ? \`ещё \${format.plural(left, "раз", "раза", "раз")} до цели\` : "цель выполнена 🎉",
+    progress: Math.min(1, state.count / goal),
+    color: left > 0 ? "accent" : "green",
+    history: state.history.length ? [...state.history, state.count] : [],
+    updated: format.time(),
+  };
+}
+
+// Buttons and tappable boxes call action(name, ctx); the widget refreshes right after.
+function action(name, ctx) {
+  const state = load();
+  if (name === "add") state.count += 1;
+  if (name === "reset") state.count = 0;
+  storage.set("state", state);
+}
+`);
+  fs.writeFileSync(path.join(dir, "fixtures/ok.json"), json({
+    description: "Два нажатия утром; цель по умолчанию — 8",
+    now: "2026-09-27T09:00:00Z",
+    storage: { state: { day: "2026-09-27", count: 3, history: [5, 8, 2] } },
+    actions: ["add", "add"],
+    expect: { count: "5", progress: 0.625, color: "accent", left: "/ещё 3 раза/" },
+  }));
+}
+
 async function main() {
   const [command, ...rest] = process.argv.slice(2);
   const args = parseArgs(rest);
@@ -507,8 +625,47 @@ async function main() {
     const dir = widgetDir(w);
     const result = await scenario(dir, fixtureFor(dir, args));
     if (result.error) { console.error(`FAIL ${result.error}`); process.exit(1); }
-    await screenshot(renderHTML(result.views, args.theme || "dark"), out);
-    console.log(`${out}: примерный макет (шрифт и значки не как на iPhone)`);
+    const themes = args.theme === "all" ? ["dark", "light", "glass", "ascii"] : [args.theme || "dark"];
+    for (const theme of themes) {
+      const file = themes.length > 1 ? out.replace(/(\.png)?$/, `-${theme}.png`) : out;
+      await screenshot(renderHTML(result.views, theme), file);
+      console.log(`${file}: примерный макет (шрифт и значки не как на iPhone)`);
+    }
+  } else if (command === "new") {
+    const id = args._[0];
+    if (!/^[a-z0-9]+(\.[a-z0-9-]+)+$/.test(id || "")) throw new Error("new com.you.widget — id из строчных латинских букв, цифр и точек");
+    const dir = path.resolve(args.dir || path.join(ROOT, "catalog/widgets"), id);
+    if (fs.existsSync(dir)) throw new Error(`${dir} уже есть`);
+    scaffold(dir, id, args.name || "Мой виджет");
+    const rel = path.relative(process.cwd(), dir);
+    console.log(`${rel}: manifest.json, view.json, provider.js, fixtures/ok.json\n` +
+      `дальше:  node scripts/widget-dev.mjs watch ${rel}   (правьте файлы — preview.png обновляется)\n` +
+      `         node scripts/widget-dev.mjs test ${rel}\n` +
+      `на Mac:  меню PhoneScreen → «Виджеты…» → «Папка разработки…» (живая перезагрузка)`);
+  } else if (command === "watch") {
+    const dir = widgetDir(args._[0] || ".");
+    const out = args.out || path.join(dir, "preview.png");
+    let timer = null, running = false;
+    const go = async () => {
+      if (running) return void (timer = setTimeout(go, 200));
+      running = true;
+      try {
+        const result = await scenario(dir, fixtureFor(dir, args));
+        for (const line of result.box.logs) console.error("log:", line);
+        if (result.error) console.log(`${new Date().toLocaleTimeString()} ✗ ${result.error}`);
+        else {
+          await screenshot(renderHTML(result.views, args.theme || "dark"), out);
+          console.log(`${new Date().toLocaleTimeString()} ✓ ${path.relative(process.cwd(), out)}  ${JSON.stringify(result.data).slice(0, 120)}`);
+        }
+      } catch (e) { console.log(`${new Date().toLocaleTimeString()} ✗ ${e.message}`); }
+      running = false;
+    };
+    await go();
+    console.log("слежу за изменениями (Ctrl-C — выход)…");
+    const skip = (f) => !f || f.endsWith(".png") || f.startsWith(".");
+    fs.watch(dir, { recursive: true }, (_, f) => { if (skip(f)) return; clearTimeout(timer); timer = setTimeout(go, 150); });
+    fs.watch(path.join(ROOT, "Mac/Widgets/prelude.js"), () => { clearTimeout(timer); timer = setTimeout(go, 150); });
+    await new Promise(() => {});
   } else if (command === "bundle") {
     // Every catalog widget with data from its first successful fixture, plus pages — for `--demo-bundle` on the phone.
     const out = args._[0];
@@ -532,6 +689,8 @@ async function main() {
       { layout: "split", widgets: ["rain", "hackernews"].map(ref) },
       { layout: "grid", widgets: ["tictactoe", "game2048", "memory", "minesweeper"].map(ref) },
       { layout: "grid", widgets: ["music", "weather", "calendar", "monitor"] },
+      { layout: "trio", widgets: ["wallpaper", "photos", "worldclock"].map((id) => (id === "photos" ? id : ref(id))) },
+      { layout: "single", widgets: ["photos"] },
     ];
     const bundle = { widgets, pages };
     if (args.theme) {
@@ -558,7 +717,7 @@ async function main() {
     console.log(failed ? `${failed} из ${total} сценариев не прошли` : `OK: ${total} сценариев`);
     process.exit(failed ? 1 : 0);
   } else {
-    console.error(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 9).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
+    console.error(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 11).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
     process.exit(2);
   }
 }

@@ -68,6 +68,9 @@
     ]
    },
    {
+    "type": "spacer"
+   },
+   {
     "type": "box",
     "padding": 8,
     "radius": 14,
@@ -197,102 +200,114 @@
   ]
  },
  "medium": {
-  "type": "hstack",
-  "spacing": 12,
+  "type": "vstack",
+  "spacing": 0,
   "children": [
    {
-    "type": "box",
-    "padding": 5,
-    "radius": 10,
-    "background": "#BBADA0",
-    "opacity": 0.35,
+    "type": "spacer"
+   },
+   {
+    "type": "hstack",
+    "spacing": 12,
     "children": [
      {
-      "type": "list",
-      "items": "{{tiles}}",
-      "columns": 4,
-      "spacing": 5,
-      "template": {
-       "type": "box",
-       "aspect": 1,
-       "padding": 0,
-       "radius": 6,
-       "background": "{{item.bg}}",
-       "opacity": "{{item.opacity}}",
-       "children": [
-        {
-         "type": "text",
-         "text": "{{item.text}}",
-         "size": "{{item.sizeSmall}}",
-         "weight": "bold",
-         "design": "rounded",
-         "color": "{{item.color}}"
+      "type": "box",
+      "padding": 5,
+      "radius": 10,
+      "background": "#BBADA0",
+      "opacity": 0.35,
+      "children": [
+       {
+        "type": "list",
+        "items": "{{tiles}}",
+        "columns": 4,
+        "spacing": 5,
+        "template": {
+         "type": "box",
+         "aspect": 1,
+         "padding": 0,
+         "radius": 6,
+         "background": "{{item.bg}}",
+         "opacity": "{{item.opacity}}",
+         "children": [
+          {
+           "type": "text",
+           "text": "{{item.text}}",
+           "size": "{{item.sizeSmall}}",
+           "weight": "bold",
+           "design": "rounded",
+           "color": "{{item.color}}"
+          }
+         ]
         }
-       ]
-      }
+       }
+      ]
+     },
+     {
+      "type": "vstack",
+      "spacing": 8,
+      "align": "leading",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{score}}",
+        "size": 26,
+        "weight": "bold",
+        "design": "rounded"
+       },
+       {
+        "type": "text",
+        "text": "рекорд {{best}}",
+        "style": "caption",
+        "color": "secondary"
+       },
+       {
+        "type": "spacer"
+       },
+       {
+        "type": "hstack",
+        "spacing": 6,
+        "children": [
+         {
+          "type": "button",
+          "title": "↑",
+          "action": "up"
+         }
+        ]
+       },
+       {
+        "type": "hstack",
+        "spacing": 6,
+        "children": [
+         {
+          "type": "button",
+          "title": "←",
+          "action": "left"
+         },
+         {
+          "type": "button",
+          "title": "→",
+          "action": "right"
+         }
+        ]
+       },
+       {
+        "type": "hstack",
+        "spacing": 6,
+        "children": [
+         {
+          "type": "button",
+          "title": "↓",
+          "action": "down"
+         }
+        ]
+       }
+      ]
      }
     ]
    },
    {
-    "type": "vstack",
-    "spacing": 8,
-    "align": "leading",
-    "children": [
-     {
-      "type": "text",
-      "text": "{{score}}",
-      "size": 26,
-      "weight": "bold",
-      "design": "rounded"
-     },
-     {
-      "type": "text",
-      "text": "рекорд {{best}}",
-      "style": "caption",
-      "color": "secondary"
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "hstack",
-      "spacing": 6,
-      "children": [
-       {
-        "type": "button",
-        "title": "↑",
-        "action": "up"
-       }
-      ]
-     },
-     {
-      "type": "hstack",
-      "spacing": 6,
-      "children": [
-       {
-        "type": "button",
-        "title": "←",
-        "action": "left"
-       },
-       {
-        "type": "button",
-        "title": "→",
-        "action": "right"
-       }
-      ]
-     },
-     {
-      "type": "hstack",
-      "spacing": 6,
-      "children": [
-       {
-        "type": "button",
-        "title": "↓",
-        "action": "down"
-       }
-      ]
-     }
-    ]
+    "type": "spacer"
    }
   ]
  },

@@ -109,7 +109,7 @@ private struct ExtrasRow: View {
     }
 
     private func toggle(_ symbol: String, on: Bool, action: @escaping () -> Void) -> some View {
-        Image(systemName: symbol)
+        Glyph(systemName: symbol)
             .font(.system(size: 18, weight: .semibold))
             .foregroundStyle(on ? Color.accentColor : .secondary)
             .frame(width: 44, height: 36)
@@ -170,11 +170,7 @@ struct LevelBar: View {
 
     var body: some View {
         GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Color.primary.opacity(0.15))
-                Capsule().fill(Color.primary).frame(width: max(height, geo.size.width * value))
-            }
-            .frame(height: height)
+            ThemedBar(value: value, height: height)
             .frame(maxHeight: .infinity)
             .contentShape(Rectangle())
             .gesture(DragGesture(minimumDistance: 0)
@@ -220,7 +216,7 @@ private struct QueueView: View {
             }
             .pointerScrollable()
             if model.musicQueue == nil {
-                ProgressView().frame(maxWidth: .infinity)
+                ThemedSpinner().frame(maxWidth: .infinity)
             }
         }
         .padding(.horizontal, 24)
@@ -253,7 +249,7 @@ private struct SoundView: View {
                         }
                     }
                 } else {
-                    ProgressView().frame(maxWidth: .infinity)
+                    ThemedSpinner().frame(maxWidth: .infinity)
                 }
             }
             .padding(.horizontal, 24)
@@ -265,7 +261,7 @@ private struct SoundView: View {
     private func level(title: String, symbol: String, value: Double, set: @escaping (Double) -> Void) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Label(title, systemImage: symbol).font(.subheadline.weight(.medium))
+                Label { Text(title) } icon: { Glyph(symbol) }.font(.subheadline.weight(.medium))
                 Spacer()
                 Text("\(Int((value * 100).rounded()))%").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
             }
@@ -294,10 +290,10 @@ private struct AirPlayRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: symbol).frame(width: 26)
+            Glyph(systemName: symbol).frame(width: 26)
             Text(device.name).lineLimit(1)
             Spacer()
-            Image(systemName: device.selected ? "checkmark.circle.fill" : "circle")
+            Glyph(systemName: device.selected ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(device.selected ? Color.accentColor : .secondary)
         }
         .padding(12)
@@ -324,9 +320,9 @@ private struct Artwork: View {
         ZStack {
             RoundedRectangle(cornerRadius: 18).fill(Color.primary.opacity(0.08))
             if let image {
-                Image(uiImage: image).resizable().scaledToFill()
+                ThemedPicture(image: image)
             } else {
-                Image(systemName: "music.note").font(.system(size: 64)).foregroundStyle(.secondary)
+                Glyph(systemName: "music.note").font(.system(size: 64)).foregroundStyle(.secondary)
             }
         }
         .aspectRatio(1, contentMode: .fit)
@@ -361,8 +357,7 @@ private struct ProgressRow: View {
             let duration = track?.duration ?? 0
             let elapsed = min(currentElapsed(at: context.date), duration)
             VStack(spacing: 6) {
-                ProgressView(value: duration > 0 ? elapsed / duration : 0)
-                    .tint(Color.primary)
+                ThemedBar(value: duration > 0 ? elapsed / duration : 0, height: 4)
                 HStack {
                     Text(format(elapsed))
                     Spacer()
@@ -402,7 +397,7 @@ private struct Controls: View {
 
     private func button(_ symbol: String, size: CGFloat, perform: @escaping () -> Void) -> some View {
         Button(action: perform) {
-            Image(systemName: symbol)
+            Glyph(systemName: symbol)
                 .font(.system(size: size))
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: compact ? 38 : 64, height: compact ? 38 : 64)

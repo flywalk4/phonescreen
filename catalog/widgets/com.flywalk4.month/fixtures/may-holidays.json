@@ -1,0 +1,13 @@
+{
+ "description": "Май: праздники 1 и 9 мая, плюс перенос 11 мая из настроек",
+ "now": "2026-05-06T09:00:00Z",
+ "settings": {
+  "holidays": "2026-05-11"
+ },
+ "expect": {
+  "cells.4.color": "red",
+  "cells.12.color": "red",
+  "cells.14.color": "red",
+  "cells.9.background": "accent"
+ }
+}

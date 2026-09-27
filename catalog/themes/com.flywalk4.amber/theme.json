@@ -1,24 +1,48 @@
 {
   "id": "com.flywalk4.amber",
   "name": "Янтарный терминал",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
   "description": "ASCII в духе старых мониторов: янтарные символы на чёрном.",
   "style": "ascii",
   "appearance": "dark",
   "font": "monospaced",
   "radius": 0,
-  "background": { "colors": ["#0A0700"] },
+  "background": {
+    "colors": [
+      "#0A0700"
+    ],
+    "animation": "matrix",
+    "tints": [
+      "#FFB000",
+      "#5E4000"
+    ],
+    "speed": 0.8
+  },
   "colors": {
     "text": "#FFB000",
     "secondary": "#A36F00",
     "accent": "#FFCC4D",
     "border": "#A36F00",
     "palette": {
-      "primary": "#FFB000", "secondary": "#A36F00", "tertiary": "#5E4000", "accent": "#FFCC4D",
-      "green": "#FFB000", "mint": "#FFB000", "teal": "#FFB000", "blue": "#FFB000", "cyan": "#FFB000",
-      "indigo": "#FFB000", "purple": "#FFB000", "white": "#FFB000", "gray": "#A36F00",
-      "orange": "#FF8C00", "yellow": "#FFE08A", "red": "#FF5A36", "pink": "#FF8C00"
-    }
+      "primary": "#FFB000",
+      "secondary": "#A36F00",
+      "tertiary": "#5E4000",
+      "accent": "#FFCC4D",
+      "green": "#FFB000",
+      "mint": "#FFB000",
+      "teal": "#FFB000",
+      "blue": "#FFB000",
+      "cyan": "#FFB000",
+      "indigo": "#FFB000",
+      "purple": "#FFB000",
+      "white": "#FFB000",
+      "gray": "#A36F00",
+      "orange": "#FF8C00",
+      "yellow": "#FFE08A",
+      "red": "#FF5A36",
+      "pink": "#FF8C00"
+    },
+    "card": "#0A0700EB"
   }
 }

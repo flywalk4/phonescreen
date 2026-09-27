@@ -98,14 +98,18 @@ private struct WidgetBox: ViewModifier {
     }
 }
 
-/// Page background: a colour or a linear gradient.
+/// Page background: a colour or a linear gradient, animated when the theme says so.
 struct ThemeBackground: View {
     @Environment(\.theme) private var theme
 
     var body: some View {
         let colors = theme.background.colors.map { Color(hex: $0, fallback: .black) }
         Group {
-            if colors.count > 1 {
+            if let name = theme.background.animation, let kind = SceneView.Kind(rawValue: name) {
+                SceneView(kind: kind, base: colors,
+                          tints: (theme.background.tints ?? []).map { Color(hex: $0, fallback: theme.accent) },
+                          speed: theme.background.speed ?? 1)
+            } else if colors.count > 1 {
                 let angle = Angle(degrees: theme.background.angle ?? 0)
                 // 0° = top → bottom; the gradient line turns clockwise with the angle.
                 let dx = sin(angle.radians) / 2, dy = cos(angle.radians) / 2

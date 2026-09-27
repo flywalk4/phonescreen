@@ -37,10 +37,15 @@ struct CustomWidgetView: View {
     @ViewBuilder
     private func content(_ node: WidgetNode) -> some View {
         if size == .full {
-            ScrollView {
-                NodeView(node: node, widgetID: id).frame(maxWidth: .infinity, alignment: .topLeading)
+            // Fits on the page → it gets the whole height (so `spacer`s spread the layout out); too tall → it scrolls.
+            ViewThatFits(in: .vertical) {
+                NodeView(node: node, widgetID: id)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                ScrollView {
+                    NodeView(node: node, widgetID: id).frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+                .pointerScrollable()
             }
-            .pointerScrollable()
             .widgetPadding()
         } else {
             NodeView(node: node, widgetID: id)
@@ -84,7 +89,7 @@ struct NodeView: View {
                 .lineLimit(lines)
                 .multilineTextAlignment(align == "center" ? .center : align == "trailing" ? .trailing : .leading)
         case .symbol(let name, let color, let size):
-            Image(systemName: name)
+            Glyph(name)
                 .font(size.map { .system(size: CGFloat($0)) } ?? .body)
                 .foregroundStyle(WidgetColor.style(color, theme: theme))
         case .gauge(let value, let label, let color) where ascii:
@@ -152,6 +157,16 @@ struct NodeView: View {
                       alignment: .leading, spacing: gap) {
                 ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
             }
+        case .layers(let align, let children):
+            ZStack(alignment: alignment(align)) {
+                ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
+            }
+        case .scene(let kind, let colors, let tints, let speed):
+            let base = (colors ?? theme.background.colors).map { Color(hex: $0, fallback: .black) }
+            let moving = (tints ?? theme.background.tints ?? [theme.colors.accent]).map { Color(hex: $0, fallback: theme.accent) }
+            SceneView(kind: SceneView.Kind(rawValue: kind) ?? .aurora, base: base, tints: moving, speed: speed ?? 1)
+                .frame(minWidth: 40, maxWidth: .infinity, minHeight: 40, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: max(0, min(CGFloat(theme.radius) - 6, 18)), style: .continuous))
         case .divider where ascii:
             AsciiRule(color: theme.secondaryText)
         case .divider:
@@ -160,6 +175,20 @@ struct NodeView: View {
     }
 
     private func tint(_ name: String?) -> Color { WidgetColor.color(name, theme: theme) ?? theme.accent }
+
+    private func alignment(_ a: String?) -> Alignment {
+        switch a {
+        case "top": .top
+        case "bottom": .bottom
+        case "leading": .leading
+        case "trailing": .trailing
+        case "topLeading": .topLeading
+        case "topTrailing": .topTrailing
+        case "bottomLeading": .bottomLeading
+        case "bottomTrailing": .bottomTrailing
+        default: .center
+        }
+    }
 
     private func horizontal(_ a: String?) -> HorizontalAlignment {
         switch a { case "center": .center; case "trailing": .trailing; default: .leading }
@@ -304,6 +333,7 @@ enum WidgetColor {
         case "brown": return .brown
         case "gray", "grey": return .gray
         case "white": return .white
+        case "clear", "none": return .clear // a box without a surface
         default: return RGBA(hex: name).map { Color(.sRGB, red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) }
         }
     }

@@ -23,11 +23,16 @@ async function refresh(ctx) {
       dayLabel: day ? ` · ${day}` : "",
       detail: [diffText(diff), day, t.weekdayName].filter(Boolean).join(" · "),
       status: status.text, icon: status.icon, color: status.color,
+      dayFraction: (t.hour * 60 + t.minute) / 1440, // сколько прошло дня в городе (для полосы)
     };
   });
 
   return {
     local: `${pad(here.hour)}:${pad(here.minute)}`,
+    localDate: format.date(now, "weekday"),
+    summary: rows.filter((r) => r.status === STATUS.work.text).length
+      ? `работают: ${rows.filter((r) => r.status === STATUS.work.text).map((r) => r.name).join(", ")}`
+      : "сейчас нигде не рабочее время",
     rows,
     first: rows[0],
     rest: rows.slice(1, 4),

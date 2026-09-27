@@ -116,6 +116,9 @@
     }
    },
    {
+    "type": "spacer"
+   },
+   {
     "type": "text",
     "text": "Отсчёты",
     "style": "headline",
@@ -180,9 +183,6 @@
       }
      ]
     }
-   },
-   {
-    "type": "spacer"
    }
   ]
  },

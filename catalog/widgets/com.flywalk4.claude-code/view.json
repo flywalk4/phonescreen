@@ -157,9 +157,6 @@
     "style": "footnote",
     "color": "secondary",
     "text": "{{note}}"
-   },
-   {
-    "type": "spacer"
    }
   ]
  },
