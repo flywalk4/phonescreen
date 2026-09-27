@@ -260,5 +260,5 @@ public enum WidgetTemplate {
     }
 
     private static func clamp01(_ v: Double?) -> Double { min(max(v ?? 0, 0), 1) }
-    private static func columns(_ v: Double?) -> Int { min(max(Int(v ?? 2), 1), 6) }
+    private static func columns(_ v: Double?) -> Int { min(max(Int(v ?? 2), 1), 12) }
 }

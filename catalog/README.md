@@ -127,7 +127,7 @@ async function action(name, ctx) {
 | `chart` | `values` (массив чисел, до 200), `color`, `style` (`line` — линия, `area` — линия с заливкой-градиентом, `bar` — столбики), `height` |
 | `button` | `title`, `symbol`, `action` → `action(name)` в provider.js; нажимается пальцем и курсором Mac. В `action` можно привязку: `"tap:{{index}}"` |
 | `box` | плашка: `children` столбиком на скруглённой подложке. `padding` (12), `spacing`, `align`, `radius`; `background` + `opacity` — свой цвет, без них — подложка в стиле темы (стекло в Liquid Glass, рамка в ASCII). `fit: true` — по размеру содержимого («таблетки»), иначе на всю ширину. `action` — вся плашка кнопка (клетки игр, плитки). `aspect` — пропорции (1 — квадрат) |
-| `grid` | `children` в `columns` колонок (1–6), `spacing` |
+| `grid` | `children` в `columns` колонок (1–12), `spacing` |
 | `list` | `items` (массив), `template` (узел), `spacing`, `align`; `columns` — сеткой в N колонок |
 | `sprite` | пиксельная анимация: `frames` — массив кадров, кадр — массив строк одинаковой длины (до 48×48, до 16 кадров); `palette` — символ → цвет (`.` и пробел прозрачные); `fps`. Масштабируется под место. Кадры удобно рисовать кодом в provider.js |
 | `spacer`, `divider` | — |

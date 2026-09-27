@@ -161,6 +161,13 @@ import Testing
         #expect(action == "tap:1")
     }
 
+    @Test func gridUpToTwelveColumns() throws {
+        let node = try WidgetTemplate.resolve(json(#"{"type": "grid", "columns": 8, "children": []}"#), data: json("{}"))
+        #expect(node == .grid(columns: 8, spacing: nil, children: []))
+        let capped = try WidgetTemplate.resolve(json(#"{"type": "grid", "columns": 40, "children": []}"#), data: json("{}"))
+        #expect(capped == .grid(columns: 12, spacing: nil, children: []))
+    }
+
     @Test func boxAndGrid() throws {
         let node = try WidgetTemplate.resolve(json(#"""
             {"type": "box", "padding": 10, "background": "green", "opacity": 0.2, "children": [

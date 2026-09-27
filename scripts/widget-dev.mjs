@@ -199,7 +199,7 @@ function node(t, scope, budget) {
   const str = (k) => (k in t ? text(value(t[k], scope)) : undefined);
   const num = (k) => (k in t ? number(value(t[k], scope)) ?? undefined : undefined);
   const children = () => (t.children || []).map((c) => node(c, scope, budget)).filter(Boolean);
-  const columns = (v) => clamp(Math.trunc(v ?? 2), 1, 6);
+  const columns = (v) => clamp(Math.trunc(v ?? 2), 1, 12);
   switch (t.type) {
     case "vstack": case "hstack": return { type: t.type, spacing: num("spacing"), align: str("align"), children: children() };
     case "text": {
