@@ -1,0 +1,50 @@
+{
+  "full": {
+    "type": "vstack", "spacing": 14, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 8, "children": [
+        { "type": "symbol", "name": "globe", "color": "accent" },
+        { "type": "text", "text": "Мировое время", "style": "title2" },
+        { "type": "spacer" },
+        { "type": "text", "text": "у тебя {{local}}", "style": "subheadline", "color": "secondary" }
+      ]},
+      { "type": "list", "items": "{{rows}}", "spacing": 14, "template": {
+        "type": "hstack", "spacing": 12, "children": [
+          { "type": "symbol", "name": "{{item.icon}}", "color": "{{item.color}}", "size": 22 },
+          { "type": "vstack", "spacing": 2, "align": "leading", "children": [
+            { "type": "text", "text": "{{item.name}}", "style": "headline", "lines": 1 },
+            { "type": "text", "text": "{{item.detail}} · {{item.status}}", "style": "caption", "color": "secondary", "lines": 1 }
+          ]},
+          { "type": "spacer" },
+          { "type": "text", "text": "{{item.time}}", "style": "title" }
+        ]
+      }},
+      { "type": "spacer" }
+    ]
+  },
+  "medium": {
+    "type": "list", "items": "{{rows}}", "spacing": 8, "template": {
+      "type": "hstack", "spacing": 8, "children": [
+        { "type": "symbol", "name": "{{item.icon}}", "color": "{{item.color}}", "size": 14 },
+        { "type": "vstack", "spacing": 0, "align": "leading", "children": [
+          { "type": "text", "text": "{{item.name}}", "style": "subheadline", "lines": 1 },
+          { "type": "text", "text": "{{item.diff}}", "style": "caption2", "color": "secondary", "lines": 1 }
+        ]},
+        { "type": "spacer" },
+        { "type": "text", "text": "{{item.time}}", "style": "title3" },
+        { "type": "text", "text": "{{item.day}}", "style": "caption2", "color": "secondary", "if": "{{item.day}}" }
+      ]
+    }
+  },
+  "small": {
+    "type": "vstack", "spacing": 4, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 6, "children": [
+        { "type": "symbol", "name": "{{first.icon}}", "color": "{{first.color}}", "size": 14 },
+        { "type": "text", "text": "{{first.name}}", "style": "caption", "color": "secondary", "lines": 1 }
+      ]},
+      { "type": "text", "text": "{{first.time}}", "style": "largeTitle" },
+      { "type": "text", "text": "{{first.diff}} {{first.day}}", "style": "caption2", "color": "secondary" }
+    ]
+  }
+}

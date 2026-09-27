@@ -1,0 +1,62 @@
+{
+  "full": {
+    "type": "vstack", "spacing": 14, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 8, "children": [
+        { "type": "symbol", "name": "location.fill", "color": "secondary", "size": 14 },
+        { "type": "text", "text": "{{place}}", "style": "headline", "lines": 1 },
+        { "type": "spacer" },
+        { "type": "text", "text": "{{temp}}", "style": "title2" }
+      ]},
+      { "type": "hstack", "spacing": 14, "children": [
+        { "type": "symbol", "name": "{{icon}}", "color": "{{color}}", "size": 44 },
+        { "type": "vstack", "spacing": 2, "align": "leading", "children": [
+          { "type": "text", "text": "{{headline}}", "style": "title", "lines": 1 },
+          { "type": "text", "text": "{{sub}}", "style": "subheadline", "color": "secondary" }
+        ]}
+      ]},
+      { "type": "vstack", "spacing": 4, "align": "leading", "if": "{{hasChart}}", "children": [
+        { "type": "chart", "values": "{{chart}}", "color": "blue" },
+        { "type": "text", "text": "осадки по 15 минут, следующие 3 часа", "style": "caption2", "color": "secondary" }
+      ]},
+      { "type": "divider" },
+      { "type": "list", "items": "{{hours}}", "spacing": 8, "template": {
+        "type": "hstack", "spacing": 10, "children": [
+          { "type": "text", "text": "{{item.time}}", "style": "body" },
+          { "type": "spacer" },
+          { "type": "text", "text": "{{item.mm}}", "style": "caption", "color": "secondary" },
+          { "type": "text", "text": "{{item.prob}}", "style": "headline", "color": "{{item.color}}" }
+        ]
+      }},
+      { "type": "spacer" },
+      { "type": "text", "text": "Обновлено {{updated}} · Open-Meteo", "style": "caption2", "color": "secondary" }
+    ]
+  },
+  "medium": {
+    "type": "vstack", "spacing": 8, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 10, "children": [
+        { "type": "symbol", "name": "{{icon}}", "color": "{{color}}", "size": 28 },
+        { "type": "vstack", "spacing": 0, "align": "leading", "children": [
+          { "type": "text", "text": "{{headline}}", "style": "title3", "lines": 1 },
+          { "type": "text", "text": "{{sub}}", "style": "caption", "color": "secondary", "lines": 2 }
+        ]},
+        { "type": "spacer" },
+        { "type": "text", "text": "{{temp}}", "style": "title3" }
+      ]},
+      { "type": "chart", "values": "{{chart}}", "color": "blue", "if": "{{hasChart}}" }
+    ]
+  },
+  "small": {
+    "type": "vstack", "spacing": 4, "align": "leading",
+    "children": [
+      { "type": "hstack", "children": [
+        { "type": "symbol", "name": "{{icon}}", "color": "{{color}}", "size": 24 },
+        { "type": "spacer" },
+        { "type": "text", "text": "{{temp}}", "style": "headline" }
+      ]},
+      { "type": "text", "text": "{{headline}}", "style": "headline", "lines": 2 },
+      { "type": "text", "text": "{{sub}}", "style": "caption2", "color": "secondary", "lines": 2 }
+    ]
+  }
+}

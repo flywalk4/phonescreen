@@ -15,6 +15,34 @@
       }
     },
     {
+      "id": "com.flywalk4.markets",
+      "name": "Крипта и акции",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Цены криптовалют (CoinGecko) и акций Московской биржи (ISS MOEX) с изменением за день и графиком. Без ключей. Акции — с задержкой биржи для бесплатных данных (около 15 минут).",
+      "symbol": "chart.line.uptrend.xyaxis",
+      "path": "widgets/com.flywalk4.markets",
+      "files": {
+        "manifest.json": "533098458e0975221b3e8a9961dc7f0458666d227a97d227b4e9b8ce2c6a4fe3",
+        "view.json": "b3f88c102001895e06b8e08438f712f6150242764ee6cf5fe20efe5d04156314",
+        "provider.js": "cb975618a8ef78ade0638da59b467374ae7459af92feacc2fbe34bf597d0540f"
+      }
+    },
+    {
+      "id": "com.flywalk4.rain",
+      "name": "Осадки",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Будет ли дождь или снег в ближайшие часы: «дождь через 40 минут», «закончится через 25 минут», график осадков по 15 минут на 3 часа и вероятность по часам. Данные Open-Meteo, без ключа.",
+      "symbol": "cloud.rain",
+      "path": "widgets/com.flywalk4.rain",
+      "files": {
+        "manifest.json": "2d9562f60acc1fd5acea17ab8e78e19b98da2cdcdcefb8f894f3b78ad6ce1c78",
+        "view.json": "27945556970241839b6fe086975e8cae282d0e7f6799678a65f6596313a4eee6",
+        "provider.js": "b14a3bf0d512b78ff21e7517f291f676c732431bd744b259f2064e22c9dcc98b"
+      }
+    },
+    {
       "id": "com.flywalk4.rates",
       "name": "Курсы валют",
       "version": "1.0.0",
@@ -26,6 +54,20 @@
         "manifest.json": "ea38eebef225c1ca7c1ceaa35b543fc3552023cdbb32eb5ec45fed0760fc1443",
         "view.json": "e52445472d52e74b192804ac8110b55ece585e458c238f6581e0f4903d17a21b",
         "provider.js": "d1a30603250437f5ef2ef8f85c60dc1d4ee2886175c46a2a6d2a1bc93c1edb47"
+      }
+    },
+    {
+      "id": "com.flywalk4.worldclock",
+      "name": "Мировое время",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Время в других городах и часовых поясах: разница с твоим, «завтра» или «вчера» и кто сейчас на работе, а кто спит. Без сети.",
+      "symbol": "globe",
+      "path": "widgets/com.flywalk4.worldclock",
+      "files": {
+        "manifest.json": "a98f39dde817ac4c3acdd3df2ac7b73f5715d92fb1067cee6a5991d11ec65091",
+        "view.json": "65be6b3e39aeb52ab2ebaf9b381d304897aab8289adc246363aec1fb1760c39d",
+        "provider.js": "1e24a9d9db2e03c0462988d32c966f42e8839ea707feaa7e8835418d6437e0c4"
       }
     }
   ]
