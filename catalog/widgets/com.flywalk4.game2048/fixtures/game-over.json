@@ -1,0 +1,36 @@
+{
+ "storage": {
+  "game": {
+   "grid": [
+    2,
+    4,
+    2,
+    4,
+    4,
+    2,
+    4,
+    2,
+    2,
+    4,
+    2,
+    4,
+    4,
+    2,
+    4,
+    2
+   ],
+   "score": 100,
+   "best": 500,
+   "over": true,
+   "won": false
+  }
+ },
+ "actions": [
+  "left"
+ ],
+ "expect": {
+  "over": true,
+  "status": "Ходов нет — начни заново",
+  "best": "500"
+ }
+}

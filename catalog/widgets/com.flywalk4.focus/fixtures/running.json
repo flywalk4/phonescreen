@@ -1,0 +1,11 @@
+{
+ "now": "2026-09-27T14:40:00Z",
+ "actions": [
+  "toggle"
+ ],
+ "expect": {
+  "running": true,
+  "toggleTitle": "Пауза",
+  "until": "/закончится в 15:0[45]/"
+ }
+}

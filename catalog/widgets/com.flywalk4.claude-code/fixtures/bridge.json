@@ -1,0 +1,16 @@
+{
+ "description": "Мост установлен: официальные проценты и состояние из хуков",
+ "now": "2026-09-27T14:40:00Z",
+ "files": {
+  "~/.claude/phonescreen/status.json": "{\"at\": 1790520000, \"model\": \"Opus 5.5\", \"rate_limits\": {\"five_hour\": {\"used_percentage\": 62.4, \"resets_at\": 1790525400}, \"seven_day\": {\"used_percentage\": 23, \"resets_at\": 1790820000}}}",
+  "~/.claude/phonescreen/state.json": "{\"at\": 1790520000, \"sessions\": {\"x\": {\"state\": \"waiting\", \"at\": 1790519970}}}"
+ },
+ "expect": {
+  "official": true,
+  "mood": "waiting",
+  "five.pct": "62%",
+  "five.color": "orange",
+  "five.reset": "/^сброс через 1 ч (29|30) мин$/",
+  "week.pct": "23%"
+ }
+}

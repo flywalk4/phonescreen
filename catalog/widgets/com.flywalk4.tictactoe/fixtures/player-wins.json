@@ -1,0 +1,36 @@
+{
+ "settings": {
+  "level": "hard"
+ },
+ "storage": {
+  "game": {
+   "board": [
+    "x",
+    "x",
+    "",
+    "o",
+    "o",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "score": {
+    "x": 0,
+    "o": 0,
+    "d": 0
+   },
+   "macFirst": false,
+   "counted": false
+  }
+ },
+ "actions": [
+  "tap:2"
+ ],
+ "expect": {
+  "status": "Ты победил!",
+  "you": "1",
+  "cells.2.bg": "green",
+  "over": true
+ }
+}

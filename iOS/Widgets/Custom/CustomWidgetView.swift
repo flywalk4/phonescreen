@@ -77,9 +77,9 @@ struct NodeView: View {
             HStack(alignment: vertical(align), spacing: spacing.map { CGFloat($0) }) {
                 ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
             }
-        case .text(let text, let style, let color, let lines, let align):
+        case .text(let text, let style, let color, let lines, let align, let custom):
             Text(text)
-                .font(font(style))
+                .font(font(style, custom))
                 .foregroundStyle(WidgetColor.style(color, theme: theme))
                 .lineLimit(lines)
                 .multilineTextAlignment(align == "center" ? .center : align == "trailing" ? .trailing : .leading)
@@ -108,18 +108,12 @@ struct NodeView: View {
             AsciiBar(value: value, color: tint(color))
         case .progress(let value, let color):
             ProgressView(value: value).tint(tint(color))
-        case .chart(let values, let color) where ascii:
+        case .chart(let values, let color, _, let height) where ascii:
             AsciiChart(values: values, color: tint(color))
-        case .chart(let values, let color):
-            Chart(Array(values.enumerated()), id: \.offset) { i, v in
-                LineMark(x: .value("i", i), y: .value("v", v))
-                    .foregroundStyle(tint(color))
-                    .interpolationMethod(.monotone)
-            }
-            .chartXAxis(.hidden)
-            .chartYAxis(.hidden)
-            .chartYScale(domain: .automatic(includesZero: false))
-            .frame(minHeight: 60, maxHeight: 120)
+                .frame(height: height.map { CGFloat($0) })
+        case .chart(let values, let color, let style, let height):
+            WidgetChart(values: values, color: tint(color), style: style ?? "line")
+                .frame(minHeight: height.map { CGFloat($0) } ?? 60, maxHeight: height.map { CGFloat($0) } ?? 120)
         case .button(let title, _, let action) where ascii:
             Button { model.customAction(widgetID, action) } label: { Text("[ \(title) ]").font(Ascii.font) }
                 .buttonStyle(.plain)
@@ -135,6 +129,29 @@ struct NodeView: View {
             SpriteView(frames: frames, palette: palette, fps: fps ?? 4)
         case .spacer:
             Spacer(minLength: 0)
+        case .box(let spacing, let align, let padding, let background, let opacity, let radius, let fit, let action, let aspect, let children):
+            let panel = VStack(alignment: horizontal(align), spacing: spacing.map { CGFloat($0) } ?? 6) {
+                ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
+            }
+            .frame(maxWidth: fit == true ? nil : .infinity, maxHeight: aspect == nil ? nil : .infinity,
+                   alignment: aspect == nil ? Alignment(horizontal: horizontal(align), vertical: .top) : .center)
+            .padding(padding.map { CGFloat($0) } ?? 12)
+            .modifier(Aspect(ratio: aspect))
+            .widgetBox(fill: WidgetColor.color(background, theme: theme).map { $0.opacity(opacity ?? 1) },
+                       radius: radius.map { CGFloat($0) })
+            if let action {
+                Button { model.customAction(widgetID, action) } label: { panel.contentShape(Rectangle()) }
+                    .buttonStyle(.plain)
+                    .pointerTarget { model.customAction(widgetID, action) }
+            } else {
+                panel
+            }
+        case .grid(let columns, let spacing, let children):
+            let gap = spacing.map { CGFloat($0) } ?? 10
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: gap, alignment: .top), count: columns),
+                      alignment: .leading, spacing: gap) {
+                ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
+            }
         case .divider where ascii:
             AsciiRule(color: theme.secondaryText)
         case .divider:
@@ -152,6 +169,48 @@ struct NodeView: View {
         switch a { case "top": .top; case "bottom": .bottom; case "baseline": .firstTextBaseline; default: .center }
     }
 
+    private func font(_ style: String?, _ custom: WidgetFont?) -> Font {
+        guard let custom else { return font(style) }
+        let weight = custom.weight.flatMap { Self.weights[$0] }
+        let design: Font.Design? = switch custom.design {
+        case "rounded": .rounded
+        case "monospaced": .monospaced
+        case "serif": .serif
+        case "default": .default
+        default: nil // the theme's
+        }
+        if let size = custom.size {
+            return .system(size: CGFloat(size), weight: weight ?? .regular, design: design)
+        }
+        return .system(textStyle(style), design: design, weight: weight ?? defaultWeight(style))
+    }
+
+    private func textStyle(_ style: String?) -> Font.TextStyle {
+        switch style {
+        case "largeTitle": .largeTitle
+        case "title": .title
+        case "title2": .title2
+        case "title3": .title3
+        case "headline": .headline
+        case "callout": .callout
+        case "subheadline": .subheadline
+        case "footnote": .footnote
+        case "caption": .caption
+        case "caption2": .caption2
+        default: .body
+        }
+    }
+
+    /// Titles are semibold in `font(_:)`; keep that when only the design changes.
+    private func defaultWeight(_ style: String?) -> Font.Weight {
+        ["largeTitle", "title", "title2", "title3", "headline"].contains(style ?? "") ? .semibold : .regular
+    }
+
+    private static let weights: [String: Font.Weight] = [
+        "ultraLight": .ultraLight, "thin": .thin, "light": .light, "regular": .regular, "medium": .medium,
+        "semibold": .semibold, "bold": .bold, "heavy": .heavy, "black": .black,
+    ]
+
     private func font(_ style: String?) -> Font {
         switch style {
         case "largeTitle": .largeTitle.weight(.semibold)
@@ -166,6 +225,57 @@ struct NodeView: View {
         case "caption2": .caption2
         default: .body
         }
+    }
+}
+
+/// Keeps a `box` at a width / height ratio when one is set (and leaves layout alone otherwise).
+private struct Aspect: ViewModifier {
+    let ratio: Double?
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if let ratio { content.aspectRatio(CGFloat(ratio), contentMode: .fit) } else { content }
+    }
+}
+
+/// A chart of `values`: a line, a line over a fading area, or bars.
+struct WidgetChart: View {
+    let values: [Double]
+    let color: Color
+    let style: String
+
+    var body: some View {
+        Chart(Array(values.enumerated()), id: \.offset) { i, v in
+            switch style {
+            case "bar":
+                BarMark(x: .value("i", i), y: .value("v", v))
+                    .foregroundStyle(color.gradient)
+                    .cornerRadius(3)
+            case "area":
+                AreaMark(x: .value("i", i), yStart: .value("min", low), yEnd: .value("v", v))
+                    .foregroundStyle(LinearGradient(colors: [color.opacity(0.45), color.opacity(0.02)],
+                                                    startPoint: .top, endPoint: .bottom))
+                    .interpolationMethod(.monotone)
+                LineMark(x: .value("i", i), y: .value("v", v))
+                    .foregroundStyle(color)
+                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .interpolationMethod(.monotone)
+            default:
+                LineMark(x: .value("i", i), y: .value("v", v))
+                    .foregroundStyle(color)
+                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .interpolationMethod(.monotone)
+            }
+        }
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartYScale(domain: style == "bar" ? .automatic(includesZero: true) : .automatic(includesZero: false))
+    }
+
+    /// Bottom of the area: a little under the smallest value, so the fill doesn't start at zero.
+    private var low: Double {
+        guard let lo = values.min(), let hi = values.max() else { return 0 }
+        return lo - (hi - lo) * 0.1
     }
 }
 

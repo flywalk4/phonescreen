@@ -1,0 +1,55 @@
+{
+ "storage": {
+  "game": {
+   "set": "animals",
+   "cards": [
+    "🦊",
+    "🐼",
+    "🦊",
+    "🐸",
+    "🦉",
+    "🐙",
+    "🦁",
+    "🐧",
+    "🦄",
+    "🐼",
+    "🐸",
+    "🦉",
+    "🐙",
+    "🦁",
+    "🐧",
+    "🦄"
+   ],
+   "open": [],
+   "matched": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ],
+   "moves": 0,
+   "best": null
+  }
+ },
+ "actions": [
+  "tap:0",
+  "tap:1"
+ ],
+ "expect": {
+  "status": "Не пара — нажми дальше",
+  "cards.1.face": "🐼",
+  "cards.1.bg": "red"
+ }
+}

@@ -1,0 +1,381 @@
+{
+ "full": {
+  "type": "vstack",
+  "spacing": 14,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "spacing": 10,
+    "children": [
+     {
+      "type": "text",
+      "text": "2048",
+      "size": 40,
+      "weight": "heavy",
+      "design": "rounded",
+      "color": "#EDC22E"
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "box",
+      "fit": true,
+      "padding": 8,
+      "radius": 8,
+      "align": "center",
+      "spacing": 0,
+      "children": [
+       {
+        "type": "text",
+        "text": "СЧЁТ",
+        "style": "caption2",
+        "weight": "semibold",
+        "color": "secondary"
+       },
+       {
+        "type": "text",
+        "text": "{{score}}",
+        "style": "headline",
+        "design": "rounded"
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "fit": true,
+      "padding": 8,
+      "radius": 8,
+      "align": "center",
+      "spacing": 0,
+      "children": [
+       {
+        "type": "text",
+        "text": "РЕКОРД",
+        "style": "caption2",
+        "weight": "semibold",
+        "color": "secondary"
+       },
+       {
+        "type": "text",
+        "text": "{{best}}",
+        "style": "headline",
+        "design": "rounded"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "box",
+    "padding": 8,
+    "radius": 14,
+    "background": "#BBADA0",
+    "opacity": 0.35,
+    "children": [
+     {
+      "type": "list",
+      "items": "{{tiles}}",
+      "columns": 4,
+      "spacing": 8,
+      "template": {
+       "type": "box",
+       "aspect": 1,
+       "padding": 0,
+       "radius": 10,
+       "background": "{{item.bg}}",
+       "opacity": "{{item.opacity}}",
+       "children": [
+        {
+         "type": "text",
+         "text": "{{item.text}}",
+         "size": "{{item.size}}",
+         "weight": "bold",
+         "design": "rounded",
+         "color": "{{item.color}}"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "type": "text",
+    "text": "{{status}}",
+    "style": "subheadline",
+    "weight": "semibold",
+    "color": "{{statusColor}}"
+   },
+   {
+    "type": "hstack",
+    "spacing": 10,
+    "children": [
+     {
+      "type": "box",
+      "padding": 14,
+      "radius": 12,
+      "align": "center",
+      "action": "left",
+      "children": [
+       {
+        "type": "text",
+        "text": "←",
+        "size": 26,
+        "weight": "bold",
+        "color": "accent"
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "padding": 14,
+      "radius": 12,
+      "align": "center",
+      "action": "up",
+      "children": [
+       {
+        "type": "text",
+        "text": "↑",
+        "size": 26,
+        "weight": "bold",
+        "color": "accent"
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "padding": 14,
+      "radius": 12,
+      "align": "center",
+      "action": "down",
+      "children": [
+       {
+        "type": "text",
+        "text": "↓",
+        "size": 26,
+        "weight": "bold",
+        "color": "accent"
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "padding": 14,
+      "radius": 12,
+      "align": "center",
+      "action": "right",
+      "children": [
+       {
+        "type": "text",
+        "text": "→",
+        "size": 26,
+        "weight": "bold",
+        "color": "accent"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "hstack",
+    "children": [
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "button",
+      "title": "Новая игра",
+      "symbol": "arrow.clockwise",
+      "action": "new"
+     }
+    ]
+   },
+   {
+    "type": "spacer"
+   }
+  ]
+ },
+ "medium": {
+  "type": "hstack",
+  "spacing": 12,
+  "children": [
+   {
+    "type": "box",
+    "padding": 5,
+    "radius": 10,
+    "background": "#BBADA0",
+    "opacity": 0.35,
+    "children": [
+     {
+      "type": "list",
+      "items": "{{tiles}}",
+      "columns": 4,
+      "spacing": 5,
+      "template": {
+       "type": "box",
+       "aspect": 1,
+       "padding": 0,
+       "radius": 6,
+       "background": "{{item.bg}}",
+       "opacity": "{{item.opacity}}",
+       "children": [
+        {
+         "type": "text",
+         "text": "{{item.text}}",
+         "size": "{{item.sizeSmall}}",
+         "weight": "bold",
+         "design": "rounded",
+         "color": "{{item.color}}"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "type": "vstack",
+    "spacing": 8,
+    "align": "leading",
+    "children": [
+     {
+      "type": "text",
+      "text": "{{score}}",
+      "size": 26,
+      "weight": "bold",
+      "design": "rounded"
+     },
+     {
+      "type": "text",
+      "text": "рекорд {{best}}",
+      "style": "caption",
+      "color": "secondary"
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "hstack",
+      "spacing": 6,
+      "children": [
+       {
+        "type": "button",
+        "title": "↑",
+        "action": "up"
+       }
+      ]
+     },
+     {
+      "type": "hstack",
+      "spacing": 6,
+      "children": [
+       {
+        "type": "button",
+        "title": "←",
+        "action": "left"
+       },
+       {
+        "type": "button",
+        "title": "→",
+        "action": "right"
+       }
+      ]
+     },
+     {
+      "type": "hstack",
+      "spacing": 6,
+      "children": [
+       {
+        "type": "button",
+        "title": "↓",
+        "action": "down"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "small": {
+  "type": "vstack",
+  "spacing": 6,
+  "align": "leading",
+  "children": [
+   {
+    "type": "box",
+    "padding": 4,
+    "radius": 8,
+    "background": "#BBADA0",
+    "opacity": 0.35,
+    "children": [
+     {
+      "type": "list",
+      "items": "{{tiles}}",
+      "columns": 4,
+      "spacing": 3,
+      "template": {
+       "type": "box",
+       "aspect": 1,
+       "padding": 0,
+       "radius": 4,
+       "background": "{{item.bg}}",
+       "opacity": "{{item.opacity}}",
+       "children": [
+        {
+         "type": "text",
+         "text": "{{item.text}}",
+         "size": "{{item.sizeSmall}}",
+         "weight": "bold",
+         "design": "rounded",
+         "color": "{{item.color}}"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "type": "text",
+    "text": "{{score}} · рекорд {{best}}",
+    "style": "caption",
+    "weight": "semibold",
+    "design": "rounded"
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "hstack",
+    "spacing": 4,
+    "children": [
+     {
+      "type": "button",
+      "title": "←",
+      "action": "left"
+     },
+     {
+      "type": "button",
+      "title": "→",
+      "action": "right"
+     }
+    ]
+   },
+   {
+    "type": "hstack",
+    "spacing": 4,
+    "children": [
+     {
+      "type": "button",
+      "title": "↑",
+      "action": "up"
+     },
+     {
+      "type": "button",
+      "title": "↓",
+      "action": "down"
+     }
+    ]
+   }
+  ]
+ }
+}

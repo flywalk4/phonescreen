@@ -1,0 +1,21 @@
+{
+ "description": "Четвёртый помидор закончился — длинный перерыв",
+ "now": "2026-09-27T14:40:00Z",
+ "storage": {
+  "pomodoro": {
+   "phase": "focus",
+   "running": true,
+   "left": 0,
+   "endsAt": 1790519995,
+   "done": 3,
+   "day": "2026-9-27",
+   "justFinished": ""
+  }
+ },
+ "expect": {
+  "phase": "Длинный перерыв",
+  "done": 4,
+  "time": "15:00",
+  "until": "Помидор готов — отдохни"
+ }
+}

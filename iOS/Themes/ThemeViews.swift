@@ -55,6 +55,47 @@ extension View {
     func themedCard() -> some View {
         modifier(ThemedCard())
     }
+
+    /// A panel inside a widget (`box`): the given fill, or a surface in the theme's style.
+    func widgetBox(fill: Color?, radius: CGFloat?) -> some View {
+        modifier(WidgetBox(fill: fill, radius: radius))
+    }
+}
+
+private struct WidgetBox: ViewModifier {
+    let fill: Color?
+    let radius: CGFloat?
+    @Environment(\.theme) private var theme
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: radius ?? max(0, min(CGFloat(theme.radius) - 6, 18)), style: .continuous)
+        if let fill {
+            content.background(shape.fill(fill)).clipShape(shape)
+        } else {
+            switch theme.style {
+            case .flat:
+                content.background(shape.fill(theme.text.opacity(0.07))).clipShape(shape)
+            case .glass:
+                glass(content, shape: shape)
+            case .ascii:
+                content.padding(2).overlay(AsciiFrame(color: theme.border ?? theme.secondaryText))
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func glass(_ content: Content, shape: RoundedRectangle) -> some View {
+        #if compiler(>=6.2)
+        if #available(iOS 26, *) {
+            content.glassEffect(.regular, in: shape)
+        } else {
+            content.background(.thinMaterial, in: shape)
+        }
+        #else
+        content.background(.thinMaterial, in: shape)
+        #endif
+    }
 }
 
 /// Page background: a colour or a linear gradient.

@@ -1,0 +1,12 @@
+{
+ "now": "2026-09-27T14:40:00Z",
+ "settings": {
+  "work": "10-19",
+  "events": ""
+ },
+ "expect": {
+  "bars.0.title": "Рабочий день",
+  "bars.0.pct": "52%",
+  "hasEvents": false
+ }
+}

@@ -1,0 +1,42 @@
+name: Screenshots
+
+# Real iPhone screenshots (Simulator, demo mode) of every catalog widget, mixed pages in each built-in theme and the
+# catalog themes. Published to the branch screenshots/<branch> (and as an artifact) so they can be looked at anywhere.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, "claude/**"]
+    paths: ["iOS/**", "Packages/**", "catalog/**", "project.yml", "scripts/widget-dev.mjs", "scripts/screenshots.sh", ".github/workflows/screenshots.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+      - name: Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)" && xcodebuild -version
+      - run: brew install xcodegen
+      - name: Take screenshots
+        run: scripts/screenshots.sh shots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: shots
+      - name: Publish to screenshots/${{ github.ref_name }}
+        run: |
+          branch="screenshots/${GITHUB_REF_NAME}"
+          cd shots
+          git init -q && git checkout -q -b "$branch"
+          git add .
+          git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" commit -qm "Screenshots of ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "$branch"

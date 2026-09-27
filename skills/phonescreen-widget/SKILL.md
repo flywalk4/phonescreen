@@ -25,6 +25,8 @@ The full reference (every field, node type and sandbox API) is `catalog/README.m
 5. **Write `view.json`** for all three sizes. `full` is a whole phone page; `medium` half a page; `small` a quarter (≈ 170×170 pt): one number and a label. Bind data with `{{path}}`; repeat rows with `list` + `{{item.…}}`; hide optional parts with `"if": "{{flag}}"`.
 6. **Validate:** `python3 scripts/validate-widget.py catalog/widgets/<id>` — fix every ✗.
 7. **Run it for real** (needs the built Mac app): `PhoneScreen --widget-test catalog/widgets/<id>` (the binary is `PhoneScreen.app/Contents/MacOS/PhoneScreen`). It runs `refresh()` in the real sandbox and prints the data and resolved UI, or `FAIL …`. Secrets and settings come from the environment: `WIDGET_SECRET_<KEY>=… WIDGET_SETTING_<KEY>=…`. Iterate until it prints `OK` and the output looks right.
+7b. **No Mac?** `node scripts/widget-dev.mjs run catalog/widgets/<id> --views` runs `refresh()` in an emulation of the sandbox and resolves the views the same way; answer `fetch` from a fixture (`--fixture NAME`), press buttons with `--action`, pin the clock with `--now`. `node scripts/widget-dev.mjs preview catalog/widgets/<id> out.png --theme dark|light|glass|ascii` draws an approximate PNG of all three sizes — look at it and iterate on the layout.
+7c. **Fixtures:** add `catalog/widgets/<id>/fixtures/*.json` scenarios (API answers, settings, storage, actions, `expect` paths or `error`; format at the top of `scripts/widget-dev.mjs`) — at least the happy path and the API failing; for games, a few moves. `node scripts/widget-dev.mjs test catalog/widgets/<id>` must pass (CI runs it on every pull request).
 8. **Catalog:** `python3 scripts/build-catalog.py` (updates hashes in `catalog/index.json`), then commit the folder and the index together. Bump `version` whenever you change a published widget.
 
 ## Sandbox rules (the runtime enforces them — code that ignores them fails)
@@ -38,8 +40,14 @@ The full reference (every field, node type and sandbox API) is `catalog/README.m
 
 ## View cheatsheet
 
-Nodes: `vstack` / `hstack` (`children`, `spacing`, `align`), `text` (`text`, `style`, `color`, `lines`, `align`), `symbol` (SF Symbol `name`, `color`, `size`), `gauge` / `progress` (`value` 0…1), `chart` (`values` array), `button` (`title`, `symbol`, `action`), `list` (`items`, `template`), `sprite` (pixel animation: `frames` = arrays of equal-length strings, `palette` char → colour, `fps`; draw frames in code, see `com.flywalk4.claude-code`), `spacer`, `divider`. Any node may have `"if"`.
+Nodes: `vstack` / `hstack` (`children`, `spacing`, `align`), `text` (`text`, `style`, `color`, `lines`, `align`, plus `size` / `weight` / `design` for big rounded numbers), `symbol` (SF Symbol `name`, `color`, `size`), `gauge` / `progress` (`value` 0…1), `chart` (`values` array, `style`: `line` | `area` | `bar`, `height`), `button` (`title`, `symbol`, `action` — may contain bindings like `"tap:{{index}}"`), `box` (a rounded panel: `children`, `padding`, `radius`, `background` + `opacity` or the theme's surface; `fit` to hug content; `action` makes it tappable; `aspect` keeps proportions), `grid` (`children`, `columns`), `list` (`items`, `template`, `columns` for a grid), `sprite` (pixel animation: `frames` = arrays of equal-length strings, `palette` char → colour, `fps`; draw frames in code, see `com.flywalk4.claude-code`), `spacer`, `divider`. Any node may have `"if"`.
 Text styles: `largeTitle title title2 title3 headline body callout subheadline footnote caption caption2`. Colours: system names (`green`, `secondary`, `accent`, …) or `#RRGGBB`. Prefer names: themes restyle them (`primary`/`secondary` are the theme's text colours; a theme's `palette` can remap any name), while `#RRGGBB` stays fixed in every theme — keep hex for things like a mascot's own colours.
+
+## Design (make it look like the rest of the catalog)
+
+Read "Как сделать красиво" in `catalog/README.md` and copy the patterns from `com.flywalk4.markets`: a small uppercase caption header with a coloured symbol; one hero number (`size` 40–84, `weight: bold`, `design: rounded`); changes and statuses as pills (`box` with `fit: true`, `background` = status colour, `opacity: 0.18`); groups in `box`, secondary figures as tiles (`list` with `columns: 2`); `area` charts for trends, `bar` for hourly forecasts; colour names rather than hex so themes can restyle them. Design all three sizes separately — don't just shrink `full`.
+
+Games and other interactive widgets: every tap is `action(name)` on the Mac, then `refresh()` — good for turn-based games. Board cells: `list` with `columns` and a `box` template with `"aspect": 1, "action": "tap:{{index}}"`. Keep state in `storage` and save a freshly created game immediately (otherwise a random board changes between refreshes). Keep each synchronous step well under 2 s (prune searches — see the alpha-beta in `com.flywalk4.tictactoe`).
 
 ## Quality bar
 

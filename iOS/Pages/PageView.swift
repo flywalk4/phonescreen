@@ -39,6 +39,7 @@ struct PageView: View {
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
+            .debugLayout("page", .red)
         }
         // Multi-widget pages leave room for the connection badge and the page dots.
         .padding(.vertical, page.layout == .single ? 0 : 30)
@@ -61,8 +62,41 @@ private struct Card: View {
             }
         }
         .themedCard()
+        .debugLayout("card", .yellow)
     }
 }
+
+extension View {
+    /// DEBUG `--debug-layout`: outlines the view and prints its size — for layout checks on screenshots.
+    @ViewBuilder
+    func debugLayout(_ label: String, _ color: Color) -> some View {
+        #if DEBUG
+        if DebugLayout.enabled {
+            overlay {
+                GeometryReader { geo in
+                    Rectangle().stroke(color, lineWidth: 1)
+                        .overlay(alignment: .topLeading) {
+                            Text("\(label) \(Int(geo.size.width))×\(Int(geo.size.height)) @\(Int(geo.frame(in: .global).minX))")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundStyle(color)
+                                .background(.black.opacity(0.7))
+                        }
+                }
+            }
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
+    }
+}
+
+#if DEBUG
+enum DebugLayout {
+    static let enabled = ProcessInfo.processInfo.arguments.contains("--debug-layout")
+}
+#endif
 
 struct WidgetView: View {
     let ref: WidgetRef

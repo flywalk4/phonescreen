@@ -3,53 +3,81 @@
     "type": "vstack", "spacing": 14, "align": "leading",
     "children": [
       { "type": "hstack", "spacing": 8, "children": [
-        { "type": "symbol", "name": "chart.line.uptrend.xyaxis", "color": "green" },
-        { "type": "text", "text": "Крипта и акции", "style": "title2" },
+        { "type": "symbol", "name": "chart.line.uptrend.xyaxis", "color": "green", "size": 15 },
+        { "type": "text", "text": "РЫНКИ", "style": "caption", "weight": "semibold", "color": "secondary" },
         { "type": "spacer" },
         { "type": "button", "title": "Обновить", "symbol": "arrow.clockwise", "action": "reload" }
       ]},
-      { "type": "hstack", "align": "baseline", "spacing": 10, "children": [
-        { "type": "text", "text": "{{main.name}}", "style": "headline", "color": "secondary" },
-        { "type": "text", "text": "{{main.price}}", "style": "largeTitle", "lines": 1 },
-        { "type": "spacer" },
-        { "type": "text", "text": "{{main.change}}", "style": "headline", "color": "{{main.changeColor}}" }
-      ]},
-      { "type": "chart", "values": "{{chart}}", "color": "{{chartColor}}", "if": "{{hasChart}}" },
-      { "type": "divider" },
-      { "type": "list", "items": "{{rows}}", "spacing": 10, "template": {
-        "type": "hstack", "spacing": 10, "children": [
-          { "type": "text", "text": "{{item.name}}", "style": "headline", "lines": 1 },
+      { "type": "box", "padding": 16, "spacing": 10, "children": [
+        { "type": "hstack", "align": "top", "children": [
+          { "type": "vstack", "spacing": 2, "align": "leading", "children": [
+            { "type": "text", "text": "{{main.name}}", "style": "subheadline", "color": "secondary", "lines": 1 },
+            { "type": "text", "text": "{{main.price}}", "size": 44, "weight": "bold", "design": "rounded", "lines": 1 }
+          ]},
           { "type": "spacer" },
-          { "type": "text", "text": "{{item.price}}", "style": "body" },
-          { "type": "text", "text": "{{item.change}}", "style": "subheadline", "color": "{{item.changeColor}}" }
-        ]
-      }},
+          { "type": "box", "fit": true, "padding": 6, "radius": 8, "background": "{{main.changeColor}}", "opacity": 0.18, "if": "{{main.change}}", "children": [
+            { "type": "text", "text": "{{main.change}}", "style": "subheadline", "weight": "semibold", "color": "{{main.changeColor}}" }
+          ]}
+        ]},
+        { "type": "chart", "values": "{{chart}}", "color": "{{chartColor}}", "style": "area", "height": 120, "if": "{{hasChart}}" },
+        { "type": "text", "text": "{{main.period}}", "style": "caption", "color": "secondary" }
+      ]},
+      { "type": "list", "items": "{{rest}}", "columns": 2, "spacing": 10, "template":
+        { "type": "box", "padding": 12, "spacing": 3, "children": [
+          { "type": "text", "text": "{{item.name}}", "style": "caption", "weight": "semibold", "color": "secondary", "lines": 1 },
+          { "type": "text", "text": "{{item.price}}", "size": 19, "weight": "semibold", "design": "rounded", "lines": 1 },
+          { "type": "text", "text": "{{item.change}}", "style": "caption", "weight": "medium", "color": "{{item.changeColor}}", "if": "{{item.change}}" },
+          { "type": "text", "text": "нет торгов", "style": "caption", "color": "secondary", "if": "{{item.noTrades}}" }
+        ]}
+      },
       { "type": "spacer" },
       { "type": "text", "text": "{{warning}}", "style": "caption", "color": "orange", "if": "{{warning}}" },
       { "type": "text", "text": "Обновлено {{updated}} · CoinGecko, Мосбиржа", "style": "caption2", "color": "secondary" }
     ]
   },
   "medium": {
-    "type": "vstack", "spacing": 6, "align": "leading",
+    "type": "vstack", "spacing": 10, "align": "leading",
     "children": [
-      { "type": "chart", "values": "{{chart}}", "color": "{{chartColor}}", "if": "{{hasChart}}" },
-      { "type": "list", "items": "{{rows}}", "spacing": 4, "template": {
-        "type": "hstack", "spacing": 6, "children": [
-          { "type": "text", "text": "{{item.ticker}}", "style": "subheadline", "lines": 1 },
-          { "type": "spacer" },
-          { "type": "text", "text": "{{item.price}}", "style": "subheadline" },
-          { "type": "text", "text": "{{item.change}}", "style": "caption2", "color": "{{item.changeColor}}" }
-        ]
-      }}
+      { "type": "hstack", "align": "top", "children": [
+        { "type": "vstack", "spacing": 0, "align": "leading", "children": [
+          { "type": "text", "text": "{{main.name}}", "style": "caption", "weight": "semibold", "color": "secondary", "lines": 1 },
+          { "type": "text", "text": "{{main.price}}", "size": 32, "weight": "bold", "design": "rounded", "lines": 1 }
+        ]},
+        { "type": "spacer" },
+        { "type": "box", "fit": true, "padding": 5, "radius": 7, "background": "{{main.changeColor}}", "opacity": 0.18, "if": "{{main.change}}", "children": [
+          { "type": "text", "text": "{{main.change}}", "style": "footnote", "weight": "semibold", "color": "{{main.changeColor}}" }
+        ]}
+      ]},
+      { "type": "chart", "values": "{{chart}}", "color": "{{chartColor}}", "style": "area", "height": 110, "if": "{{hasChart}}" },
+      { "type": "list", "items": "{{others}}", "columns": 2, "spacing": 8, "template":
+        { "type": "box", "padding": 8, "spacing": 1, "children": [
+          { "type": "text", "text": "{{item.ticker}}", "style": "caption2", "weight": "semibold", "color": "secondary" },
+          { "type": "hstack", "spacing": 4, "children": [
+            { "type": "text", "text": "{{item.price}}", "style": "footnote", "weight": "semibold", "design": "rounded", "lines": 1 },
+            { "type": "spacer" },
+            { "type": "text", "text": "{{item.change}}", "style": "caption2", "color": "{{item.changeColor}}", "lines": 1 }
+          ]}
+        ]}
+      }
     ]
   },
   "small": {
-    "type": "vstack", "spacing": 4, "align": "leading",
+    "type": "vstack", "spacing": 6, "align": "leading",
     "children": [
-      { "type": "text", "text": "{{main.name}}", "style": "caption", "color": "secondary", "lines": 1 },
-      { "type": "text", "text": "{{main.price}}", "style": "title2", "lines": 1 },
-      { "type": "text", "text": "{{main.change}}", "style": "caption", "color": "{{main.changeColor}}" },
-      { "type": "chart", "values": "{{chart}}", "color": "{{chartColor}}", "if": "{{hasChart}}" }
+      { "type": "text", "text": "{{main.name}}", "style": "caption", "weight": "semibold", "color": "secondary", "lines": 1 },
+      { "type": "text", "text": "{{main.price}}", "size": 26, "weight": "bold", "design": "rounded", "lines": 1 },
+      { "type": "box", "fit": true, "padding": 4, "radius": 6, "background": "{{main.changeColor}}", "opacity": 0.18, "if": "{{main.change}}", "children": [
+        { "type": "text", "text": "{{main.change}}", "style": "caption", "weight": "semibold", "color": "{{main.changeColor}}" }
+      ]},
+      { "type": "chart", "values": "{{chart}}", "color": "{{chartColor}}", "style": "area", "height": 80, "if": "{{hasChart}}" },
+      { "type": "spacer" },
+      { "type": "list", "items": "{{others}}", "spacing": 5, "template":
+        { "type": "hstack", "spacing": 4, "children": [
+          { "type": "text", "text": "{{item.ticker}}", "style": "caption", "weight": "semibold", "lines": 1 },
+          { "type": "spacer" },
+          { "type": "text", "text": "{{item.change}}", "style": "caption2", "color": "{{item.changeColor}}", "lines": 1 }
+        ]}
+      }
     ]
   }
 }

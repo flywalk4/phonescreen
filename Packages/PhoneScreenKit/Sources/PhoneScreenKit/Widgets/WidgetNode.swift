@@ -6,22 +6,45 @@ public indirect enum WidgetNode: Codable, Equatable, Sendable {
     case vstack(spacing: Double?, align: String?, children: [WidgetNode])
     case hstack(spacing: Double?, align: String?, children: [WidgetNode])
     /// `style`: largeTitle, title, title2, title3, headline, body, callout, subheadline, footnote, caption, caption2.
-    case text(String, style: String?, color: String?, lines: Int?, align: String?)
+    /// `font` overrides size / weight / design (big numbers, rounded or monospaced digits).
+    case text(String, style: String?, color: String?, lines: Int?, align: String?, font: WidgetFont? = nil)
     /// An SF Symbol.
     case symbol(String, color: String?, size: Double?)
     /// Ring, value 0…1.
     case gauge(value: Double, label: String?, color: String?)
     /// Bar, value 0…1.
     case progress(value: Double, color: String?)
-    /// Line chart of the values.
-    case chart(values: [Double], color: String?)
-    /// Calls the widget's `action(name)` on the Mac.
+    /// Chart of the values. `style`: `line` (default), `area` (line with a gradient under it), `bar`.
+    case chart(values: [Double], color: String?, style: String? = nil, height: Double? = nil)
+    /// Calls the widget's `action(name)` on the Mac. The name may contain bindings: `"tap:{{index}}"`.
     case button(title: String, symbol: String?, action: String)
     /// Pixel-art animation: each frame is rows of characters, each character a palette colour
     /// (`.` or space = transparent); the phone plays the frames at `fps`.
     case sprite(frames: [[String]], palette: [String: String], fps: Double?)
     case spacer
     case divider
+    /// A panel: children stacked vertically on a rounded surface. Without `background` the surface follows the
+    /// theme (a subtle fill, glass, or an ASCII frame); with it, that colour at `opacity` (default 1).
+    /// It takes the full width unless `fit` (then it hugs its content — pills, badges). With `action` the whole
+    /// panel is a button (game cells, tappable tiles); `aspect` (width / height, e.g. 1) keeps its shape, content centred.
+    case box(spacing: Double?, align: String?, padding: Double?, background: String?, opacity: Double?,
+             radius: Double?, fit: Bool?, action: String? = nil, aspect: Double? = nil, children: [WidgetNode])
+    /// Children laid out in `columns` equal columns, row by row.
+    case grid(columns: Int, spacing: Double?, children: [WidgetNode])
+}
+
+/// Text font overrides. `weight`: ultraLight, thin, light, regular, medium, semibold, bold, heavy, black.
+/// `design`: default, rounded, monospaced, serif (unset — the theme's).
+public struct WidgetFont: Codable, Equatable, Sendable {
+    public var size: Double?
+    public var weight: String?
+    public var design: String?
+
+    public init(size: Double? = nil, weight: String? = nil, design: String? = nil) {
+        self.size = size
+        self.weight = weight
+        self.design = design
+    }
 }
 
 /// Everything the phone needs to show one installed JavaScript widget.
@@ -60,7 +83,7 @@ extension WidgetSize: CodingKeyRepresentable {}
 /// Template nodes are JSON objects with a `"type"`; any string may contain `{{path}}` bindings
 /// (`"{{rate}}"` alone keeps the value's type — number, array — otherwise it's interpolated as text).
 /// Extras: `"if": "{{path}}"` drops the node when the value is falsy; `{"type": "list", "items": "{{rows}}",
-/// "template": {...}}` repeats a template with `item` / `index` bound. Unknown types are skipped, so newer
+/// "template": {...}}` repeats a template with `item` / `index` bound (in `columns` columns if set). Unknown types are skipped, so newer
 /// templates degrade gracefully on older apps.
 public enum WidgetTemplate {
     public struct Error: Swift.Error, Equatable, CustomStringConvertible {
@@ -98,8 +121,11 @@ public enum WidgetTemplate {
         case "hstack":
             return .hstack(spacing: num("spacing"), align: str("align"), children: try children())
         case "text":
+            let size = num("size").map { min(max($0, 6), 160) }
+            let font = size != nil || t["weight"] != nil || t["design"] != nil
+                ? WidgetFont(size: size, weight: str("weight"), design: str("design")) : nil
             return .text(String((str("text") ?? "").prefix(maxText)), style: str("style"), color: str("color"),
-                         lines: num("lines").map { Int($0) }, align: str("align"))
+                         lines: num("lines").map { Int($0) }, align: str("align"), font: font)
         case "symbol":
             return .symbol(str("name") ?? "questionmark", color: str("color"), size: num("size"))
         case "gauge":
@@ -108,9 +134,10 @@ public enum WidgetTemplate {
             return .progress(value: clamp01(num("value")), color: str("color"))
         case "chart":
             let values = (t["values"].map { value($0, scope) } as? [Any] ?? []).compactMap(number)
-            return .chart(values: Array(values.suffix(200)), color: str("color"))
+            return .chart(values: Array(values.suffix(200)), color: str("color"), style: str("style"),
+                          height: num("height").map { min(max($0, 20), 400) })
         case "button":
-            guard let action = t["action"] as? String else { throw Error(description: "У кнопки нет action") }
+            guard let action = str("action"), !action.isEmpty else { throw Error(description: "У кнопки нет action") }
             return .button(title: str("title") ?? "", symbol: str("symbol"), action: action)
         case "sprite":
             let rawFrames = t["frames"].map { value($0, scope) } as? [Any] ?? []
@@ -119,6 +146,14 @@ public enum WidgetTemplate {
             let rawPalette = t["palette"].map { value($0, scope) } as? [String: Any] ?? [:]
             let palette = rawPalette.reduce(into: [String: String]()) { $0[String($1.key.prefix(1))] = text($1.value) }
             return .sprite(frames: frames, palette: palette, fps: num("fps"))
+        case "box":
+            return .box(spacing: num("spacing"), align: str("align"), padding: num("padding"),
+                        background: str("background"), opacity: num("opacity").map { min(max($0, 0), 1) },
+                        radius: num("radius"), fit: t["fit"].map { truthy(value($0, scope)) },
+                        action: str("action").flatMap { $0.isEmpty ? nil : String($0.prefix(200)) },
+                        aspect: num("aspect").map { min(max($0, 0.2), 5) }, children: try children())
+        case "grid":
+            return .grid(columns: columns(num("columns")), spacing: num("spacing"), children: try children())
         case "spacer":
             return .spacer
         case "divider":
@@ -132,6 +167,9 @@ public enum WidgetTemplate {
                 inner["item"] = item
                 inner["index"] = i
                 if let row = try node(itemTemplate, scope: inner, budget: &budget) { rows.append(row) }
+            }
+            if let n = num("columns"), n > 1 {
+                return .grid(columns: columns(n), spacing: num("spacing"), children: rows)
             }
             return .vstack(spacing: num("spacing") ?? 6, align: str("align") ?? "leading", children: rows)
         default:
@@ -222,4 +260,5 @@ public enum WidgetTemplate {
     }
 
     private static func clamp01(_ v: Double?) -> Double { min(max(v ?? 0, 0), 1) }
+    private static func columns(_ v: Double?) -> Int { min(max(Int(v ?? 2), 1), 12) }
 }

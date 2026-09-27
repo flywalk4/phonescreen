@@ -1,0 +1,151 @@
+{
+ "now": "2026-09-27T14:40:00Z",
+ "fetch": [
+  {
+   "match": "topstories.json",
+   "body": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+   ]
+  },
+  {
+   "match": "item/1\\.json",
+   "body": {
+    "id": 1,
+    "title": "Show HN: I built a tiny e-ink dashboard for my desk",
+    "score": 512,
+    "descendants": 188,
+    "time": 1790517600,
+    "by": "u",
+    "url": "https://github.com/post"
+   }
+  },
+  {
+   "match": "item/2\\.json",
+   "body": {
+    "id": 2,
+    "title": "The unreasonable effectiveness of SQLite in production",
+    "score": 341,
+    "descendants": 97,
+    "time": 1790515200,
+    "by": "u",
+    "url": "https://fly.io/post"
+   }
+  },
+  {
+   "match": "item/3\\.json",
+   "body": {
+    "id": 3,
+    "title": "A deep dive into Apple's Liquid Glass rendering",
+    "score": 228,
+    "descendants": 64,
+    "time": 1790512800,
+    "by": "u",
+    "url": "https://developer.apple.com/post"
+   }
+  },
+  {
+   "match": "item/4\\.json",
+   "body": {
+    "id": 4,
+    "title": "Why we moved off Kubernetes",
+    "score": 190,
+    "descendants": 211,
+    "time": 1790510400,
+    "by": "u",
+    "url": "https://blog.example.com/post"
+   }
+  },
+  {
+   "match": "item/5\\.json",
+   "body": {
+    "id": 5,
+    "title": "Ask HN: What's your favorite underrated tool?",
+    "score": 156,
+    "descendants": 302,
+    "time": 1790508000,
+    "by": "u"
+   }
+  },
+  {
+   "match": "item/6\\.json",
+   "body": {
+    "id": 6,
+    "title": "Rust 2.0 roadmap published",
+    "score": 143,
+    "descendants": 55,
+    "time": 1790505600,
+    "by": "u",
+    "url": "https://blog.rust-lang.org/post"
+   }
+  },
+  {
+   "match": "item/7\\.json",
+   "body": {
+    "id": 7,
+    "title": "Moscow's new metro line opens",
+    "score": 98,
+    "descendants": 40,
+    "time": 1790503200,
+    "by": "u",
+    "url": "https://bbc.com/post"
+   }
+  },
+  {
+   "match": "item/8\\.json",
+   "body": {
+    "id": 8,
+    "title": "Lisp in 99 lines of Python",
+    "score": 77,
+    "descendants": 12,
+    "time": 1790500800,
+    "by": "u",
+    "url": "https://norvig.com/post"
+   }
+  }
+ ],
+ "expect": {
+  "top.points": "512",
+  "top.site": "github.com",
+  "stories.4.site": "Ask HN",
+  "top.age": "40 мин",
+  "listName": "top"
+ }
+}

@@ -132,3 +132,50 @@ import Testing
         #expect(node == .sprite(frames: [[".x.", "xxx"], ["x.x", "xxx"]], palette: ["x": "#DA7756"], fps: 4))
     }
 }
+
+@Suite struct WidgetTemplateStylingTests {
+    func json(_ s: String) -> Any { try! JSONSerialization.jsonObject(with: Data(s.utf8), options: [.fragmentsAllowed]) }
+
+    @Test func textFontAndChartStyle() throws {
+        let node = try WidgetTemplate.resolve(json(#"""
+            {"type": "vstack", "children": [
+                {"type": "text", "text": "{{n}}", "size": 48, "weight": "bold", "design": "rounded"},
+                {"type": "text", "text": "plain"},
+                {"type": "chart", "values": "{{v}}", "style": "area", "height": 80}
+            ]}
+            """#), data: json(#"{"n": 42, "v": [1, 2, 3]}"#))
+        #expect(node == .vstack(spacing: nil, align: nil, children: [
+            .text("42", style: nil, color: nil, lines: nil, align: nil, font: WidgetFont(size: 48, weight: "bold", design: "rounded")),
+            .text("plain", style: nil, color: nil, lines: nil, align: nil),
+            .chart(values: [1, 2, 3], color: nil, style: "area", height: 80),
+        ]))
+    }
+
+    @Test func actionsTakeBindings() throws {
+        let node = try WidgetTemplate.resolve(json(#"""
+            {"type": "list", "items": "{{cells}}", "columns": 3, "template":
+                {"type": "box", "action": "tap:{{index}}", "children": [{"type": "text", "text": "{{item}}"}]}}
+            """#), data: json(#"{"cells": ["X", "O"]}"#))
+        guard case .grid(3, _, let cells) = node, cells.count == 2,
+              case .box(_, _, _, _, _, _, _, let action, _, _) = cells[1] else { Issue.record("not a grid of boxes"); return }
+        #expect(action == "tap:1")
+    }
+
+    @Test func gridUpToTwelveColumns() throws {
+        let node = try WidgetTemplate.resolve(json(#"{"type": "grid", "columns": 8, "children": []}"#), data: json("{}"))
+        #expect(node == .grid(columns: 8, spacing: nil, children: []))
+        let capped = try WidgetTemplate.resolve(json(#"{"type": "grid", "columns": 40, "children": []}"#), data: json("{}"))
+        #expect(capped == .grid(columns: 12, spacing: nil, children: []))
+    }
+
+    @Test func boxAndGrid() throws {
+        let node = try WidgetTemplate.resolve(json(#"""
+            {"type": "box", "padding": 10, "background": "green", "opacity": 0.2, "children": [
+                {"type": "list", "items": "{{xs}}", "columns": 2, "template": {"type": "text", "text": "{{item}}"}}
+            ]}
+            """#), data: json(#"{"xs": ["a", "b", "c"]}"#))
+        let cell = { (s: String) in WidgetNode.text(s, style: nil, color: nil, lines: nil, align: nil) }
+        #expect(node == .box(spacing: nil, align: nil, padding: 10, background: "green", opacity: 0.2, radius: nil, fit: nil,
+                             children: [.grid(columns: 2, spacing: nil, children: [cell("a"), cell("b"), cell("c")])]))
+    }
+}
