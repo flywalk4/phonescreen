@@ -239,7 +239,7 @@ function node(t, scope, budget) {
     case "grid": return { type: "grid", columns: columns(num("columns")), spacing: num("spacing"), children: children() };
     case "layers": return { type: "layers", align: str("align"), children: children() };
     case "scene": {
-      const list = (k) => (Array.isArray(value(t[k], scope)) ? value(t[k], scope).slice(0, 6).map(text) : undefined);
+      const list = (k) => (Array.isArray(value(t[k], scope)) ? value(t[k], scope).slice(0, 6).map((c) => text(value(c, scope))) : undefined);
       const sp = num("speed");
       return { type: "scene", kind: str("kind") ?? "aurora", colors: list("colors"), tints: list("tints"), speed: sp === undefined ? undefined : clamp(sp, 0.1, 5) };
     }

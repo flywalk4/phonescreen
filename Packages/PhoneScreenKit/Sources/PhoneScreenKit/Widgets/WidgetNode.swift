@@ -163,7 +163,7 @@ public enum WidgetTemplate {
             return .layers(align: str("align"), children: try children())
         case "scene":
             let list = { (key: String) -> [String]? in
-                (t[key].map { value($0, scope) } as? [Any]).map { $0.prefix(6).map { text($0) } }
+                (t[key].map { value($0, scope) } as? [Any]).map { $0.prefix(6).map { text(value($0, scope)) } }
             }
             return .scene(kind: str("kind") ?? "aurora", colors: list("colors"), tints: list("tints"),
                           speed: num("speed").map { min(max($0, 0.1), 5) })
