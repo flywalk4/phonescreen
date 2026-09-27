@@ -4,7 +4,7 @@
 
 **Turn your iPhone into a side screen for your Mac.** Put it next to your display. It shows live widgets: music, system load, calendar, weather, crypto, your Claude Code limits, a photo frame, even small games. Move the Mac's cursor off the edge of your screen and it lands on the phone.
 
-<p align="center"><img src="docs/images/hero.png" alt="PhoneScreen in the dark, Liquid Glass, light and ASCII themes" width="100%"></p>
+<!-- <p align="center"><img src="docs/images/hero.png" alt="PhoneScreen in the dark, Liquid Glass, light and ASCII themes" width="100%"></p> (pictures come with the next Simulator screenshots) -->
 
 - **Native, not a mirror.** The iPhone draws every widget in SwiftUI. The Mac sends only data, so it stays sharp, smooth and light on battery.
 - **Any link that works.** USB, Wi-Fi, peer-to-peer Wi-Fi (AWDL) and Bluetooth LE all run at once, and traffic takes the best one. Pull the cable and the session carries on over Wi-Fi.
@@ -13,7 +13,7 @@
 
 ## Widgets
 
-<p align="center"><img src="docs/images/widgets.png" alt="Catalog widgets" width="100%"></p>
+<!-- <p align="center"><img src="docs/images/widgets.png" alt="Catalog widgets" width="100%"></p> (pictures come with the next Simulator screenshots) -->
 
 **Built in:** Music (Apple Music and Spotify, with album art), Mac monitor (CPU, GPU, RAM, network), Calendar and Reminders (iCloud, straight on the phone), Notes, Weather, a Launcher for Dock apps, Shortcuts and system actions, and a **Photo frame** that slideshows your Favorites with a slow Ken Burns drift.
 
@@ -38,11 +38,11 @@
 
 Each widget has three layouts, `full` (a whole page), `medium` (half) and `small` (a quarter), so you can mix them on a page:
 
-<p align="center"><img src="docs/images/pages.png" alt="Pages mixing several widgets" width="100%"></p>
+<!-- <p align="center"><img src="docs/images/pages.png" alt="Pages mixing several widgets" width="100%"></p> (pictures come with the next Simulator screenshots) -->
 
 ## Themes
 
-<p align="center"><img src="docs/images/themes.png" alt="Catalog themes" width="100%"></p>
+<!-- <p align="center"><img src="docs/images/themes.png" alt="Catalog themes" width="100%"></p> (pictures come with the next Simulator screenshots) -->
 
 A theme is one `theme.json` with colours, font, corner radius, card style (`flat`, `glass` or `ascii`) and an optional animated background. It restyles built-in and catalog widgets alike. In the ASCII theme, bars become `[####....]`, rings become percentages, icons become characters and album art becomes ASCII art. Pick one in the Mac app under **Темы…** (Themes).
 
