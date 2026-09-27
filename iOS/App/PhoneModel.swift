@@ -144,9 +144,46 @@ final class PhoneModel: ObservableObject {
                                      memoryUsed: 11_000_000_000, memoryTotal: 16_000_000_000, netInBytesPerSec: 250_000, netOutBytesPerSec: 40_000)
             stats = sample
             statsHistory = (0..<60).map { i in var s = sample; s.cpu = 0.3 + 0.25 * sin(Double(i) / 6); s.gpu = 0.2 + 0.1 * cos(Double(i) / 5); return s }
+            // `--demo-bundle <file>`: catalog widgets with sample data (`node scripts/widget-dev.mjs bundle`), their pages
+            // and a theme — for screenshots of the real UI without a Mac. `--demo-theme <builtin id>` picks a built-in theme.
+            if let i = args.firstIndex(of: "--demo-bundle"), i + 1 < args.count { loadDemoBundle(args[i + 1]) }
+            if let i = args.firstIndex(of: "--demo-theme"), i + 1 < args.count,
+               let builtin = Theme.builtin.first(where: { $0.id == args[i + 1] }) { theme = builtin }
+            if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]), pages.indices.contains(n) { currentPage = n }
         }
         #endif
     }
+
+    #if DEBUG
+    /// `{ "widgets": [{ "id", "name", "symbol", "view": view.json, "data": refresh() result }],
+    ///    "pages": [{ "layout": "grid", "widgets": ["custom:<id>", "music", …] }], "theme": theme.json }` — every part optional.
+    /// Views are resolved here with the same `WidgetTemplate` the Mac uses.
+    private func loadDemoBundle(_ path: String) {
+        guard let data = FileManager.default.contents(atPath: path),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+        for widget in json["widgets"] as? [[String: Any]] ?? [] {
+            guard let id = widget["id"] as? String, let view = widget["view"] as? [String: Any] else { continue }
+            let payload = widget["data"] ?? NSNull()
+            var views: [WidgetSize: WidgetNode] = [:]
+            for size in [WidgetSize.full, .medium, .small] {
+                if let template = view[size.rawValue], let node = try? WidgetTemplate.resolve(template, data: payload) { views[size] = node }
+            }
+            customWidgets[id] = CustomWidgetState(id: id, name: widget["name"] as? String ?? id,
+                                                  symbol: widget["symbol"] as? String ?? "puzzlepiece.extension",
+                                                  views: views, error: nil, updated: Date())
+        }
+        if let raw = json["pages"] as? [[String: Any]] {
+            let list = raw.enumerated().compactMap { index, page -> PageInfo? in
+                guard let layout = (page["layout"] as? String).flatMap(PageLayout.init(rawValue:)) else { return nil }
+                let refs = (page["widgets"] as? [String] ?? []).compactMap(WidgetRef.init(rawValue:))
+                return PageInfo(id: "demo-\(index)", layout: layout, widgets: refs)
+            }
+            if !list.isEmpty { pages = list; currentPage = 0 }
+        }
+        if let raw = json["theme"], let data = try? JSONSerialization.data(withJSONObject: raw),
+           let decoded = try? JSONDecoder().decode(Theme.self, from: data) { theme = decoded }
+    }
+    #endif
 
     /// iOS kills listening sockets in the background; re-arm on every foreground.
     func sceneBecameActive() {

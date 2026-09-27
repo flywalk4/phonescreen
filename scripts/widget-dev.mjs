@@ -6,6 +6,8 @@
 //                                            [--now 2026-09-27T14:40:00Z] [--home DIR] [--views]
 //   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|catalog/themes/<id>] [--fixture NAME]
 //   node scripts/widget-dev.mjs test [<widget>…]        # every fixtures/*.json of every widget (default: catalog/widgets/*)
+//   node scripts/widget-dev.mjs bundle demo.json [--theme catalog/themes/<id>]  # all widgets + pages for the phone's
+//                                                        # `--demo --demo-bundle demo.json` (screenshots of the real UI)
 //
 // The real check is still `PhoneScreen --widget-test` on a Mac (JavaScriptCore, the real sandbox and SwiftUI);
 // this emulation mirrors the sandbox API and limits closely enough to catch script, template and layout mistakes.
@@ -507,6 +509,38 @@ async function main() {
     if (result.error) { console.error(`FAIL ${result.error}`); process.exit(1); }
     await screenshot(renderHTML(result.views, args.theme || "dark"), out);
     console.log(`${out}: примерный макет (шрифт и значки не как на iPhone)`);
+  } else if (command === "bundle") {
+    // Every catalog widget with data from its first successful fixture, plus pages — for `--demo-bundle` on the phone.
+    const out = args._[0];
+    if (!out) throw new Error("bundle <out.json> [--theme catalog/themes/<id>]");
+    const dirs = fs.readdirSync(path.join(ROOT, "catalog/widgets")).sort().map((d) => path.join(ROOT, "catalog/widgets", d));
+    const widgets = [];
+    for (const dir of dirs) {
+      const list = fixtures(dir).filter((f) => !f.error);
+      const fx = list.find((f) => f.name === "ok") || list[0] || {};
+      const result = await scenario(dir, fx);
+      if (result.error) { console.error(`✗ ${path.basename(dir)}: ${result.error}`); continue; }
+      const m = result.box.manifest;
+      widgets.push({ id: m.id, name: m.name, symbol: m.symbol, view: JSON.parse(fs.readFileSync(path.join(dir, "view.json"), "utf8")), data: result.data });
+    }
+    const ids = new Set(widgets.map((w) => w.id));
+    const ref = (id) => (ids.has(`com.flywalk4.${id}`) ? `custom:com.flywalk4.${id}` : id);
+    const pages = [
+      ...widgets.map((w) => ({ layout: "single", widgets: [`custom:${w.id}`] })),
+      { layout: "grid", widgets: ["markets", "time", "air", "focus"].map(ref) },
+      { layout: "trio", widgets: ["claude-code", "sky", "rates"].map(ref) },
+      { layout: "split", widgets: ["rain", "hackernews"].map(ref) },
+      { layout: "grid", widgets: ["tictactoe", "game2048", "memory", "minesweeper"].map(ref) },
+      { layout: "grid", widgets: ["music", "weather", "calendar", "monitor"] },
+    ];
+    const bundle = { widgets, pages };
+    if (args.theme) {
+      const file = fs.statSync(args.theme).isDirectory() ? path.join(args.theme, "theme.json") : args.theme;
+      bundle.theme = JSON.parse(fs.readFileSync(file, "utf8"));
+    }
+    fs.writeFileSync(out, JSON.stringify(bundle));
+    console.log(`${out}: ${widgets.length} виджетов, ${pages.length} страниц (страница N = --page N)`);
+    pages.forEach((p, i) => console.log(`  ${i}: ${p.layout} ${p.widgets.join(", ")}`));
   } else if (command === "test") {
     const dirs = args._.length ? args._.map(widgetDir)
       : fs.readdirSync(path.join(ROOT, "catalog/widgets")).map((d) => path.join(ROOT, "catalog/widgets", d)).filter((d) => fs.existsSync(path.join(d, "manifest.json")));
