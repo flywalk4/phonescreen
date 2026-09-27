@@ -6,7 +6,7 @@
 //   node scripts/widget-dev.mjs watch <widget> [--theme …] [--fixture NAME]   # re-run + re-render preview.png on save
 //   node scripts/widget-dev.mjs run <widget> [--fixture NAME] [--setting k=v] [--secret k=v] [--action NAME]…
 //                                            [--now 2026-09-27T14:40:00Z] [--home DIR] [--views]
-//   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|catalog/themes/<id>] [--fixture NAME]
+//   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|all|catalog/themes/<id>] [--fixture NAME]
 //   node scripts/widget-dev.mjs test [<widget>…]        # every fixtures/*.json of every widget (default: catalog/widgets/*)
 //   node scripts/widget-dev.mjs bundle demo.json [--theme catalog/themes/<id>]  # all widgets + pages for the phone's
 //                                                        # `--demo --demo-bundle demo.json` (screenshots of the real UI)
@@ -621,8 +621,12 @@ async function main() {
     const dir = widgetDir(w);
     const result = await scenario(dir, fixtureFor(dir, args));
     if (result.error) { console.error(`FAIL ${result.error}`); process.exit(1); }
-    await screenshot(renderHTML(result.views, args.theme || "dark"), out);
-    console.log(`${out}: примерный макет (шрифт и значки не как на iPhone)`);
+    const themes = args.theme === "all" ? ["dark", "light", "glass", "ascii"] : [args.theme || "dark"];
+    for (const theme of themes) {
+      const file = themes.length > 1 ? out.replace(/(\.png)?$/, `-${theme}.png`) : out;
+      await screenshot(renderHTML(result.views, theme), file);
+      console.log(`${file}: примерный макет (шрифт и значки не как на iPhone)`);
+    }
   } else if (command === "new") {
     const id = args._[0];
     if (!/^[a-z0-9]+(\.[a-z0-9-]+)+$/.test(id || "")) throw new Error("new com.you.widget — id из строчных латинских букв, цифр и точек");

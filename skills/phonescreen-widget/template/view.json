@@ -1,9 +1,16 @@
 {
+  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
   "full": {
     "type": "vstack", "spacing": 12, "align": "leading",
     "children": [
-      { "type": "text", "text": "{{title}}", "style": "title2" },
-      { "type": "text", "text": "{{value}}", "style": "largeTitle" },
+      { "type": "hstack", "children": [
+        { "type": "text", "text": "{{title}}", "style": "headline" },
+        { "type": "spacer" },
+        { "type": "text", "text": "{{updated}}", "style": "caption", "color": "secondary" }
+      ] },
+      { "type": "spacer" },
+      { "type": "text", "text": "{{value}}", "size": 72, "weight": "bold", "design": "rounded", "lines": 1 },
+      { "type": "text", "text": "{{change}}", "style": "title3", "weight": "semibold", "color": "{{changeColor}}" },
       { "type": "spacer" },
       { "type": "button", "title": "Обновить", "symbol": "arrow.clockwise", "action": "reload" }
     ]
@@ -12,8 +19,18 @@
     "type": "vstack", "spacing": 6, "align": "leading",
     "children": [
       { "type": "text", "text": "{{title}}", "style": "headline", "lines": 1 },
-      { "type": "text", "text": "{{value}}", "style": "title" }
+      { "type": "spacer" },
+      { "type": "text", "text": "{{value}}", "size": 48, "weight": "bold", "design": "rounded", "lines": 1 },
+      { "type": "text", "text": "{{change}}", "style": "subheadline", "color": "{{changeColor}}" }
     ]
   },
-  "small": { "type": "text", "text": "{{value}}", "style": "title" }
+  "small": {
+    "type": "vstack", "spacing": 4, "align": "leading",
+    "children": [
+      { "type": "text", "text": "{{title}}", "style": "caption", "color": "secondary", "lines": 1 },
+      { "type": "spacer" },
+      { "type": "text", "text": "{{value}}", "size": 34, "weight": "bold", "design": "rounded", "lines": 1 },
+      { "type": "text", "text": "{{change}}", "style": "caption", "color": "{{changeColor}}" }
+    ]
+  }
 }
