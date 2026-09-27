@@ -8,10 +8,10 @@
   "appearance": "dark",
   "font": "rounded",
   "radius": 30,
-  "background": { "colors": ["#1A0B3D", "#6B1E7A", "#D5386B", "#FF9E5E"], "angle": 0 },
+  "background": { "colors": ["#1A0B3D", "#5B1A73", "#A62459", "#C24A2A"], "angle": 0 },
   "colors": {
     "text": "#FFFFFF",
-    "secondary": "#FFD6F0B3",
+    "secondary": "#FFD6F0D9",
     "accent": "#FF6AD5",
     "card": "#2A0E4A40",
     "border": "#FF6AD540",

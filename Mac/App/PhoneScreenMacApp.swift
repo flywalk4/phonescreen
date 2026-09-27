@@ -22,6 +22,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             WidgetTestRunner.run(folder: URL(fileURLWithPath: CommandLine.arguments[i + 1]))
             return
         }
+        // `--theme-test <folder or theme.json>`: read a theme the way the app installs it, print it (or the error), quit.
+        if let i = CommandLine.arguments.firstIndex(of: "--theme-test"), i + 1 < CommandLine.arguments.count {
+            ThemeTestRunner.run(URL(fileURLWithPath: CommandLine.arguments[i + 1]))
+            return
+        }
         if let i = CommandLine.arguments.firstIndex(of: "--catalog-test"), i + 1 < CommandLine.arguments.count {
             WidgetTestRunner.runCatalog(CommandLine.arguments[i + 1])
             return

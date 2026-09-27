@@ -29,6 +29,16 @@ import Testing
         #expect(throws: Theme.Invalid.self) { try theme.validate() }
     }
 
+    @Test func contrast() {
+        let white = RGBA(r: 1, g: 1, b: 1), black = RGBA(r: 0, g: 0, b: 0)
+        #expect(abs(white.contrast(with: black) - 21) < 0.01)
+        #expect(abs(white.contrast(with: white) - 1) < 0.01)
+        for theme in Theme.builtin { #expect(theme.contrastWarnings().isEmpty, "\(theme.name)") }
+        var unreadable = Theme.light
+        unreadable.colors.text = "#DDDDDD"
+        #expect(unreadable.contrastWarnings().count == 1)
+    }
+
     @Test func themeMessageRoundTrip() throws {
         let messages = try FrameParser().messagesFrom(Framing.encode(.theme(.ascii)))
         #expect(messages == [.theme(.ascii)])

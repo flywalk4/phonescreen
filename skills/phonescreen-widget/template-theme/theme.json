@@ -1,0 +1,20 @@
+{
+  "id": "com.author.mytheme",
+  "name": "Моя тема",
+  "version": "1.0.0",
+  "author": "author",
+  "description": "Одна строка о том, как выглядит тема.",
+  "style": "flat",
+  "appearance": "dark",
+  "font": "system",
+  "radius": 20,
+  "background": { "colors": ["#101418", "#1C2430"], "angle": 0 },
+  "colors": {
+    "text": "#F2F4F7",
+    "secondary": "#9AA4B2",
+    "accent": "#4F9DFF",
+    "card": "#FFFFFF10",
+    "border": "#FFFFFF14",
+    "palette": {}
+  }
+}

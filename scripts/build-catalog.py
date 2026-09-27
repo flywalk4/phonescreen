@@ -56,6 +56,8 @@ def build() -> dict:
             "files": {"theme.json": hashlib.sha256((folder / "theme.json").read_bytes()).hexdigest()},
         })
         print(f"✓ тема {t['id']} {t['version']}")
+        for w in validate_theme.contrast_warnings(t):
+            print(f"    ⚠ {w}")
     if failed:
         sys.exit("каталог не собран: исправьте ошибки выше")
     return {"widgets": entries, "themes": themes}

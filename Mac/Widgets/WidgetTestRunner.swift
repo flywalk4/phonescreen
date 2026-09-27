@@ -51,8 +51,8 @@ enum WidgetTestRunner {
         }
     }
 
-    /// `PhoneScreen --catalog-test <index.json URL or path>`: downloads every entry the way the app installs it
-    /// (SHA-256 checked) and validates the package. Exit 0 if all install.
+    /// `PhoneScreen --catalog-test <index.json URL or path>`: downloads every widget and theme the way the app
+    /// installs it (SHA-256 checked) and validates it. Exit 0 if all install.
     static func runCatalog(_ location: String) {
         let url = location.contains("://") ? URL(string: location)! : URL(fileURLWithPath: location)
         Task {
@@ -63,6 +63,10 @@ enum WidgetTestRunner {
                     let widget = try WidgetStore.read(package: folder)
                     print("✓ \(entry.id) \(widget.manifest.version)")
                     try? FileManager.default.removeItem(at: folder)
+                }
+                for entry in catalog.themes ?? [] {
+                    let theme = try await ThemeStore.download(entry, indexURL: url).theme
+                    print("✓ тема \(entry.id) \(theme.version)")
                 }
                 print("OK")
                 exit(0)

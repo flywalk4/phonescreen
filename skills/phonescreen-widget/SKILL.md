@@ -14,7 +14,7 @@ catalog/widgets/<id>/
   provider.js     async function refresh(ctx) → data;  optional async function action(name, ctx)
 ```
 
-The full reference (every field, node type and sandbox API) is `catalog/README.md` in the repository — read it before writing anything non-trivial. Working examples: `catalog/widgets/com.flywalk4.rates/` (network, settings, history, chart) and `catalog/widgets/com.flywalk4.claude-code/` (local files, animated sprite). A starting point is `template/` next to this file.
+The full reference (every field, node type and sandbox API) is `catalog/README.md` in the repository — read it before writing anything non-trivial. Working examples: `catalog/widgets/com.flywalk4.rates/` (network, settings, history, chart) and `catalog/widgets/com.flywalk4.claude-code/` (local files, animated sprite). A starting point is `template/` next to this file (`template-theme/` for themes).
 
 ## Workflow
 
@@ -51,9 +51,10 @@ Text styles: `largeTitle title title2 title3 headline body callout subheadline f
 
 ## Themes
 
-A theme is one file, `catalog/themes/<id>/theme.json` (folder name = `id`), that restyles the whole phone — built-in and JavaScript widgets. Full format: the "Темы" section of `catalog/README.md`; examples in `catalog/themes/`. Fields: `style` (`flat` | `glass` | `ascii`), `appearance` (`dark` | `light`), `font` (`system` | `rounded` | `monospaced` | `serif`), `radius` (0…40), `background.colors` (1 colour or a 2–4 colour gradient, `angle` in degrees), `colors.text/secondary/accent` (required), `colors.card/border`, `colors.palette` (remap widget colour names, e.g. `{"green": "#72F1B8"}`). Colours are `#RRGGBB` or `#RRGGBBAA`.
+A theme is a folder with one file, `catalog/themes/<id>/theme.json` (folder name = `id`), that restyles the whole phone — built-in and JavaScript widgets. No code, so no permissions. Full format: the "Темы" section of `catalog/README.md`; start from `template-theme/` next to this file; examples in `catalog/themes/`. Fields: `style` (`flat` | `glass` | `ascii`), `appearance` (`dark` | `light`), `font` (`system` | `rounded` | `monospaced` | `serif`), `radius` (0…40), `background.colors` (1 colour or a 2–4 colour gradient, `angle` in degrees), `colors.text/secondary/accent` (required), `colors.card/border`, `colors.palette` (remap widget colour names, e.g. `{"green": "#72F1B8"}`). Colours are `#RRGGBB` or `#RRGGBBAA`.
 
-1. Check contrast: `text` and `secondary` must stay readable on both `background` and `card`; for `glass`, pick a vivid gradient and a translucent `card`.
-2. Validate: `python3 scripts/validate-theme.py catalog/themes/<id>` — fix every ✗.
-3. `python3 scripts/build-catalog.py`, commit the folder with `catalog/index.json`. Bump `version` on changes.
-4. To see it live: Mac → Темы → «Файл разработки…» and pick the `theme.json`; every save recolours the phone.
+1. **Copy the template** to `catalog/themes/<id>/` and set `id`, `name`, `author`, `description`.
+2. **Pick colours for readability**: `text` needs 4.5:1 contrast against every background colour and the card, `secondary` 3:1. For `glass`, use a vivid but dark-enough gradient (white text must read on every stop) and a translucent `card`. For `ascii`, remap the palette so widget colours fit the terminal look.
+3. **Validate:** `python3 scripts/validate-theme.py catalog/themes/<id>` — fix every ✗ and every ⚠ (the contrast warnings).
+4. **Run it for real** (needs the built Mac app): `PhoneScreen --theme-test catalog/themes/<id>` prints the theme as the app reads it and `OK`, or `FAIL …`. With a phone: Settings → Темы → «Папка разработки…» — every save recolours the phone.
+5. **Catalog:** `python3 scripts/build-catalog.py`, commit the folder with `catalog/index.json`. Bump `version` whenever you change a published theme.

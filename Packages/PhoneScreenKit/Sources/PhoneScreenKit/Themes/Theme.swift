@@ -109,6 +109,28 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
+// MARK: - Readability
+
+public extension Theme {
+    /// Places where text would be hard to read: WCAG contrast of `text` (needs 4.5:1) and `secondary` (3:1) against
+    /// every background colour and the card over it. Advisory — a theme with warnings still installs.
+    func contrastWarnings() -> [String] {
+        let backgrounds = background.colors.compactMap(RGBA.init(hex:)).map { $0.over(RGBA(r: 0, g: 0, b: 0)) }
+        let card = colors.card.flatMap(RGBA.init(hex:))
+        var surfaces: [(String, RGBA)] = backgrounds.map { ("фон", $0) }
+        if let card, style != .glass { surfaces += backgrounds.map { ("карточка", card.over($0)) } }
+        var warnings: [String] = []
+        for (name, hex, minimum) in [("text", colors.text, 4.5), ("secondary", colors.secondary, 3.0)] {
+            guard let fg = RGBA(hex: hex) else { continue }
+            let worst = surfaces.map { ($0.0, fg.over($0.1).contrast(with: $0.1)) }.min { $0.1 < $1.1 }
+            if let worst, worst.1 < minimum {
+                warnings.append("colors.\(name) плохо читается на \(worst.0): контраст \(String(format: "%.1f", worst.1)):1, нужно от \(String(format: "%.1f", minimum)):1")
+            }
+        }
+        return warnings
+    }
+}
+
 /// A colour parsed from `#RRGGBB` / `#RRGGBBAA`, components 0…1.
 public struct RGBA: Equatable, Sendable {
     public var r, g, b, a: Double
@@ -127,6 +149,23 @@ public struct RGBA: Equatable, Sendable {
         let rgba = s.count == 7 ? (v << 8) | 0xFF : v
         self.init(r: Double((rgba >> 24) & 0xFF) / 255, g: Double((rgba >> 16) & 0xFF) / 255,
                   b: Double((rgba >> 8) & 0xFF) / 255, a: Double(rgba & 0xFF) / 255)
+    }
+
+    /// This colour composited over an opaque one.
+    public func over(_ below: RGBA) -> RGBA {
+        RGBA(r: r * a + below.r * (1 - a), g: g * a + below.g * (1 - a), b: b * a + below.b * (1 - a))
+    }
+
+    /// WCAG relative luminance.
+    public var luminance: Double {
+        func channel(_ c: Double) -> Double { c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4) }
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+    }
+
+    /// WCAG contrast ratio, 1…21.
+    public func contrast(with other: RGBA) -> Double {
+        let (l1, l2) = (luminance, other.luminance)
+        return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
     }
 }
 
