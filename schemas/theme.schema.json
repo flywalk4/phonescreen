@@ -1,0 +1,150 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/theme.schema.json",
+ "title": "PhoneScreen theme.json",
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "version",
+  "author",
+  "style",
+  "appearance",
+  "font",
+  "radius",
+  "background",
+  "colors"
+ ],
+ "properties": {
+  "$schema": {
+   "type": "string"
+  },
+  "id": {
+   "type": "string",
+   "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$"
+  },
+  "name": {
+   "type": "string",
+   "maxLength": 40
+  },
+  "version": {
+   "type": "string",
+   "pattern": "^\\d+\\.\\d+\\.\\d+$"
+  },
+  "author": {
+   "type": "string"
+  },
+  "description": {
+   "type": "string"
+  },
+  "style": {
+   "enum": [
+    "flat",
+    "glass",
+    "ascii"
+   ]
+  },
+  "appearance": {
+   "enum": [
+    "dark",
+    "light"
+   ]
+  },
+  "font": {
+   "enum": [
+    "system",
+    "rounded",
+    "monospaced",
+    "serif"
+   ]
+  },
+  "radius": {
+   "type": "number",
+   "minimum": 0,
+   "maximum": 40
+  },
+  "background": {
+   "type": "object",
+   "required": [
+    "colors"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "colors": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+     },
+     "minItems": 1,
+     "maxItems": 4
+    },
+    "angle": {
+     "type": "number"
+    },
+    "animation": {
+     "enum": [
+      "aurora",
+      "stars",
+      "matrix",
+      "waves",
+      "bokeh",
+      "lava"
+     ]
+    },
+    "tints": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+     },
+     "maxItems": 6
+    },
+    "speed": {
+     "type": "number",
+     "minimum": 0.1,
+     "maximum": 5
+    }
+   }
+  },
+  "colors": {
+   "type": "object",
+   "required": [
+    "text",
+    "secondary",
+    "accent"
+   ],
+   "additionalProperties": false,
+   "properties": {
+    "text": {
+     "type": "string",
+     "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    },
+    "secondary": {
+     "type": "string",
+     "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    },
+    "accent": {
+     "type": "string",
+     "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    },
+    "card": {
+     "type": "string",
+     "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    },
+    "border": {
+     "type": "string",
+     "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    },
+    "palette": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "string",
+      "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+     }
+    }
+   }
+  }
+ },
+ "additionalProperties": false
+}

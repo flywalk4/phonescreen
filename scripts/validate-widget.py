@@ -92,7 +92,7 @@ def validate(folder: Path) -> list[str]:
     if not isinstance(view, dict) or not (set(view) & SIZES):
         errors.append("view.json: объект с ключами full / medium / small")
     else:
-        for key in set(view) - SIZES:
+        for key in set(view) - SIZES - {"$schema"}:
             errors.append(f"view.json: неизвестный ключ «{key}» (нужны full / medium / small)")
         for size in SIZES & set(view):
             check_node(view[size], f"view.{size}", errors)

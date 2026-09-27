@@ -2,6 +2,8 @@
 // Widget development without a Mac: runs provider.js in an emulation of the app's sandbox (Node), resolves
 // view.json the way WidgetTemplate.swift does, draws an approximate PNG mock, and runs the widgets' fixtures.
 //
+//   node scripts/widget-dev.mjs new com.you.widget [--name "Имя"] [--dir catalog/widgets]  # a working starter widget
+//   node scripts/widget-dev.mjs watch <widget> [--theme …] [--fixture NAME]   # re-run + re-render preview.png on save
 //   node scripts/widget-dev.mjs run <widget> [--fixture NAME] [--setting k=v] [--secret k=v] [--action NAME]…
 //                                            [--now 2026-09-27T14:40:00Z] [--home DIR] [--views]
 //   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|catalog/themes/<id>] [--fixture NAME]
@@ -137,6 +139,7 @@ export function sandbox(dir, options = {}) {
     sleep: (ms) => new Promise((r) => setTimeout(r, Math.max(0, Math.min(Number(ms) || 0, 60000)))),
     Date: FakeDate,
   });
+  vm.runInContext(fs.readFileSync(path.join(ROOT, "Mac/Widgets/prelude.js"), "utf8"), context, { filename: "prelude.js" });
   vm.runInContext(fs.readFileSync(path.join(dir, "provider.js"), "utf8"), context, { filename: "provider.js", timeout: 2000 });
 
   const settings = {};
@@ -511,6 +514,96 @@ function fixtureFor(dir, args) {
   };
 }
 
+/** A small but complete widget: settings, storage, an action, all three sizes, adaptive to every theme. */
+function scaffold(dir, id, name) {
+  const json = (v) => JSON.stringify(v, null, 2) + "\n";
+  const schema = (n) => `https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/${n}.schema.json`;
+  fs.mkdirSync(path.join(dir, "fixtures"), { recursive: true });
+  fs.writeFileSync(path.join(dir, "manifest.json"), json({
+    $schema: schema("manifest"), id, name, version: "1.0.0", author: id.split(".")[1] || "me",
+    description: "Счётчик с целью на день — стартовый шаблон: настройки, storage, кнопки и все три размера.",
+    symbol: "sparkles", refresh: 60,
+    settings: [{ key: "goal", title: "Цель на день", default: "8" }],
+  }));
+  const face = (big, extra = [], compact = false) => ({
+    type: "vstack", spacing: 10, children: [
+      { type: "hstack", children: [
+        { type: "symbol", name: "sparkles", color: "accent" },
+        { type: "text", text: "{{title}}", style: "headline" },
+        ...(compact ? [] : [{ type: "spacer" }, { type: "text", text: "{{updated}}", style: "caption", color: "secondary" }]),
+      ] },
+      { type: "text", text: "{{count}}", size: big, weight: "bold", design: "rounded" },
+      { type: "text", text: "{{left}}", style: "subheadline", color: "{{color}}" },
+      { type: "progress", value: "{{progress}}", color: "{{color}}" },
+      ...extra,
+    ],
+  });
+  const buttons = { type: "hstack", children: [
+    { type: "button", title: "+1", symbol: "plus", action: "add" },
+    { type: "button", title: "Сброс", symbol: "arrow.clockwise", action: "reset" },
+  ] };
+  fs.writeFileSync(path.join(dir, "view.json"), json({
+    $schema: schema("view"),
+    full: { type: "vstack", spacing: 16, children: [
+      face(96, [buttons]),
+      { type: "box", if: "{{history}}", children: [
+        { type: "text", text: "Последние 7 дней", style: "caption", color: "secondary" },
+        { type: "chart", values: "{{history}}", style: "bar", color: "accent", height: 80 },
+      ] },
+    ] },
+    medium: face(56, [buttons]),
+    small: { type: "box", action: "add", children: [face(40, [], true)] },
+  }));
+  fs.writeFileSync(path.join(dir, "provider.js"), `// ${name}: refresh(ctx) returns the data view.json binds to ({{count}} etc.). Runs on the Mac.
+// ctx.settings — from manifest.settings; storage — 64 KB that survive restarts; format — number/date helpers.
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function load() {
+  const state = storage.get("state") || { day: today(), count: 0, history: [] };
+  if (state.day !== today()) { // a new day: keep yesterday in the history
+    state.history = [...state.history, state.count].slice(-6);
+    state.day = today();
+    state.count = 0;
+  }
+  return state;
+}
+
+function refresh(ctx) {
+  const state = load();
+  storage.set("state", state);
+  const goal = Math.max(1, Number(ctx.settings.goal) || 8);
+  const left = goal - state.count;
+  return {
+    title: "Сегодня",
+    count: format.number(state.count, 0),
+    left: left > 0 ? \`ещё \${format.plural(left, "раз", "раза", "раз")} до цели\` : "цель выполнена 🎉",
+    progress: Math.min(1, state.count / goal),
+    color: left > 0 ? "accent" : "green",
+    history: state.history.length ? [...state.history, state.count] : [],
+    updated: format.time(),
+  };
+}
+
+// Buttons and tappable boxes call action(name, ctx); the widget refreshes right after.
+function action(name, ctx) {
+  const state = load();
+  if (name === "add") state.count += 1;
+  if (name === "reset") state.count = 0;
+  storage.set("state", state);
+}
+`);
+  fs.writeFileSync(path.join(dir, "fixtures/ok.json"), json({
+    description: "Два нажатия утром; цель по умолчанию — 8",
+    now: "2026-09-27T09:00:00Z",
+    storage: { state: { day: "2026-09-27", count: 3, history: [5, 8, 2] } },
+    actions: ["add", "add"],
+    expect: { count: "5", progress: 0.625, color: "accent", left: "/ещё 3 раза/" },
+  }));
+}
+
 async function main() {
   const [command, ...rest] = process.argv.slice(2);
   const args = parseArgs(rest);
@@ -529,6 +622,41 @@ async function main() {
     if (result.error) { console.error(`FAIL ${result.error}`); process.exit(1); }
     await screenshot(renderHTML(result.views, args.theme || "dark"), out);
     console.log(`${out}: примерный макет (шрифт и значки не как на iPhone)`);
+  } else if (command === "new") {
+    const id = args._[0];
+    if (!/^[a-z0-9]+(\.[a-z0-9-]+)+$/.test(id || "")) throw new Error("new com.you.widget — id из строчных латинских букв, цифр и точек");
+    const dir = path.resolve(args.dir || path.join(ROOT, "catalog/widgets"), id);
+    if (fs.existsSync(dir)) throw new Error(`${dir} уже есть`);
+    scaffold(dir, id, args.name || "Мой виджет");
+    const rel = path.relative(process.cwd(), dir);
+    console.log(`${rel}: manifest.json, view.json, provider.js, fixtures/ok.json\n` +
+      `дальше:  node scripts/widget-dev.mjs watch ${rel}   (правьте файлы — preview.png обновляется)\n` +
+      `         node scripts/widget-dev.mjs test ${rel}\n` +
+      `на Mac:  PhoneScreen → Настройки → Виджеты → «Подключить папку…» (живая перезагрузка)`);
+  } else if (command === "watch") {
+    const dir = widgetDir(args._[0] || ".");
+    const out = args.out || path.join(dir, "preview.png");
+    let timer = null, running = false;
+    const go = async () => {
+      if (running) return void (timer = setTimeout(go, 200));
+      running = true;
+      try {
+        const result = await scenario(dir, fixtureFor(dir, args));
+        for (const line of result.box.logs) console.error("log:", line);
+        if (result.error) console.log(`${new Date().toLocaleTimeString()} ✗ ${result.error}`);
+        else {
+          await screenshot(renderHTML(result.views, args.theme || "dark"), out);
+          console.log(`${new Date().toLocaleTimeString()} ✓ ${path.relative(process.cwd(), out)}  ${JSON.stringify(result.data).slice(0, 120)}`);
+        }
+      } catch (e) { console.log(`${new Date().toLocaleTimeString()} ✗ ${e.message}`); }
+      running = false;
+    };
+    await go();
+    console.log("слежу за изменениями (Ctrl-C — выход)…");
+    const skip = (f) => !f || f.endsWith(".png") || f.startsWith(".");
+    fs.watch(dir, { recursive: true }, (_, f) => { if (skip(f)) return; clearTimeout(timer); timer = setTimeout(go, 150); });
+    fs.watch(path.join(ROOT, "Mac/Widgets/prelude.js"), () => { clearTimeout(timer); timer = setTimeout(go, 150); });
+    await new Promise(() => {});
   } else if (command === "bundle") {
     // Every catalog widget with data from its first successful fixture, plus pages — for `--demo-bundle` on the phone.
     const out = args._[0];
@@ -580,7 +708,7 @@ async function main() {
     console.log(failed ? `${failed} из ${total} сценариев не прошли` : `OK: ${total} сценариев`);
     process.exit(failed ? 1 : 0);
   } else {
-    console.error(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 9).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
+    console.error(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 11).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
     process.exit(2);
   }
 }

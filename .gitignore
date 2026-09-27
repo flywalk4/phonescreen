@@ -8,3 +8,4 @@ build/
 Packages/*/.build/
 .env
 __pycache__/
+catalog/widgets/*/preview.png

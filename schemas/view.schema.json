@@ -1,0 +1,854 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
+ "title": "PhoneScreen widget view.json",
+ "description": "Declarative UI for sizes full / medium / small. Any string may contain {{path}} bindings to refresh() data.",
+ "type": "object",
+ "properties": {
+  "$schema": {
+   "type": "string"
+  },
+  "full": {
+   "$ref": "#/$defs/node"
+  },
+  "medium": {
+   "$ref": "#/$defs/node"
+  },
+  "small": {
+   "$ref": "#/$defs/node"
+  }
+ },
+ "additionalProperties": false,
+ "$defs": {
+  "node": {
+   "oneOf": [
+    {
+     "title": "box",
+     "description": "A rounded panel on the theme's surface; fit hugs content; action makes it tappable; aspect keeps proportions.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "box"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "action": {
+       "type": "string",
+       "description": "action(name) in provider.js; may contain {{bindings}}"
+      },
+      "align": {
+       "type": "string"
+      },
+      "aspect": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "background": {
+       "type": "string",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "examples": [
+        "secondary",
+        "accent",
+        "green",
+        "#FF6600"
+       ]
+      },
+      "children": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/node"
+       }
+      },
+      "fit": {
+       "anyOf": [
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "opacity": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "padding": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "radius": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "spacing": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "button",
+     "description": "Calls action(name) in provider.js.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "button"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "action": {
+       "type": "string",
+       "description": "action(name) in provider.js; may contain {{bindings}}"
+      },
+      "symbol": {
+       "type": "string"
+      },
+      "title": {
+       "type": "string"
+      }
+     },
+     "required": [
+      "type",
+      "action"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "chart",
+     "description": "Chart of values: line, area or bar.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "chart"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "color": {
+       "type": "string",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "examples": [
+        "secondary",
+        "accent",
+        "green",
+        "#FF6600"
+       ]
+      },
+      "height": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "style": {
+       "anyOf": [
+        {
+         "enum": [
+          "body",
+          "callout",
+          "caption",
+          "caption2",
+          "footnote",
+          "headline",
+          "largeTitle",
+          "subheadline",
+          "title",
+          "title2",
+          "title3",
+          "area",
+          "bar",
+          "line"
+         ]
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "values": {
+       "anyOf": [
+        {
+         "type": "array",
+         "items": {
+          "type": "number"
+         }
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "divider",
+     "description": "A line.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "divider"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "gauge",
+     "description": "Ring, value 0…1.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "gauge"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "color": {
+       "type": "string",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "examples": [
+        "secondary",
+        "accent",
+        "green",
+        "#FF6600"
+       ]
+      },
+      "label": {
+       "type": "string"
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "grid",
+     "description": "Children in columns.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "grid"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "children": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/node"
+       }
+      },
+      "columns": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "spacing": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "hstack",
+     "description": "Children side by side.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "hstack"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "align": {
+       "type": "string"
+      },
+      "children": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/node"
+       }
+      },
+      "spacing": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "layers",
+     "description": "Children on top of each other (first at the back).",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "layers"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "align": {
+       "type": "string"
+      },
+      "children": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/node"
+       }
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "list",
+     "description": "Repeats template for each of items (item / index bound); columns for a grid.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "list"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "align": {
+       "type": "string"
+      },
+      "columns": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "items": {
+       "type": "string",
+       "pattern": "\\{\\{.+\\}\\}"
+      },
+      "spacing": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "template": {
+       "$ref": "#/$defs/node"
+      }
+     },
+     "required": [
+      "type",
+      "template"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "progress",
+     "description": "Bar, value 0…1.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "progress"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "color": {
+       "type": "string",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "examples": [
+        "secondary",
+        "accent",
+        "green",
+        "#FF6600"
+       ]
+      },
+      "value": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "scene",
+     "description": "Animated scene drawn by the phone (live wallpaper).",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "scene"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "colors": {
+       "anyOf": [
+        {
+         "type": "array",
+         "items": {
+          "type": "string"
+         }
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "kind": {
+       "anyOf": [
+        {
+         "enum": [
+          "aurora",
+          "stars",
+          "matrix",
+          "waves",
+          "bokeh",
+          "lava"
+         ]
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "speed": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "tints": {
+       "anyOf": [
+        {
+         "type": "array",
+         "items": {
+          "type": "string"
+         }
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        },
+        {
+         "type": "null"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "spacer",
+     "description": "Flexible space.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "spacer"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "sprite",
+     "description": "Pixel animation: frames of equal-length strings, palette char → colour.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "sprite"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "fps": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "frames": {
+       "anyOf": [
+        {
+         "type": "array"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "palette": {
+       "anyOf": [
+        {
+         "type": "object"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "symbol",
+     "description": "An SF Symbol.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "symbol"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "color": {
+       "type": "string",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "examples": [
+        "secondary",
+        "accent",
+        "green",
+        "#FF6600"
+       ]
+      },
+      "name": {
+       "type": "string",
+       "description": "SF Symbol name"
+      },
+      "size": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "text",
+     "description": "Text; style or size/weight/design.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "text"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "align": {
+       "type": "string"
+      },
+      "color": {
+       "type": "string",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "examples": [
+        "secondary",
+        "accent",
+        "green",
+        "#FF6600"
+       ]
+      },
+      "design": {
+       "anyOf": [
+        {
+         "enum": [
+          "default",
+          "monospaced",
+          "rounded",
+          "serif"
+         ]
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "lines": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "size": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "style": {
+       "anyOf": [
+        {
+         "enum": [
+          "body",
+          "callout",
+          "caption",
+          "caption2",
+          "footnote",
+          "headline",
+          "largeTitle",
+          "subheadline",
+          "title",
+          "title2",
+          "title3",
+          "area",
+          "bar",
+          "line"
+         ]
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
+      "text": {
+       "type": "string"
+      },
+      "weight": {
+       "anyOf": [
+        {
+         "enum": [
+          "black",
+          "bold",
+          "heavy",
+          "light",
+          "medium",
+          "regular",
+          "semibold",
+          "thin",
+          "ultraLight"
+         ]
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "title": "vstack",
+     "description": "Children stacked vertically.",
+     "type": "object",
+     "properties": {
+      "type": {
+       "const": "vstack"
+      },
+      "if": {
+       "type": "string",
+       "description": "Hide the node when the binding is empty / false / 0 / []"
+      },
+      "align": {
+       "type": "string"
+      },
+      "children": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/node"
+       }
+      },
+      "spacing": {
+       "anyOf": [
+        {
+         "type": "number"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      }
+     },
+     "required": [
+      "type"
+     ],
+     "additionalProperties": false
+    }
+   ]
+  }
+ }
+}

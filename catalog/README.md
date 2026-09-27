@@ -11,7 +11,7 @@ catalog/widgets/com.author.mywidget/
 
 ## Как добавить виджет в каталог
 
-1. Создайте папку `catalog/widgets/<id>/` (имя папки = `id` из манифеста).
+1. Создайте папку `catalog/widgets/<id>/` (имя папки = `id` из манифеста) — проще всего готовым шаблоном: `node scripts/widget-dev.mjs new com.you.widget --name "Имя"` (рабочий виджет со всеми тремя размерами, настройкой, `storage`, кнопками и сценарием).
 2. Проверьте: `python3 scripts/validate-widget.py catalog/widgets/<id>`
 3. Запустите по-настоящему (нужен собранный Mac-агент): `PhoneScreen --widget-test catalog/widgets/<id>` — выполнит `refresh()` в той же песочнице, что и приложение, и напечатает данные и итоговое дерево.
 4. Обновите индекс: `python3 scripts/build-catalog.py` (хеши SHA-256 всех файлов; приложение не установит файл с другим хешем).
@@ -21,6 +21,8 @@ catalog/widgets/com.author.mywidget/
 **Без Mac** (Linux, Windows, CI, ИИ-агент в облаке) — `scripts/widget-dev.mjs` на Node 18+:
 
 ```bash
+node scripts/widget-dev.mjs new com.you.widget --name "Имя"                  # стартовый виджет + fixtures/ok.json
+node scripts/widget-dev.mjs watch catalog/widgets/<id> --theme ascii          # при каждом сохранении: refresh() + preview.png
 node scripts/widget-dev.mjs run catalog/widgets/<id> --fixture ok --views   # refresh() в эмуляции песочницы + дерево для телефона
 node scripts/widget-dev.mjs preview catalog/widgets/<id> out.png --theme glass # примерный PNG всех трёх размеров (нужен Playwright)
 node scripts/widget-dev.mjs test                                             # все сценарии fixtures/ всех виджетов
@@ -28,7 +30,9 @@ node scripts/widget-dev.mjs test                                             # �
 
 Сценарии лежат в `catalog/widgets/<id>/fixtures/*.json` (в приложение не скачиваются): ответы API (`fetch`), настройки, секреты, `storage`, файлы, нажатия (`actions`), время (`now`, `timezone`) и что должно получиться (`expect` по путям в данных или `error`). Формат — в начале `scripts/widget-dev.mjs`. Pull request в каталог проверяется автоматически: валидаторы, актуальность `index.json` и все сценарии. Эмуляция повторяет API и лимиты песочницы, но окончательная проверка — `--widget-test` на Mac.
 
-Во время разработки удобнее **Настройки → Виджеты → «Папка разработки…»**: сохраните файл — виджет перезагрузится на iPhone сам. Журнал `console.log` и ошибок — там же.
+**Подсказки в редакторе.** В `schemas/` лежат JSON Schema для `view.json`, `manifest.json` и `theme.json` (все узлы, поля, стили, цвета). В VS Code они подключены для `catalog/` через `.vscode/settings.json`; в своём файле достаточно первой строки `"$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json"`. Схемы генерируются из правил валидатора: `python3 scripts/build-schemas.py`.
+
+Во время разработки на Mac удобнее **Настройки → Виджеты → «Папка разработки…»**: сохраните файл — виджет перезагрузится на iPhone сам. Журнал `console.log` и ошибок — там же.
 
 ## manifest.json
 
@@ -96,7 +100,20 @@ async function action(name, ctx) {
 | `setTimeout(fn, ms)`, `sleep(ms)` | задержки (до 60 с) |
 | `console.log/warn/error` | в журнал виджета в настройках |
 
-Ограничения: код выполняется не дольше 2 с подряд (ожидание `fetch` не считается), весь `refresh()` — не дольше 20 с. Числа форматируйте в JS сами (`toFixed`), даты — строками.
+Ограничения: код выполняется не дольше 2 с подряд (ожидание `fetch` не считается), весь `refresh()` — не дольше 20 с.
+
+**`format`** — готовые помощники для чисел и дат (глобальный объект, одинаковый в приложении и в `widget-dev`; код — `Mac/Widgets/prelude.js`):
+
+| | |
+| --- | --- |
+| `format.number(1234.5)` / `format.number(x, 2)` | `"1 234,5"` / ровно 2 знака после запятой |
+| `format.compact(1234567)` | `"1,2 млн"`, `"12 тыс."` |
+| `format.percent(0.421)` / `format.percent(0.421, 1)` | `"42%"` / `"42,1%"` |
+| `format.change(-1.07)` + `format.changeColor(-1.07)` | `"▼ 1,07%"` и `"red"` (для `color` в `view.json`) |
+| `format.plural(5, "день", "дня", "дней")` | `"5 дней"` |
+| `format.time(date)` / `format.date(date, "short" \| "long" \| "weekday" \| "full")` | `"14:05"` / `"27 сен"`, `"27 сентября"`, `"воскресенье, 27 сентября"`, `"27 сентября 2026"` |
+| `format.duration(7500)` / `format.relative(date)` | `"2 ч 5 мин"` / `"5 мин назад"`, `"через 2 ч"`, `"вчера"` |
+| `format.bytes(1572864)` / `format.level(0.9)` | `"1,5 МБ"` / `"red"` (зелёный → оранжевый → красный) |
 
 ## view.json
 

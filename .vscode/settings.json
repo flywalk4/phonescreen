@@ -1,0 +1,7 @@
+{
+  "json.schemas": [
+    { "fileMatch": ["catalog/widgets/*/view.json"], "url": "./schemas/view.schema.json" },
+    { "fileMatch": ["catalog/widgets/*/manifest.json"], "url": "./schemas/manifest.schema.json" },
+    { "fileMatch": ["catalog/themes/*/theme.json"], "url": "./schemas/theme.schema.json" }
+  ]
+}

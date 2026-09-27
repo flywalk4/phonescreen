@@ -1,0 +1,107 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
+ "title": "PhoneScreen widget manifest.json",
+ "type": "object",
+ "required": [
+  "id",
+  "name",
+  "version",
+  "author"
+ ],
+ "properties": {
+  "$schema": {
+   "type": "string"
+  },
+  "id": {
+   "type": "string",
+   "pattern": "^[a-z0-9]+(\\.[a-z0-9-]+)+$",
+   "description": "Reverse DNS, same as the folder name: com.author.widget"
+  },
+  "name": {
+   "type": "string",
+   "maxLength": 40
+  },
+  "version": {
+   "type": "string",
+   "pattern": "^\\d+\\.\\d+\\.\\d+$"
+  },
+  "author": {
+   "type": "string"
+  },
+  "description": {
+   "type": "string"
+  },
+  "symbol": {
+   "type": "string",
+   "description": "SF Symbol for menus"
+  },
+  "refresh": {
+   "type": "number",
+   "minimum": 5,
+   "description": "Seconds between refresh() calls (≥ 30 with network, ≥ 5 without; default 300)"
+  },
+  "permissions": {
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+    "network": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"
+     },
+     "description": "HTTPS hosts fetch may reach (subdomains included)"
+    },
+    "secrets": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "required": [
+       "key",
+       "title"
+      ],
+      "properties": {
+       "key": {
+        "type": "string"
+       },
+       "title": {
+        "type": "string"
+       }
+      }
+     }
+    },
+    "files": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "pattern": "^~/"
+     },
+     "description": "Read-only paths: ~/folder/ or ~/folder/file"
+    }
+   }
+  },
+  "settings": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "required": [
+     "key",
+     "title"
+    ],
+    "properties": {
+     "key": {
+      "type": "string"
+     },
+     "title": {
+      "type": "string"
+     },
+     "default": {
+      "type": "string"
+     }
+    }
+   }
+  }
+ },
+ "additionalProperties": false
+}

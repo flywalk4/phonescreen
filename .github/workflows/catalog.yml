@@ -2,10 +2,10 @@ name: Catalog
 
 on:
   pull_request:
-    paths: ["catalog/**", "scripts/**"]
+    paths: ["catalog/**", "scripts/**", "schemas/**", "Mac/Widgets/prelude.js"]
   push:
     branches: [main]
-    paths: ["catalog/**", "scripts/**"]
+    paths: ["catalog/**", "scripts/**", "schemas/**", "Mac/Widgets/prelude.js"]
 
 jobs:
   check:
@@ -19,7 +19,14 @@ jobs:
         run: |
           for w in catalog/widgets/*/; do python3 scripts/validate-widget.py "$w"; done
           for t in catalog/themes/*/; do python3 scripts/validate-theme.py "$t"; done
-      - name: catalog/index.json is up to date
-        run: python3 scripts/build-catalog.py --check
+      - name: catalog/index.json and schemas/ are up to date
+        run: |
+          python3 scripts/build-catalog.py --check
+          python3 scripts/build-schemas.py --check
+      - name: The starter template works
+        run: |
+          node scripts/widget-dev.mjs new com.ci.starter --dir "$RUNNER_TEMP"
+          python3 scripts/validate-widget.py "$RUNNER_TEMP/com.ci.starter"
+          node scripts/widget-dev.mjs test "$RUNNER_TEMP/com.ci.starter"
       - name: Widget scenarios (fixtures/)
         run: node scripts/widget-dev.mjs test

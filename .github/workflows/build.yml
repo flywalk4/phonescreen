@@ -29,6 +29,15 @@ jobs:
             -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build > mac.log 2>&1 || true
           grep -E "error:|BUILD (SUCCEEDED|FAILED)" mac.log || true
           grep -q "BUILD SUCCEEDED" mac.log
+      - name: Local widgets in the real sandbox (--widget-test)
+        run: |
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -path '*Build/Products/Debug/PhoneScreen.app' | head -1)
+          for w in time worldclock focus tictactoe game2048 minesweeper memory wallpaper; do
+            out=$("$APP/Contents/MacOS/PhoneScreen" --widget-test "catalog/widgets/com.flywalk4.$w" 2>&1) || { echo "$out" | tail -20; exit 1; }
+            echo "✓ $w: $(echo "$out" | tail -1)"
+          done
+          # the format helpers are loaded (prelude.js bundled as a resource)
+          test -f "$APP/Contents/Resources/prelude.js"
       - name: Build the iPhone app
         run: |
           xcodebuild -project PhoneScreen.xcodeproj -scheme PhoneScreeniOS -configuration Debug \
