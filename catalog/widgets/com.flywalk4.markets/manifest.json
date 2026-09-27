@@ -1,7 +1,7 @@
 {
   "id": "com.flywalk4.markets",
   "name": "Крипта и акции",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "flywalk4",
   "description": "Цены криптовалют (CoinGecko) и акций Московской биржи (ISS MOEX) с изменением за день и графиком. Без ключей. Акции — с задержкой биржи для бесплатных данных (около 15 минут).",
   "symbol": "chart.line.uptrend.xyaxis",

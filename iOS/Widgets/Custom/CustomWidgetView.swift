@@ -37,10 +37,15 @@ struct CustomWidgetView: View {
     @ViewBuilder
     private func content(_ node: WidgetNode) -> some View {
         if size == .full {
-            ScrollView {
-                NodeView(node: node, widgetID: id).frame(maxWidth: .infinity, alignment: .topLeading)
+            // Fits on the page → it gets the whole height (so `spacer`s spread the layout out); too tall → it scrolls.
+            ViewThatFits(in: .vertical) {
+                NodeView(node: node, widgetID: id)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                ScrollView {
+                    NodeView(node: node, widgetID: id).frame(maxWidth: .infinity, alignment: .topLeading)
+                }
+                .pointerScrollable()
             }
-            .pointerScrollable()
             .widgetPadding()
         } else {
             NodeView(node: node, widgetID: id)
@@ -84,7 +89,7 @@ struct NodeView: View {
                 .lineLimit(lines)
                 .multilineTextAlignment(align == "center" ? .center : align == "trailing" ? .trailing : .leading)
         case .symbol(let name, let color, let size):
-            Image(systemName: name)
+            Glyph(name)
                 .font(size.map { .system(size: CGFloat($0)) } ?? .body)
                 .foregroundStyle(WidgetColor.style(color, theme: theme))
         case .gauge(let value, let label, let color) where ascii:

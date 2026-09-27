@@ -71,6 +71,9 @@
     ]
    },
    {
+    "type": "spacer"
+   },
+   {
     "type": "hstack",
     "spacing": 10,
     "align": "top",
@@ -157,9 +160,6 @@
     "style": "footnote",
     "color": "secondary",
     "text": "{{note}}"
-   },
-   {
-    "type": "spacer"
    }
   ]
  },

@@ -414,7 +414,7 @@ body{margin:0;background:#1c1c1e;font-family:${({ monospaced: "'DejaVu Sans Mono
 .label{position:absolute;top:22px;width:100%;text-align:center;color:${T.sec};font-size:12px}
 .v{display:flex;flex-direction:column;min-width:0;position:relative}.h{display:flex;width:100%;min-width:0}.t{line-height:1.2;min-width:0}
 .mono{font-family:'DejaVu Sans Mono',monospace;font-size:12px}.sp{flex:1 1 0;min-width:0;min-height:0}
-.h>.v{flex:0 1 auto}.v>.v{align-self:stretch}.h>.h{width:auto;flex:0 0 auto}.v>.box.fill{align-self:stretch}.h>.box.fill{flex:1 1 0}
+.h>.v{flex:0 1 auto}.h>.v:has(.grid),.h>.grid{flex:1 1 0}.v>.v{align-self:stretch}.h>.h{width:auto;flex:0 0 auto}.v>.box.fill{align-self:stretch}.h>.box.fill{flex:1 1 0}
 .box.fit{flex:0 0 auto}.v>.box.fit{align-self:flex-start}.box>*:not(.surface){position:relative}.surface{position:absolute;inset:0}
 .grid{display:grid;width:100%;align-items:start}.cell{align-items:stretch}
 .layers{display:grid;width:100%;flex:1 1 auto;min-height:0}.layer{grid-area:1/1;display:flex;flex-direction:column;min-height:0}

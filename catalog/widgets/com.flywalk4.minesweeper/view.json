@@ -94,6 +94,9 @@
     ]
    },
    {
+    "type": "spacer"
+   },
+   {
     "type": "list",
     "items": "{{cells}}",
     "columns": 8,
@@ -159,78 +162,90 @@
   ]
  },
  "medium": {
-  "type": "hstack",
-  "spacing": 12,
+  "type": "vstack",
+  "spacing": 0,
   "children": [
    {
-    "type": "vstack",
-    "spacing": 0,
+    "type": "spacer"
+   },
+   {
+    "type": "hstack",
+    "spacing": 12,
     "children": [
      {
-      "type": "list",
-      "items": "{{cells}}",
-      "columns": 8,
-      "spacing": 2,
-      "template": {
-       "type": "box",
-       "aspect": 1,
-       "padding": 0,
-       "radius": 3,
-       "background": "{{item.bg}}",
-       "opacity": "{{item.opacity}}",
-       "action": "{{item.action}}",
-       "children": [
-        {
-         "type": "text",
-         "text": "{{item.text}}",
-         "size": 11,
-         "weight": "heavy",
-         "design": "rounded",
-         "color": "{{item.color}}"
+      "type": "vstack",
+      "spacing": 0,
+      "children": [
+       {
+        "type": "list",
+        "items": "{{cells}}",
+        "columns": 8,
+        "spacing": 2,
+        "template": {
+         "type": "box",
+         "aspect": 1,
+         "padding": 0,
+         "radius": 3,
+         "background": "{{item.bg}}",
+         "opacity": "{{item.opacity}}",
+         "action": "{{item.action}}",
+         "children": [
+          {
+           "type": "text",
+           "text": "{{item.text}}",
+           "size": 11,
+           "weight": "heavy",
+           "design": "rounded",
+           "color": "{{item.color}}"
+          }
+         ]
         }
-       ]
-      }
+       }
+      ]
+     },
+     {
+      "type": "vstack",
+      "spacing": 6,
+      "align": "leading",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{face}}",
+        "size": 28
+       },
+       {
+        "type": "text",
+        "text": "💣 {{minesLeft}}",
+        "style": "subheadline",
+        "weight": "semibold",
+        "design": "rounded"
+       },
+       {
+        "type": "text",
+        "text": "⏱ {{time}}",
+        "style": "subheadline",
+        "design": "rounded",
+        "color": "secondary"
+       },
+       {
+        "type": "spacer"
+       },
+       {
+        "type": "button",
+        "title": "🚩",
+        "action": "mode"
+       },
+       {
+        "type": "button",
+        "title": "Заново",
+        "action": "new"
+       }
+      ]
      }
     ]
    },
    {
-    "type": "vstack",
-    "spacing": 6,
-    "align": "leading",
-    "children": [
-     {
-      "type": "text",
-      "text": "{{face}}",
-      "size": 28
-     },
-     {
-      "type": "text",
-      "text": "💣 {{minesLeft}}",
-      "style": "subheadline",
-      "weight": "semibold",
-      "design": "rounded"
-     },
-     {
-      "type": "text",
-      "text": "⏱ {{time}}",
-      "style": "subheadline",
-      "design": "rounded",
-      "color": "secondary"
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "button",
-      "title": "🚩",
-      "action": "mode"
-     },
-     {
-      "type": "button",
-      "title": "Заново",
-      "action": "new"
-     }
-    ]
+    "type": "spacer"
    }
   ]
  },

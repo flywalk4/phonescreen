@@ -1,68 +1,282 @@
 {
-  "full": {
-    "type": "vstack", "spacing": 16, "align": "leading",
+ "full": {
+  "type": "vstack",
+  "spacing": 16,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "spacing": 8,
     "children": [
-      { "type": "hstack", "spacing": 8, "children": [
-        { "type": "text", "text": "✕◯", "size": 15, "weight": "heavy", "color": "orange" },
-        { "type": "text", "text": "КРЕСТИКИ-НОЛИКИ", "style": "caption", "weight": "semibold", "color": "secondary" },
-        { "type": "spacer" },
-        { "type": "text", "text": "Mac: {{level}}", "style": "caption", "color": "secondary" }
-      ]},
-      { "type": "hstack", "spacing": 10, "children": [
-        { "type": "box", "padding": 10, "spacing": 0, "align": "center", "children": [
-          { "type": "text", "text": "{{you}}", "size": 28, "weight": "bold", "design": "rounded", "color": "orange" },
-          { "type": "text", "text": "ты ✕", "style": "caption", "color": "secondary" }
-        ]},
-        { "type": "box", "padding": 10, "spacing": 0, "align": "center", "children": [
-          { "type": "text", "text": "{{draws}}", "size": 28, "weight": "bold", "design": "rounded", "color": "secondary" },
-          { "type": "text", "text": "ничьи", "style": "caption", "color": "secondary" }
-        ]},
-        { "type": "box", "padding": 10, "spacing": 0, "align": "center", "children": [
-          { "type": "text", "text": "{{mac}}", "size": 28, "weight": "bold", "design": "rounded", "color": "blue" },
-          { "type": "text", "text": "Mac ◯", "style": "caption", "color": "secondary" }
-        ]}
-      ]},
-      { "type": "list", "items": "{{cells}}", "columns": 3, "spacing": 10, "template":
-        { "type": "box", "aspect": 1, "padding": 0, "radius": 18, "background": "{{item.bg}}", "opacity": "{{item.opacity}}", "action": "{{item.action}}", "children": [
-          { "type": "text", "text": "{{item.mark}}", "size": 56, "weight": "bold", "color": "{{item.color}}" }
-        ]}
-      },
-      { "type": "hstack", "children": [
-        { "type": "text", "text": "{{status}}", "style": "title2", "weight": "bold", "color": "{{statusColor}}" },
-        { "type": "spacer" },
-        { "type": "button", "title": "Новая игра", "symbol": "arrow.clockwise", "action": "new" }
-      ]},
-      { "type": "spacer" }
+     {
+      "type": "text",
+      "text": "✕◯",
+      "size": 15,
+      "weight": "heavy",
+      "color": "orange"
+     },
+     {
+      "type": "text",
+      "text": "КРЕСТИКИ-НОЛИКИ",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "secondary"
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "text",
+      "text": "Mac: {{level}}",
+      "style": "caption",
+      "color": "secondary"
+     }
     ]
-  },
-  "medium": {
-    "type": "hstack", "spacing": 14, "align": "center",
+   },
+   {
+    "type": "hstack",
+    "spacing": 10,
     "children": [
-      { "type": "vstack", "spacing": 0, "children": [
-        { "type": "list", "items": "{{cells}}", "columns": 3, "spacing": 6, "template":
-          { "type": "box", "aspect": 1, "padding": 0, "radius": 10, "background": "{{item.bg}}", "opacity": "{{item.opacity}}", "action": "{{item.action}}", "children": [
-            { "type": "text", "text": "{{item.mark}}", "size": 30, "weight": "bold", "color": "{{item.color}}" }
-          ]}
+     {
+      "type": "box",
+      "padding": 10,
+      "spacing": 0,
+      "align": "center",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{you}}",
+        "size": 28,
+        "weight": "bold",
+        "design": "rounded",
+        "color": "orange"
+       },
+       {
+        "type": "text",
+        "text": "ты ✕",
+        "style": "caption",
+        "color": "secondary"
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "padding": 10,
+      "spacing": 0,
+      "align": "center",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{draws}}",
+        "size": 28,
+        "weight": "bold",
+        "design": "rounded",
+        "color": "secondary"
+       },
+       {
+        "type": "text",
+        "text": "ничьи",
+        "style": "caption",
+        "color": "secondary"
+       }
+      ]
+     },
+     {
+      "type": "box",
+      "padding": 10,
+      "spacing": 0,
+      "align": "center",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{mac}}",
+        "size": 28,
+        "weight": "bold",
+        "design": "rounded",
+        "color": "blue"
+       },
+       {
+        "type": "text",
+        "text": "Mac ◯",
+        "style": "caption",
+        "color": "secondary"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "list",
+    "items": "{{cells}}",
+    "columns": 3,
+    "spacing": 10,
+    "template": {
+     "type": "box",
+     "aspect": 1,
+     "padding": 0,
+     "radius": 18,
+     "background": "{{item.bg}}",
+     "opacity": "{{item.opacity}}",
+     "action": "{{item.action}}",
+     "children": [
+      {
+       "type": "text",
+       "text": "{{item.mark}}",
+       "size": 56,
+       "weight": "bold",
+       "color": "{{item.color}}"
+      }
+     ]
+    }
+   },
+   {
+    "type": "hstack",
+    "children": [
+     {
+      "type": "text",
+      "text": "{{status}}",
+      "style": "title2",
+      "weight": "bold",
+      "color": "{{statusColor}}"
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "button",
+      "title": "Новая игра",
+      "symbol": "arrow.clockwise",
+      "action": "new"
+     }
+    ]
+   },
+   {
+    "type": "spacer"
+   }
+  ]
+ },
+ "medium": {
+  "type": "vstack",
+  "spacing": 0,
+  "children": [
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "hstack",
+    "spacing": 14,
+    "align": "center",
+    "children": [
+     {
+      "type": "vstack",
+      "spacing": 0,
+      "children": [
+       {
+        "type": "list",
+        "items": "{{cells}}",
+        "columns": 3,
+        "spacing": 6,
+        "template": {
+         "type": "box",
+         "aspect": 1,
+         "padding": 0,
+         "radius": 10,
+         "background": "{{item.bg}}",
+         "opacity": "{{item.opacity}}",
+         "action": "{{item.action}}",
+         "children": [
+          {
+           "type": "text",
+           "text": "{{item.mark}}",
+           "size": 30,
+           "weight": "bold",
+           "color": "{{item.color}}"
+          }
+         ]
         }
-      ]},
-      { "type": "vstack", "spacing": 8, "align": "leading", "children": [
-        { "type": "text", "text": "{{status}}", "style": "headline", "color": "{{statusColor}}" },
-        { "type": "text", "text": "✕ {{you}} · {{draws}} · {{mac}} ◯", "style": "subheadline", "weight": "semibold", "design": "rounded" },
-        { "type": "button", "title": "Заново", "symbol": "arrow.clockwise", "action": "new" }
-      ]}
+       }
+      ]
+     },
+     {
+      "type": "vstack",
+      "spacing": 8,
+      "align": "leading",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{status}}",
+        "style": "headline",
+        "color": "{{statusColor}}"
+       },
+       {
+        "type": "text",
+        "text": "✕ {{you}} · {{draws}} · {{mac}} ◯",
+        "style": "subheadline",
+        "weight": "semibold",
+        "design": "rounded"
+       },
+       {
+        "type": "button",
+        "title": "Заново",
+        "symbol": "arrow.clockwise",
+        "action": "new"
+       }
+      ]
+     }
     ]
-  },
-  "small": {
-    "type": "vstack", "spacing": 8, "align": "leading",
-    "children": [
-      { "type": "list", "items": "{{cells}}", "columns": 3, "spacing": 4, "template":
-        { "type": "box", "aspect": 1, "padding": 0, "radius": 8, "background": "{{item.bg}}", "opacity": "{{item.opacity}}", "action": "{{item.action}}", "children": [
-          { "type": "text", "text": "{{item.mark}}", "size": 22, "weight": "bold", "color": "{{item.color}}" }
-        ]}
-      },
-      { "type": "text", "text": "{{status}}", "style": "caption", "weight": "semibold", "color": "{{statusColor}}" },
-      { "type": "spacer" },
-      { "type": "button", "title": "Заново", "action": "new" }
-    ]
-  }
+   },
+   {
+    "type": "spacer"
+   }
+  ]
+ },
+ "small": {
+  "type": "vstack",
+  "spacing": 8,
+  "align": "leading",
+  "children": [
+   {
+    "type": "list",
+    "items": "{{cells}}",
+    "columns": 3,
+    "spacing": 4,
+    "template": {
+     "type": "box",
+     "aspect": 1,
+     "padding": 0,
+     "radius": 8,
+     "background": "{{item.bg}}",
+     "opacity": "{{item.opacity}}",
+     "action": "{{item.action}}",
+     "children": [
+      {
+       "type": "text",
+       "text": "{{item.mark}}",
+       "size": 22,
+       "weight": "bold",
+       "color": "{{item.color}}"
+      }
+     ]
+    }
+   },
+   {
+    "type": "text",
+    "text": "{{status}}",
+    "style": "caption",
+    "weight": "semibold",
+    "color": "{{statusColor}}"
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "button",
+    "title": "Заново",
+    "action": "new"
+   }
+  ]
+ }
 }

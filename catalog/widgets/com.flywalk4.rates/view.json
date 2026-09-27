@@ -91,7 +91,7 @@
       "values": "{{history}}",
       "color": "green",
       "style": "area",
-      "height": 110,
+      "height": 200,
       "if": "{{hasHistory}}"
      },
      {
