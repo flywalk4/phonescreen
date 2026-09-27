@@ -22,15 +22,25 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
     }
 
     /// One colour, or 2–4 for a linear gradient (`angle` in degrees, 0 = top to bottom).
+    /// `animation` brings it to life: the moving parts are drawn in `tints` at `speed` (1 = normal).
     public struct Background: Codable, Equatable, Sendable {
         public var colors: [String]
         public var angle: Double?
+        public var animation: String?
+        public var tints: [String]?
+        public var speed: Double?
 
-        public init(colors: [String], angle: Double? = nil) {
+        public init(colors: [String], angle: Double? = nil, animation: String? = nil, tints: [String]? = nil, speed: Double? = nil) {
             self.colors = colors
             self.angle = angle
+            self.animation = animation
+            self.tints = tints
+            self.speed = speed
         }
     }
+
+    /// Animated backgrounds the phone can draw (`background.animation`, and the `scene` widget node).
+    public static let animations = ["aurora", "stars", "matrix", "waves", "bokeh", "lava"]
 
     /// Colours as `#RRGGBB` or `#RRGGBBAA`.
     public struct Colors: Codable, Equatable, Sendable {
@@ -98,7 +108,13 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         guard (1...4).contains(background.colors.count) else {
             throw Invalid(description: "background.colors: от 1 до 4 цветов")
         }
+        if let a = background.animation, !Self.animations.contains(a) {
+            throw Invalid(description: "background.animation: «\(a)» — одна из \(Self.animations.joined(separator: ", "))")
+        }
+        if let s = background.speed, !(0.1...5).contains(s) { throw Invalid(description: "background.speed: от 0.1 до 5") }
+        guard (background.tints?.count ?? 0) <= 6 else { throw Invalid(description: "background.tints: не больше 6 цветов") }
         var all = background.colors.map { ("background.colors", $0) }
+        all += (background.tints ?? []).map { ("background.tints", $0) }
         all += [("colors.text", colors.text), ("colors.secondary", colors.secondary), ("colors.accent", colors.accent)]
         if let c = colors.card { all.append(("colors.card", c)) }
         if let c = colors.border { all.append(("colors.border", c)) }
@@ -190,15 +206,16 @@ public extension Theme {
         id: "builtin.glass", name: "Liquid Glass", author: "PhoneScreen",
         description: "Стеклянные карточки поверх яркого градиента, как в iOS 26.",
         style: .glass, appearance: .dark, font: .rounded, radius: 28,
-        background: .init(colors: ["#1B2A6B", "#6A2C8F", "#0E7C86"], angle: 35),
+        background: .init(colors: ["#141B45", "#2A1650"], angle: 35, animation: "aurora",
+                          tints: ["#3A6FF7", "#B04BD8", "#16A3A8", "#E0559C"], speed: 1),
         colors: .init(text: "#FFFFFF", secondary: "#FFFFFFB3", accent: "#7FD4FF", card: "#FFFFFF14", border: "#FFFFFF33"))
 
     static let ascii = Theme(
         id: "builtin.ascii", name: "ASCII", author: "PhoneScreen",
         description: "Всё как в терминале: рамки из +-|, полосы [####....], моноширинный зелёный текст.",
         style: .ascii, appearance: .dark, font: .monospaced, radius: 0,
-        background: .init(colors: ["#050805"]),
-        colors: .init(text: "#39FF14", secondary: "#1FA30C", accent: "#39FF14", border: "#1FA30C",
+        background: .init(colors: ["#050805"], animation: "matrix", tints: ["#39FF14", "#0F5A0A"], speed: 1),
+        colors: .init(text: "#39FF14", secondary: "#1FA30C", accent: "#39FF14", card: "#050805EB", border: "#1FA30C",
                       palette: ["primary": "#39FF14", "secondary": "#1FA30C", "tertiary": "#146B08",
                                 "accent": "#39FF14", "green": "#39FF14", "mint": "#39FF14", "teal": "#39FF14",
                                 "orange": "#FFB000", "yellow": "#FFE066", "red": "#FF3B30",

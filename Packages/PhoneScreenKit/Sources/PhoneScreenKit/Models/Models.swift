@@ -38,7 +38,7 @@ public struct Hello: Codable, Equatable, Sendable {
 }
 
 public enum WidgetKind: String, Codable, CaseIterable, Sendable {
-    case music, monitor, notes, reminders, calendar, weather, launcher
+    case music, monitor, notes, reminders, calendar, weather, launcher, photos
 
     public var title: String {
         switch self {
@@ -49,6 +49,7 @@ public enum WidgetKind: String, Codable, CaseIterable, Sendable {
         case .calendar: "Календарь"
         case .weather: "Погода"
         case .launcher: "Команды"
+        case .photos: "Фото"
         }
     }
 
@@ -61,6 +62,7 @@ public enum WidgetKind: String, Codable, CaseIterable, Sendable {
         case .calendar: "calendar"
         case .weather: "cloud.sun.fill"
         case .launcher: "square.grid.3x3.fill"
+        case .photos: "photo.on.rectangle.angled"
         }
     }
 }

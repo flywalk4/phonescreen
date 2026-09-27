@@ -30,6 +30,8 @@ NODES = {
     "list": {"items", "template", "spacing", "align", "columns"},
     "box": {"children", "spacing", "align", "padding", "background", "opacity", "radius", "fit", "action", "aspect"},
     "grid": {"children", "columns", "spacing"},
+    "layers": {"children", "align"},
+    "scene": {"kind", "colors", "tints", "speed"},
 }
 WEIGHTS = {"ultraLight", "thin", "light", "regular", "medium", "semibold", "bold", "heavy", "black"}
 DESIGNS = {"default", "rounded", "monospaced", "serif"}

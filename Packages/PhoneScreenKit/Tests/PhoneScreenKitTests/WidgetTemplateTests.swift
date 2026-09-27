@@ -161,6 +161,19 @@ import Testing
         #expect(action == "tap:1")
     }
 
+    @Test func layersAndScene() throws {
+        let node = try WidgetTemplate.resolve(json(#"""
+            {"type": "layers", "align": "bottomLeading", "children": [
+                {"type": "scene", "kind": "{{k}}", "tints": ["#FF0000", "{{c}}"], "speed": 9},
+                {"type": "text", "text": "12:40"}
+            ]}
+            """#), data: json(#"{"k": "stars", "c": "#00FF00"}"#))
+        #expect(node == .layers(align: "bottomLeading", children: [
+            .scene(kind: "stars", colors: nil, tints: ["#FF0000", "#00FF00"], speed: 5),
+            .text("12:40", style: nil, color: nil, lines: nil, align: nil),
+        ]))
+    }
+
     @Test func gridUpToTwelveColumns() throws {
         let node = try WidgetTemplate.resolve(json(#"{"type": "grid", "columns": 8, "children": []}"#), data: json("{}"))
         #expect(node == .grid(columns: 8, spacing: nil, children: []))

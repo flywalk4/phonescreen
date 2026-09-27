@@ -31,6 +31,11 @@ public indirect enum WidgetNode: Codable, Equatable, Sendable {
              radius: Double?, fit: Bool?, action: String? = nil, aspect: Double? = nil, children: [WidgetNode])
     /// Children laid out in `columns` equal columns, row by row.
     case grid(columns: Int, spacing: Double?, children: [WidgetNode])
+    /// Children on top of each other (the first at the back), aligned by `align` (`center`, `top`, `bottomLeading`…).
+    case layers(align: String?, children: [WidgetNode])
+    /// An animated scene drawn by the phone (`kind`: aurora, stars, matrix, waves, bokeh, lava), filling its space.
+    /// `colors` — the background (1–4), `tints` — the moving parts; the theme's colours when absent.
+    case scene(kind: String, colors: [String]?, tints: [String]?, speed: Double?)
 }
 
 /// Text font overrides. `weight`: ultraLight, thin, light, regular, medium, semibold, bold, heavy, black.
@@ -154,6 +159,14 @@ public enum WidgetTemplate {
                         aspect: num("aspect").map { min(max($0, 0.2), 5) }, children: try children())
         case "grid":
             return .grid(columns: columns(num("columns")), spacing: num("spacing"), children: try children())
+        case "layers":
+            return .layers(align: str("align"), children: try children())
+        case "scene":
+            let list = { (key: String) -> [String]? in
+                (t[key].map { value($0, scope) } as? [Any]).map { $0.prefix(6).map { text($0) } }
+            }
+            return .scene(kind: str("kind") ?? "aurora", colors: list("colors"), tints: list("tints"),
+                          speed: num("speed").map { min(max($0, 0.1), 5) })
         case "spacer":
             return .spacer
         case "divider":

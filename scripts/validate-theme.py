@@ -11,6 +11,7 @@ from pathlib import Path
 STYLES = {"flat", "glass", "ascii"}
 APPEARANCES = {"dark", "light"}
 FONTS = {"system", "rounded", "monospaced", "serif"}
+ANIMATIONS = ["aurora", "stars", "matrix", "waves", "bokeh", "lava"]
 HEX = re.compile(r"^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$")
 MAX_BYTES = 64 * 1024
 
@@ -89,6 +90,13 @@ def validate(path: Path) -> list:
         errors.append("background.colors: от 1 до 4 цветов")
     else:
         colors += [("background.colors", c) for c in bg["colors"]]
+        colors += [("background.tints", c) for c in bg.get("tints") or []]
+        if "animation" in bg and bg["animation"] not in ANIMATIONS:
+            errors.append(f"background.animation: одна из {', '.join(ANIMATIONS)}")
+        if "speed" in bg and not (isinstance(bg["speed"], (int, float)) and 0.1 <= bg["speed"] <= 5):
+            errors.append("background.speed: число от 0.1 до 5")
+        if len(bg.get("tints") or []) > 6:
+            errors.append("background.tints: не больше 6 цветов")
         if "angle" in bg and not isinstance(bg["angle"], (int, float)):
             errors.append("background.angle: число (градусы)")
     c = t["colors"]

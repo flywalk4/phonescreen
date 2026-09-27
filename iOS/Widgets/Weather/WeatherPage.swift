@@ -175,7 +175,7 @@ struct WeatherPage: View {
                 if size == .full { content(f) } else { compact(f) }
             } else if model.authorization == .denied || model.authorization == .restricted {
                 VStack(spacing: 12) {
-                    Image(systemName: "location.slash").font(.system(size: 40)).foregroundStyle(.secondary)
+                    Glyph(systemName: "location.slash").font(.system(size: 40)).foregroundStyle(.secondary)
                     Text("Нет доступа к геопозиции").font(.headline)
                     Button("Открыть Настройки") {
                         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
@@ -183,7 +183,7 @@ struct WeatherPage: View {
                 }
             } else {
                 VStack(spacing: 12) {
-                    ProgressView()
+                    ThemedSpinner()
                     Text(model.error ?? "Загружаю погоду…").foregroundStyle(.secondary)
                 }
             }
@@ -196,7 +196,7 @@ struct WeatherPage: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(f.place ?? "Здесь").font(.subheadline.weight(.semibold)).lineLimit(1)
             HStack(spacing: 6) {
-                Image(systemName: WeatherCode.symbol(f.code, day: f.isDay)).symbolRenderingMode(.multicolor)
+                Glyph(WeatherCode.symbol(f.code, day: f.isDay), multicolor: true)
                     .font(size == .small ? .title2 : .largeTitle)
                 Text("\(Int(f.temperature.rounded()))°").font(.system(size: size == .small ? 36 : 48, weight: .light))
             }
@@ -211,7 +211,7 @@ struct WeatherPage: View {
                         VStack(spacing: 3) {
                             Text(i == 0 ? "Сейч." : h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted))))
                                 .font(.caption2).foregroundStyle(.secondary)
-                            Image(systemName: WeatherCode.symbol(h.code)).symbolRenderingMode(.multicolor).font(.caption)
+                            Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.caption)
                             Text("\(Int(h.temp.rounded()))°").font(.caption.weight(.medium))
                         }
                         .frame(maxWidth: .infinity)
@@ -228,8 +228,7 @@ struct WeatherPage: View {
                 VStack(spacing: 4) {
                     Text(f.place ?? "Здесь").font(.title3.weight(.medium))
                     HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: WeatherCode.symbol(f.code, day: f.isDay))
-                            .symbolRenderingMode(.multicolor).font(.system(size: 48))
+                        Glyph(WeatherCode.symbol(f.code, day: f.isDay), multicolor: true).font(.system(size: 48))
                         Text("\(Int(f.temperature.rounded()))°").font(.system(size: 72, weight: .thin))
                     }
                     Text(WeatherCode.text(f.code)).font(.headline)
@@ -242,7 +241,7 @@ struct WeatherPage: View {
                             VStack(spacing: 6) {
                                 Text(i == 0 ? "Сейчас" : h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted))))
                                     .font(.caption).foregroundStyle(.secondary)
-                                Image(systemName: WeatherCode.symbol(h.code)).symbolRenderingMode(.multicolor).font(.title3)
+                                Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.title3)
                                 Text("\(Int(h.temp.rounded()))°").font(.callout.weight(.medium))
                             }
                         }
@@ -268,7 +267,7 @@ private struct DailyList: View {
                 HStack(spacing: 10) {
                     Text(i == 0 ? "Сегодня" : d.day.formatted(.dateTime.weekday(.abbreviated)).capitalized)
                         .frame(width: 70, alignment: .leading)
-                    Image(systemName: WeatherCode.symbol(d.code)).symbolRenderingMode(.multicolor).frame(width: 28)
+                    Glyph(WeatherCode.symbol(d.code), multicolor: true).frame(width: 28)
                     Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary).frame(width: 34, alignment: .trailing)
                     GeometryReader { geo in
                         let w = geo.size.width, span = max(hi - lo, 1)

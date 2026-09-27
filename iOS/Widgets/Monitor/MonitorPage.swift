@@ -31,7 +31,7 @@ struct MonitorPage: View {
                     .frame(width: geo.size.width, height: geo.size.height)
                 }
             } else {
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+                ThemedSpinner().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
@@ -49,14 +49,14 @@ struct MonitorPage: View {
                 LoadChart(history: model.statsHistory)
                 NetworkChart(history: model.statsHistory)
                 HStack {
-                    Label(rate(stats.netInBytesPerSec), systemImage: "arrow.down")
+                    Label { Text(rate(stats.netInBytesPerSec)) } icon: { Glyph("arrow.down") }
                     Spacer()
-                    Label(rate(stats.netOutBytesPerSec), systemImage: "arrow.up")
+                    Label { Text(rate(stats.netOutBytesPerSec)) } icon: { Glyph("arrow.up") }
                 }
                 .font(.callout.monospacedDigit())
                 .foregroundStyle(.secondary)
             } else {
-                ProgressView()
+                ThemedSpinner()
                 Text("Жду данные с Mac…").foregroundStyle(.secondary)
             }
         }
@@ -78,17 +78,7 @@ private struct Gauge: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            ZStack {
-                Circle().stroke(Color.primary.opacity(0.1), lineWidth: diameter * 0.09)
-                Circle()
-                    .trim(from: 0, to: value ?? 0)
-                    .stroke(color, style: StrokeStyle(lineWidth: diameter * 0.09, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeOut(duration: 0.4), value: value)
-                Text(value.map { "\(Int(($0 * 100).rounded()))%" } ?? "—")
-                    .font(.system(size: diameter * 0.22, weight: .semibold).monospacedDigit())
-            }
-            .frame(width: diameter, height: diameter)
+            ThemedRing(value: value, color: color, diameter: diameter)
             Text(caption.map { "\(title) · \($0)" } ?? title).font(.caption).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
@@ -151,8 +141,8 @@ private struct LoadChart: View {
         .chartLegend(.hidden)
         .overlay(alignment: .topLeading) {
             HStack(spacing: 10) {
-                Label("CPU", systemImage: "circle.fill").foregroundStyle(.cyan)
-                Label("GPU", systemImage: "circle.fill").foregroundStyle(.purple)
+                Label { Text("CPU") } icon: { Glyph("circle.fill") }.foregroundStyle(.cyan)
+                Label { Text("GPU") } icon: { Glyph("circle.fill") }.foregroundStyle(.purple)
             }
             .font(.caption2).labelStyle(.titleAndIcon)
         }

@@ -152,6 +152,16 @@ struct NodeView: View {
                       alignment: .leading, spacing: gap) {
                 ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
             }
+        case .layers(let align, let children):
+            ZStack(alignment: alignment(align)) {
+                ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
+            }
+        case .scene(let kind, let colors, let tints, let speed):
+            let base = (colors ?? theme.background.colors).map { Color(hex: $0, fallback: .black) }
+            let moving = (tints ?? theme.background.tints ?? [theme.colors.accent]).map { Color(hex: $0, fallback: theme.accent) }
+            SceneView(kind: SceneView.Kind(rawValue: kind) ?? .aurora, base: base, tints: moving, speed: speed ?? 1)
+                .frame(minWidth: 40, maxWidth: .infinity, minHeight: 40, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: max(0, min(CGFloat(theme.radius) - 6, 18)), style: .continuous))
         case .divider where ascii:
             AsciiRule(color: theme.secondaryText)
         case .divider:
@@ -160,6 +170,20 @@ struct NodeView: View {
     }
 
     private func tint(_ name: String?) -> Color { WidgetColor.color(name, theme: theme) ?? theme.accent }
+
+    private func alignment(_ a: String?) -> Alignment {
+        switch a {
+        case "top": .top
+        case "bottom": .bottom
+        case "leading": .leading
+        case "trailing": .trailing
+        case "topLeading": .topLeading
+        case "topTrailing": .topTrailing
+        case "bottomLeading": .bottomLeading
+        case "bottomTrailing": .bottomTrailing
+        default: .center
+        }
+    }
 
     private func horizontal(_ a: String?) -> HorizontalAlignment {
         switch a { case "center": .center; case "trailing": .trailing; default: .leading }

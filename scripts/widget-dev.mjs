@@ -234,6 +234,12 @@ function node(t, scope, budget) {
                action: action ? action.slice(0, 200) : undefined, aspect: asp === undefined ? undefined : clamp(asp, 0.2, 5), children: children() };
     }
     case "grid": return { type: "grid", columns: columns(num("columns")), spacing: num("spacing"), children: children() };
+    case "layers": return { type: "layers", align: str("align"), children: children() };
+    case "scene": {
+      const list = (k) => (Array.isArray(value(t[k], scope)) ? value(t[k], scope).slice(0, 6).map(text) : undefined);
+      const sp = num("speed");
+      return { type: "scene", kind: str("kind") ?? "aurora", colors: list("colors"), tints: list("tints"), speed: sp === undefined ? undefined : clamp(sp, 0.1, 5) };
+    }
     case "list": {
       const items = value(t.items, scope);
       if (!t.template) throw new Error("У списка нет template");
@@ -379,6 +385,18 @@ function renderHTML(tree, themeName) {
         const shape = n.aspect ? `aspect-ratio:${n.aspect};justify-content:center;align-items:center;` : `align-items:${align(n.align)};`;
         return `<div class="v box ${n.fit ? "fit" : "fill"}" style="gap:${n.spacing ?? 6}px;padding:${n.padding ?? 12}px;${shape}"><div class="surface" style="border-radius:${radius}px;${surface}"></div>${n.children.map(r).join("")}</div>`;
       }
+      case "layers": {
+        const pos = ({ top: "flex-start center", bottom: "flex-end center", leading: "center flex-start", trailing: "center flex-end", topLeading: "flex-start flex-start",
+                       topTrailing: "flex-start flex-end", bottomLeading: "flex-end flex-start", bottomTrailing: "flex-end flex-end" })[n.align] || "center center";
+        const [v, h] = pos.split(" ");
+        return `<div class="layers">${n.children.map((c) => `<div class="layer" style="align-items:${v};justify-content:${h}">${r(c)}</div>`).join("")}</div>`;
+      }
+      case "scene": {
+        const base = (n.colors || []).map(color).filter(Boolean), tints = (n.tints || [T.accent]).map((c) => color(c) || c);
+        const bg = base.length > 1 ? `linear-gradient(160deg,${base.join(",")})` : base[0] || T.bg;
+        const blobs = tints.map((c, i) => `radial-gradient(circle at ${20 + ((i * 37) % 70)}% ${25 + ((i * 53) % 60)}%, ${c}aa 0, transparent 45%)`).join(",");
+        return `<div class="scene" style="background:${blobs},${bg}" title="scene ${n.kind}"></div>`;
+      }
       case "grid": return `<div class="grid" style="grid-template-columns:repeat(${n.columns},minmax(0,1fr));gap:${n.spacing ?? 10}px">${n.children.map((c) => `<div class="v cell">${r(c)}</div>`).join("")}</div>`;
       default: return "";
     }
@@ -396,6 +414,8 @@ body{margin:0;background:#1c1c1e;font-family:${({ monospaced: "'DejaVu Sans Mono
 .h>.v{flex:0 1 auto}.v>.v{align-self:stretch}.h>.h{width:auto;flex:0 0 auto}.v>.box.fill{align-self:stretch}.h>.box.fill{flex:1 1 0}
 .box.fit{flex:0 0 auto}.v>.box.fit{align-self:flex-start}.box>*:not(.surface){position:relative}.surface{position:absolute;inset:0}
 .grid{display:grid;width:100%;align-items:start}.cell{align-items:stretch}
+.layers{display:grid;width:100%;flex:1 1 auto;min-height:0}.layer{grid-area:1/1;display:flex;flex-direction:column;min-height:0}
+.scene{width:100%;height:100%;min-height:60px;border-radius:14px}
 .track{width:100%;height:4px;border-radius:2px;background:${T.light ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.18)"}}
 .divider{height:1px;width:100%;background:${T.light ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.15)"}}
 .button{padding:7px 12px;border-radius:9px;background:${T.light ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.12)"};font-size:15px;font-weight:500;white-space:nowrap;align-self:flex-start}
@@ -532,6 +552,8 @@ async function main() {
       { layout: "split", widgets: ["rain", "hackernews"].map(ref) },
       { layout: "grid", widgets: ["tictactoe", "game2048", "memory", "minesweeper"].map(ref) },
       { layout: "grid", widgets: ["music", "weather", "calendar", "monitor"] },
+      { layout: "trio", widgets: ["wallpaper", "photos", "worldclock"].map((id) => (id === "photos" ? id : ref(id))) },
+      { layout: "single", widgets: ["photos"] },
     ];
     const bundle = { widgets, pages };
     if (args.theme) {

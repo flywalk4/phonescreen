@@ -1,0 +1,14 @@
+{
+ "settings": {
+  "style": "lava",
+  "palette": "sunset",
+  "clock": "no",
+  "speed": "9"
+ },
+ "expect": {
+  "kind": "lava",
+  "colors.0": "#1B0B2E",
+  "clock": false,
+  "speed": 3
+ }
+}

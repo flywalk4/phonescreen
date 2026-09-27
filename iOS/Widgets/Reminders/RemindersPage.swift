@@ -136,7 +136,7 @@ struct RemindersPage: View {
 
     private var addField: some View {
         HStack {
-            Image(systemName: "plus.circle.fill").foregroundStyle(.secondary)
+            Glyph(systemName: "plus.circle.fill").foregroundStyle(.secondary)
             TextField("Новое напоминание", text: $draft)
                 .focused($adding)
                 .submitLabel(.done)
@@ -160,7 +160,7 @@ private struct ReminderRow: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+            Glyph(systemName: done ? "checkmark.circle.fill" : "circle")
                 .font(.title3)
                 .foregroundStyle(done ? color : .secondary)
                 .frame(width: 30, height: 30)
@@ -179,7 +179,7 @@ private struct ReminderRow: View {
             }
             Spacer()
             if reminder.priority > 0 && reminder.priority <= 4 {
-                Image(systemName: "exclamationmark").foregroundStyle(.orange).font(.caption.weight(.bold))
+                Glyph(systemName: "exclamationmark").foregroundStyle(.orange).font(.caption.weight(.bold))
             }
         }
         .padding(.vertical, 8)
@@ -196,7 +196,7 @@ struct WidgetHeader: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            Label(title, systemImage: symbol)
+            Label { Text(title) } icon: { Glyph(symbol) }
                 .font(size == .full ? .title2.weight(.bold) : .subheadline.weight(.semibold))
                 .lineLimit(1)
             Spacer(minLength: 4)

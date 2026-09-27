@@ -116,7 +116,7 @@ private struct NextUp: View {
     var body: some View {
         let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
         HStack {
-            Image(systemName: "bell.fill").foregroundStyle(.orange)
+            Glyph(systemName: "bell.fill").foregroundStyle(.orange)
             Text(minutes < 60 ? "Через \(minutes) мин" : "В \(event.startDate.formatted(date: .omitted, time: .shortened))")
                 .font(.subheadline.weight(.semibold))
             Text(event.title ?? "").font(.subheadline).lineLimit(1)
@@ -142,7 +142,7 @@ private struct EventRow: View {
                      : "\(event.startDate.formatted(date: .omitted, time: .shortened)) – \(event.endDate.formatted(date: .omitted, time: .shortened))")
                     .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                 if let location = event.location, !location.isEmpty {
-                    Label(location, systemImage: "mappin").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Label { Text(location) } icon: { Glyph("mappin") }.font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
             Spacer()

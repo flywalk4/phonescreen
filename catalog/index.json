@@ -197,6 +197,20 @@
       }
     },
     {
+      "id": "com.flywalk4.wallpaper",
+      "name": "Живые обои",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Анимированные обои на всю плитку: северное сияние, звёзды, «матрица», волны, огоньки или лавовая лампа — в цветах темы или своей палитре. По желанию с часами поверх. Без сети.",
+      "symbol": "sparkles",
+      "path": "widgets/com.flywalk4.wallpaper",
+      "files": {
+        "manifest.json": "a68c81e4ba5c48da85f56e9afa5b7e64360011bbf688fdb49293250b10dff1da",
+        "view.json": "6ffe0f9d94c493dcdc64186fa2b4ab19c8fe03dc3925babd24114e692ba5e047",
+        "provider.js": "6a1ac30eb218d21a5a919e7ac9e209815aae067857a9cfe0c2cdec8be6a2c98e"
+      }
+    },
+    {
       "id": "com.flywalk4.worldclock",
       "name": "Мировое время",
       "version": "1.1.0",
@@ -215,13 +229,13 @@
     {
       "id": "com.flywalk4.amber",
       "name": "Янтарный терминал",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
       "description": "ASCII в духе старых мониторов: янтарные символы на чёрном.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.amber",
       "files": {
-        "theme.json": "1779e5dfc5a9c8b4ff3bc9d551295193f28488a5c3dbc5efec23f829b716f332"
+        "theme.json": "04f2b7f26c1a0422102cdf902ec7bf1b24552b3ae8d94a3dd48c0dbcc1448140"
       }
     },
     {
@@ -239,13 +253,13 @@
     {
       "id": "com.flywalk4.dracula",
       "name": "Dracula",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
       "description": "Тёмное стекло с неоновыми акцентами популярной темы редакторов.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.dracula",
       "files": {
-        "theme.json": "881a204b5f1ac3de9ec89eaff8ddf0a78957b48276ce14582dadb03495429f76"
+        "theme.json": "5901bb0e7863999d7a33e7437f2a27452e3838f194b291861bff8bdbd2bd6aae"
       }
     },
     {
@@ -263,13 +277,13 @@
     {
       "id": "com.flywalk4.nord",
       "name": "Nord",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
       "description": "Холодная северная палитра: графит, лёд и полярное сияние.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.nord",
       "files": {
-        "theme.json": "0fd7de62cf403f8766a01b9a2a7912179ecd5fdfe2c1af13ae72ded1a57a3bf4"
+        "theme.json": "e4928b809a3c1b3aa3338938feb9caec2072f3191a1ce8314612187cabea179d"
       }
     },
     {
@@ -287,13 +301,13 @@
     {
       "id": "com.flywalk4.synthwave",
       "name": "Synthwave",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
       "description": "Стекло на неоновом закате: фиолетовый, розовый, оранжевый.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.synthwave",
       "files": {
-        "theme.json": "3636989d98246bd4721b864ba7478b6ae4ee7484b38437eb0cc0a4e9575d4029"
+        "theme.json": "73e1badeae1c879ad742fc76b93ad614d941af1ed28bd9f31db42b0475ca3e8d"
       }
     }
   ]
