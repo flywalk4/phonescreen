@@ -162,12 +162,12 @@ import Testing
     }
 
     @Test func layersAndScene() throws {
-        let node = try WidgetTemplate.resolve(json(#"""
+        let node = try WidgetTemplate.resolve(json(##"""
             {"type": "layers", "align": "bottomLeading", "children": [
                 {"type": "scene", "kind": "{{k}}", "tints": ["#FF0000", "{{c}}"], "speed": 9},
                 {"type": "text", "text": "12:40"}
             ]}
-            """#), data: json(#"{"k": "stars", "c": "#00FF00"}"#))
+            """##), data: json(##"{"k": "stars", "c": "#00FF00"}"##))
         let scene: WidgetNode = .scene(kind: "stars", colors: nil, tints: ["#FF0000", "#00FF00"], speed: 5)
         let text: WidgetNode = .text("12:40", style: nil, color: nil, lines: nil, align: nil)
         let expected: WidgetNode = .layers(align: "bottomLeading", children: [scene, text])
