@@ -12,6 +12,17 @@ final class PagerSwipe: ObservableObject {
     @Published var offset: CGFloat = 0
 }
 
+/// Live scale of the current page during a pinch (1 = at rest), from touch or the Mac trackpad.
+@MainActor
+final class PinchState: ObservableObject {
+    @Published var scale: CGFloat = 1
+}
+
+extension EnvironmentValues {
+    /// False inside overview tiles: their controls are pictures, not targets for the pointer.
+    @Entry var pointerInteractive = true
+}
+
 /// The Mac cursor while it is on the phone.
 ///
 /// Movement is drawn by a Core Animation layer updated directly — no SwiftUI invalidation per move.
@@ -21,6 +32,8 @@ final class PointerController: ObservableObject {
     @Published private(set) var hovered: UUID?
     @Published private(set) var pressed: UUID?
     let swipe = PagerSwipe()
+    let pinch = PinchState()
+    private var pinchTotal: Double = 0
 
     private(set) var isVisible = false
     private var model = PhonePointer(size: CGSize(width: 393, height: 852), macSide: .left)
@@ -40,6 +53,10 @@ final class PointerController: ObservableObject {
     var onEmptyClick: (() -> Void)?
     /// A swipe ended: move by this many pages (−1, 0, +1); the pager animates `swipe.offset` back to 0.
     var onSwipeEnd: ((Int) -> Void)?
+    /// Pinch finished: `true` = pinched in (show all pages), `false` = spread out (open a page).
+    var onPinch: ((Bool) -> Void)?
+    /// Two-finger double tap on the trackpad.
+    var onSmartZoom: (() -> Void)?
 
     func configure(size: CGSize, macSide: ScreenEdge) {
         guard size != model.size || macSide != model.macSide else { return }
@@ -121,6 +138,37 @@ final class PointerController: ObservableObject {
         }
     }
 
+    func pinch(magnification: Double, phase: PhoneScreenKit.ScrollPhase) {
+        guard isVisible else { return }
+        switch phase {
+        case .began:
+            pinchTotal = magnification
+        case .changed, .wheel, .momentum:
+            pinchTotal += magnification
+        case .ended:
+            pinchTotal += magnification
+            let total = pinchTotal
+            pinchTotal = 0
+            withAnimation(.snappy) { pinch.scale = 1 }
+            if total < -0.15 { onPinch?(true) } else if total > 0.15 { onPinch?(false) }
+            return
+        }
+        pinch.scale = max(0.5, min(1.15, 1 + pinchTotal))
+    }
+
+    func smartZoom() {
+        guard isVisible else { return }
+        onSmartZoom?()
+    }
+
+    /// Run the control under the pointer (spreading fingers over an overview tile opens that page).
+    @discardableResult
+    func activateHovered() -> Bool {
+        guard isVisible, let id = hit(model.position), let target = targets[id] else { return false }
+        target.action()
+        return true
+    }
+
     /// The Mac took the cursor back (Esc, hotkey, disconnect).
     func hide() {
         model.deactivate()
@@ -177,6 +225,7 @@ final class PointerController: ObservableObject {
 /// Makes a control reachable with the Mac pointer: hover highlight, press feedback, click = `action`.
 struct PointerTarget: ViewModifier {
     @EnvironmentObject private var pointer: PointerController
+    @Environment(\.pointerInteractive) private var interactive
     @State private var id = UUID()
     var highlight = true
     let action: () -> Void
@@ -186,8 +235,8 @@ struct PointerTarget: ViewModifier {
             .background(GeometryReader { geo in
                 let frame = geo.frame(in: .named(pointerSpace))
                 Color.clear
-                    .onAppear { pointer.register(id, frame: frame, action: action) }
-                    .onChange(of: frame) { _, new in pointer.register(id, frame: new, action: action) }
+                    .onAppear { if interactive { pointer.register(id, frame: frame, action: action) } }
+                    .onChange(of: frame) { _, new in if interactive { pointer.register(id, frame: new, action: action) } }
             })
             .onDisappear { pointer.unregister(id) }
             .scaleEffect(!highlight ? 1 : pointer.pressed == id ? 0.92 : pointer.hovered == id ? 1.08 : 1)
@@ -200,6 +249,7 @@ struct PointerTarget: ViewModifier {
 /// Lets the Mac pointer scroll a vertical `ScrollView` (trackpad / wheel over it). Apply to the ScrollView.
 struct PointerScrollable: ViewModifier {
     @EnvironmentObject private var pointer: PointerController
+    @Environment(\.pointerInteractive) private var interactive
     @State private var id = UUID()
     @State private var position = ScrollPosition(edge: .top)
     @State private var offset: CGFloat = 0
@@ -224,6 +274,7 @@ struct PointerScrollable: ViewModifier {
     }
 
     private func register(_ frame: CGRect) {
+        guard interactive else { return }
         pointer.registerScroller(id, frame: frame) { dy in
             // Positive dy = content moves down (natural scrolling already applied by macOS).
             let target = min(max(offset - dy, 0), maxOffset)

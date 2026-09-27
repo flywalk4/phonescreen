@@ -60,6 +60,7 @@ import Testing
                    LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock")]),
         .refresh(.notes),
         .textFocus(true), .keyText("Привет, мир"), .key(.deleteWordBackward),
+        .pointerPinch(magnification: -0.12, phase: .changed), .pointerSmartZoom,
     ]
 
     @Test(arguments: all) func roundTrip(_ message: Message) throws {

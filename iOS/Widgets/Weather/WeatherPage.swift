@@ -17,7 +17,11 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
         var fetched: Date
     }
 
-    @Published private(set) var forecast: Forecast?
+    @Published private(set) var forecast: Forecast? = WeatherModel.cache {
+        didSet { Self.cache = forecast }
+    }
+    /// Shared by every weather widget instance (pages, overview tiles): one fetch per 15 minutes.
+    private static var cache: Forecast?
     @Published private(set) var authorization: CLAuthorizationStatus
     @Published private(set) var error: String?
 

@@ -31,21 +31,62 @@ struct PagerView: View {
             WaitingView()
         } else {
             ZStack {
-                Pager(count: model.pages.count, current: $model.currentPage, swipe: model.pointer.swipe) { index in
-                    PageView(page: model.pages[index])
+                if model.overview {
+                    OverviewGrid(pages: model.pages, current: model.currentPage) { model.openFromOverview($0) }
+                        .padding(.top, 34)
+                        .transition(.asymmetric(insertion: .opacity.combined(with: .scale(scale: 1.15)),
+                                                removal: .opacity.combined(with: .scale(scale: 1.15))))
+                        // Spread two fingers anywhere in the overview to go back to the current page.
+                        .simultaneousGesture(MagnifyGesture().onEnded { value in
+                            if value.magnification > 1.2 { model.setOverview(false) }
+                        })
+                } else {
+                    PinchablePager()
+                        .transition(.asymmetric(insertion: .opacity.combined(with: .scale(scale: 0.4)),
+                                                removal: .opacity.combined(with: .scale(scale: 0.4))))
                 }
-                .onChange(of: model.currentPage) { _, index in model.userChangedPage(to: index) }
 
                 VStack {
                     ConnectionBadge(status: model.status)
                     Spacer()
-                    PageDots(count: model.pages.count, current: model.currentPage) { index in
-                        withAnimation(.snappy) { model.currentPage = index }
+                    if !model.overview {
+                        PageDots(count: model.pages.count, current: model.currentPage) { index in
+                            withAnimation(.snappy) { model.currentPage = index }
+                        }
                     }
                 }
                 .padding(.vertical, 12)
             }
+            .onChange(of: model.currentPage) { _, index in model.userChangedPage(to: index) }
         }
+    }
+}
+
+/// The pager, shrinking live under a pinch (touch or trackpad); pinching in far enough opens the overview.
+private struct PinchablePager: View {
+    @EnvironmentObject private var model: PhoneModel
+
+    var body: some View {
+        PinchablePagerContent(pinch: model.pointer.pinch)
+    }
+}
+
+private struct PinchablePagerContent: View {
+    @EnvironmentObject private var model: PhoneModel
+    @ObservedObject var pinch: PinchState
+    @GestureState private var touchScale: CGFloat = 1
+
+    var body: some View {
+        Pager(count: model.pages.count, current: $model.currentPage, swipe: model.pointer.swipe) { index in
+            PageView(page: model.pages[index])
+        }
+        .scaleEffect(min(pinch.scale, touchScale))
+        .opacity(0.4 + 0.6 * min(1, min(pinch.scale, touchScale) * 1.2 - 0.2))
+        .simultaneousGesture(
+            MagnifyGesture()
+                .updating($touchScale) { value, state, _ in state = max(0.5, min(1, value.magnification)) }
+                .onEnded { value in if value.magnification < 0.8 { model.setOverview(true) } }
+        )
     }
 }
 

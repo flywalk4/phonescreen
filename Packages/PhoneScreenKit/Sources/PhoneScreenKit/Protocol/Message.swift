@@ -52,6 +52,10 @@ public enum Message: Equatable, Sendable {
     case pointerScroll(dx: Double, dy: Double, phase: ScrollPhase)
     /// Phone → Mac: the pointer left through the Mac-facing side. Mac → phone: capture ended on the Mac's side.
     case pointerExit(along: Double)
+    /// Mac → phone: trackpad pinch step (positive = spread, negative = pinch in).
+    case pointerPinch(magnification: Double, phase: ScrollPhase)
+    /// Mac → phone: two-finger double tap on the trackpad (smart zoom).
+    case pointerSmartZoom
 
     // Keyboard: while the pointer is on the phone and a text field there has focus, the Mac keyboard types into it.
     /// Phone → Mac: a text field gained / lost focus.
@@ -67,10 +71,11 @@ extension Message: Codable {
         case hello, ping, pong, pages, setPage, pageChanged, layout, nowPlaying, stats, mediaAction, command
         case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit, textFocus, keyText, key
+        case pointerPinch, pointerSmartZoom
     }
 
     private enum Keys: String, CodingKey {
-        case t, hello, list, current, index, value, id, along, dx, dy, button, down, phase, text
+        case t, hello, list, current, index, value, id, along, dx, dy, button, down, phase, text, magnification
     }
 
     public init(from decoder: Decoder) throws {
@@ -104,6 +109,9 @@ extension Message: Codable {
                                                    dy: try c.decode(Double.self, forKey: .dy),
                                                    phase: try c.decode(ScrollPhase.self, forKey: .phase))
         case .pointerExit: self = .pointerExit(along: try c.decode(Double.self, forKey: .along))
+        case .pointerPinch: self = .pointerPinch(magnification: try c.decode(Double.self, forKey: .magnification),
+                                                 phase: try c.decode(ScrollPhase.self, forKey: .phase))
+        case .pointerSmartZoom: self = .pointerSmartZoom
         case .textFocus: self = .textFocus(try c.decode(Bool.self, forKey: .value))
         case .keyText: self = .keyText(try c.decode(String.self, forKey: .text))
         case .key: self = .key(try c.decode(SpecialKey.self, forKey: .value))
@@ -142,6 +150,9 @@ extension Message: Codable {
             try c.encode(Kind.pointerScroll, forKey: .t); try c.encode(dx, forKey: .dx); try c.encode(dy, forKey: .dy)
             try c.encode(phase, forKey: .phase)
         case .pointerExit(let a): try c.encode(Kind.pointerExit, forKey: .t); try c.encode(a, forKey: .along)
+        case .pointerPinch(let m, let phase):
+            try c.encode(Kind.pointerPinch, forKey: .t); try c.encode(m, forKey: .magnification); try c.encode(phase, forKey: .phase)
+        case .pointerSmartZoom: try c.encode(Kind.pointerSmartZoom, forKey: .t)
         case .textFocus(let v): try c.encode(Kind.textFocus, forKey: .t); try c.encode(v, forKey: .value)
         case .keyText(let v): try c.encode(Kind.keyText, forKey: .t); try c.encode(v, forKey: .text)
         case .key(let v): try c.encode(Kind.key, forKey: .t); try c.encode(v, forKey: .value)

@@ -7,6 +7,8 @@ final class PhoneModel: ObservableObject {
     @Published private(set) var status = ChannelPool.Status(active: nil, available: [])
     @Published private(set) var pages: [PageInfo] = []
     @Published var currentPage = 0
+    /// All pages as tiles (pinch in on the phone or the trackpad).
+    @Published var overview = false
     @Published private(set) var nowPlaying: NowPlaying? {
         didSet {
             // Decode the cover once per change, not on every render of the music page.
@@ -53,6 +55,16 @@ final class PhoneModel: ObservableObject {
         pointer.onEmptyClick = { [weak self] in self?.keyboard.endEditing() }
         keyboard.onFocusChange = { [weak self] focused in self?.pool.send(.textFocus(focused)) }
         pointer.onSwipeEnd = { [weak self] step in self?.finishSwipe(step) }
+        pointer.onPinch = { [weak self] pinchedIn in
+            guard let self else { return }
+            if pinchedIn { self.setOverview(true) }
+            else if self.overview, !self.pointer.activateHovered() { self.setOverview(false) }
+        }
+        pointer.onSmartZoom = { [weak self] in
+            guard let self else { return }
+            if self.overview, self.pointer.activateHovered() { return }
+            self.setOverview(!self.overview)
+        }
         pool.onMessage = { [weak self] in self?.handle($0) }
         pool.onStatus = { [weak self] in self?.status = $0 }
         #if DEBUG
@@ -69,6 +81,7 @@ final class PhoneModel: ObservableObject {
                      PageInfo(id: "split", layout: .split, widgets: [.reminders, .weather])]
                 + WidgetKind.allCases.map { PageInfo($0) }
             if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]) { currentPage = n }
+            if args.contains("--overview") { overview = true }
             nowPlaying = NowPlaying(title: "Тем кто с нами", artist: "Кино", album: "Группа крови", duration: 240, elapsed: 70, playing: true)
             notes = [NoteSummary(id: "1", title: "Покупки", snippet: "молоко, хлеб, кофе", folder: "Заметки", modified: Date().addingTimeInterval(-600)),
                      NoteSummary(id: "2", title: "Идеи для PhoneScreen", snippet: "дашборд 2×2, клавиатура на телефон", folder: "Проекты", modified: Date().addingTimeInterval(-86_400))]
@@ -134,7 +147,11 @@ final class PhoneModel: ObservableObject {
         case .pointerButton(let button, let down):
             pointer.button(button, down: down)
         case .pointerScroll(let dx, let dy, let phase):
-            pointer.scroll(dx: dx, dy: dy, phase: phase)
+            if !overview { pointer.scroll(dx: dx, dy: dy, phase: phase) }
+        case .pointerPinch(let magnification, let phase):
+            pointer.pinch(magnification: magnification, phase: phase)
+        case .pointerSmartZoom:
+            pointer.smartZoom()
         case .pointerExit:
             pointer.hide()
             keyboard.macInputActive = false
@@ -156,6 +173,19 @@ final class PhoneModel: ObservableObject {
         default:
             break
         }
+    }
+
+    func setOverview(_ on: Bool) {
+        guard on != overview else { return }
+        if on { keyboard.endEditing() }
+        withAnimation(.snappy(duration: 0.35)) { overview = on }
+    }
+
+    /// Open a page from the overview.
+    func openFromOverview(_ index: Int) {
+        guard pages.indices.contains(index) else { return }
+        currentPage = index // no animation: the zoom-in is the transition
+        setOverview(false)
     }
 
     /// A trackpad swipe ended: settle on the neighbouring page (or back on this one).

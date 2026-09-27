@@ -101,7 +101,9 @@ final class PointerCapture: @unchecked Sendable {
         let types: [CGEventType] = [.mouseMoved, .leftMouseDown, .leftMouseUp, .leftMouseDragged,
                                     .rightMouseDown, .rightMouseUp, .rightMouseDragged,
                                     .otherMouseDragged, .scrollWheel, .keyDown, .keyUp]
+        // Trackpad pinch (magnify, 30) and two-finger double tap (smart magnify, 32) have no CGEventType names.
         let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
+            | (CGEventMask(1) << Self.magnifyType) | (CGEventMask(1) << Self.smartMagnifyType)
         guard let tap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
                                           eventsOfInterest: mask, callback: { _, type, event, info in
             guard let info else { return Unmanaged.passUnretained(event) }
@@ -134,6 +136,9 @@ final class PointerCapture: @unchecked Sendable {
         return true
     }
 
+    private static let magnifyType: UInt32 = 30
+    private static let smartMagnifyType: UInt32 = 32
+
     /// Tap thread.
     private func handle(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
         let (captured, scale, textFocus) = lock.withLock { (_captured, _scale, _phoneTextFocus) }
@@ -146,6 +151,21 @@ final class PointerCapture: @unchecked Sendable {
             break
         }
         guard captured else { return Unmanaged.passUnretained(event) }
+
+        // Pinch / smart zoom go to the phone (page overview) instead of zooming the Mac app underneath.
+        if type.rawValue == Self.magnifyType, let ns = NSEvent(cgEvent: event) {
+            let phase: ScrollPhase = switch ns.phase {
+            case .began, .mayBegin: .began
+            case .ended, .cancelled: .ended
+            default: .changed
+            }
+            send?(.pointerPinch(magnification: ns.magnification, phase: phase))
+            return nil
+        }
+        if type.rawValue == Self.smartMagnifyType {
+            send?(.pointerSmartZoom)
+            return nil
+        }
 
         switch type {
         case .mouseMoved, .leftMouseDragged, .rightMouseDragged, .otherMouseDragged:
