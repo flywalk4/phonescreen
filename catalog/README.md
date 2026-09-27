@@ -12,7 +12,7 @@ catalog/widgets/com.author.mywidget/
 ## Как добавить виджет в каталог
 
 1. Создайте папку `catalog/widgets/<id>/` (имя папки = `id` из манифеста) — проще всего готовым шаблоном: `node scripts/widget-dev.mjs new com.you.widget --name "Имя"` (рабочий виджет со всеми тремя размерами, настройкой, `storage`, кнопками и сценарием).
-2. Проверьте: `python3 scripts/validate-widget.py catalog/widgets/<id>`
+2. Проверьте: `python3 scripts/validate-widget.py catalog/widgets/<id>` (с `--hints` — ещё и советы: hex-цвета, которые темы не перекрасят, кнопки в маленькой плитке)
 3. Запустите по-настоящему (нужен собранный Mac-агент): `PhoneScreen --widget-test catalog/widgets/<id>` — выполнит `refresh()` в той же песочнице, что и приложение, и напечатает данные и итоговое дерево.
 4. Обновите индекс: `python3 scripts/build-catalog.py` (хеши SHA-256 всех файлов; приложение не установит файл с другим хешем).
 5. Добавьте сценарии в `fixtures/` (хотя бы «всё хорошо» и «API недоступен») и проверьте: `node scripts/widget-dev.mjs test catalog/widgets/<id>`.
