@@ -3,8 +3,37 @@ import SwiftUI
 
 struct MusicPage: View {
     @EnvironmentObject private var model: PhoneModel
+    @Environment(\.widgetSize) private var size
 
     var body: some View {
+        if size == .full { full } else { compact }
+    }
+
+    /// Card version: cover + track + controls, side by side when there's width for it.
+    private var compact: some View {
+        GeometryReader { geo in
+            let wide = geo.size.width > geo.size.height * 1.3
+            let layout = wide ? AnyLayout(HStackLayout(spacing: 12)) : AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+            layout {
+                Artwork(image: model.artwork)
+                    .frame(maxWidth: wide ? geo.size.height : min(geo.size.width, geo.size.height * 0.5),
+                           maxHeight: wide ? geo.size.height : geo.size.height * 0.5)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(model.nowPlaying?.title ?? "Ничего не играет")
+                        .font(size == .small ? .subheadline.weight(.semibold) : .headline).lineLimit(2)
+                    Text(model.nowPlaying?.artist ?? "Музыка / Spotify на Mac")
+                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    if size == .medium { ProgressRow(track: model.nowPlaying).padding(.top, 4) }
+                    Spacer(minLength: 0)
+                    Controls(playing: model.nowPlaying?.playing ?? false, compact: true) { model.perform($0) }
+                        .disabled(model.nowPlaying == nil)
+                }
+            }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+        }
+    }
+
+    private var full: some View {
         GeometryReader { geo in
             let landscape = geo.size.width > geo.size.height
             let layout = landscape
@@ -98,13 +127,14 @@ private struct ProgressRow: View {
 
 private struct Controls: View {
     let playing: Bool
+    var compact = false
     let action: (MediaAction) -> Void
 
     var body: some View {
-        HStack(spacing: 44) {
-            button("backward.fill", size: 30) { action(.previous) }
-            button(playing ? "pause.fill" : "play.fill", size: 44) { action(.togglePlayPause) }
-            button("forward.fill", size: 30) { action(.next) }
+        HStack(spacing: compact ? 6 : 44) {
+            button("backward.fill", size: compact ? 16 : 30) { action(.previous) }
+            button(playing ? "pause.fill" : "play.fill", size: compact ? 24 : 44) { action(.togglePlayPause) }
+            button("forward.fill", size: compact ? 16 : 30) { action(.next) }
         }
         .foregroundStyle(.white)
     }
@@ -114,7 +144,7 @@ private struct Controls: View {
             Image(systemName: symbol)
                 .font(.system(size: size))
                 .contentTransition(.symbolEffect(.replace))
-                .frame(width: 64, height: 64)
+                .frame(width: compact ? 38 : 64, height: compact ? 38 : 64)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

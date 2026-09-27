@@ -163,11 +163,12 @@ enum WeatherCode {
 
 struct WeatherPage: View {
     @StateObject private var model = WeatherModel()
+    @Environment(\.widgetSize) private var size
 
     var body: some View {
         Group {
             if let f = model.forecast {
-                content(f)
+                if size == .full { content(f) } else { compact(f) }
             } else if model.authorization == .denied || model.authorization == .restricted {
                 VStack(spacing: 12) {
                     Image(systemName: "location.slash").font(.system(size: 40)).foregroundStyle(.secondary)
@@ -184,6 +185,37 @@ struct WeatherPage: View {
             }
         }
         .onAppear { model.start() }
+    }
+
+    /// Card version: now, today's range and (with room) the next hours.
+    private func compact(_ f: WeatherModel.Forecast) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(f.place ?? "Здесь").font(.subheadline.weight(.semibold)).lineLimit(1)
+            HStack(spacing: 6) {
+                Image(systemName: WeatherCode.symbol(f.code, day: f.isDay)).symbolRenderingMode(.multicolor)
+                    .font(size == .small ? .title2 : .largeTitle)
+                Text("\(Int(f.temperature.rounded()))°").font(.system(size: size == .small ? 36 : 48, weight: .light))
+            }
+            Text(WeatherCode.text(f.code)).font(.caption).lineLimit(1)
+            if let today = f.daily.first {
+                Text("↓\(Int(today.min.rounded()))°  ↑\(Int(today.max.rounded()))°").font(.caption).foregroundStyle(.secondary)
+            }
+            if size == .medium {
+                Spacer(minLength: 4)
+                HStack(spacing: 0) {
+                    ForEach(Array(f.hourly.prefix(6).enumerated()), id: \.offset) { i, h in
+                        VStack(spacing: 3) {
+                            Text(i == 0 ? "Сейч." : h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted))))
+                                .font(.caption2).foregroundStyle(.secondary)
+                            Image(systemName: WeatherCode.symbol(h.code)).symbolRenderingMode(.multicolor).font(.caption)
+                            Text("\(Int(h.temp.rounded()))°").font(.caption.weight(.medium))
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private func content(_ f: WeatherModel.Forecast) -> some View {
@@ -216,8 +248,7 @@ struct WeatherPage: View {
                 .background(RoundedRectangle(cornerRadius: 14).fill(.white.opacity(0.06)))
                 DailyList(daily: f.daily)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 36)
+            .widgetPadding()
         }
         .pointerScrollable()
     }

@@ -32,7 +32,7 @@ struct PagerView: View {
         } else {
             ZStack {
                 Pager(count: model.pages.count, current: $model.currentPage, swipe: model.pointer.swipe) { index in
-                    PageContent(page: model.pages[index])
+                    PageView(page: model.pages[index])
                 }
                 .onChange(of: model.currentPage) { _, index in model.userChangedPage(to: index) }
 
@@ -88,22 +88,6 @@ struct Pager<Page: View>: View {
         let atStart = current == 0 && x > 0
         let atEnd = current == count - 1 && x < 0
         return atStart || atEnd ? x / 3 : x
-    }
-}
-
-private struct PageContent: View {
-    let page: PageInfo
-
-    var body: some View {
-        switch page.kind {
-        case .music: MusicPage()
-        case .monitor: MonitorPage()
-        case .calendar: CalendarPage()
-        case .reminders: RemindersPage()
-        case .notes: NotesPage()
-        case .launcher: LauncherPage()
-        case .weather: WeatherPage()
-        }
     }
 }
 

@@ -4,6 +4,7 @@ import SwiftUI
 /// Apple Notes, via the Mac (iOS has no Notes API): recent notes, full text, quick new note, open on the Mac.
 struct NotesPage: View {
     @EnvironmentObject private var model: PhoneModel
+    @Environment(\.widgetSize) private var size
     @State private var openID: String?
     @State private var composing = false
 
@@ -22,19 +23,21 @@ struct NotesPage: View {
                 list.transition(.move(edge: .leading).combined(with: .opacity))
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 36)
+        .widgetPadding()
     }
 
     private var list: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 WidgetHeader(title: "Заметки", symbol: "note.text")
-                Button { startComposing() } label: {
-                    Image(systemName: "square.and.pencil").font(.title2).frame(width: 40, height: 40)
+                if size != .small {
+                    Button { startComposing() } label: {
+                        Image(systemName: "square.and.pencil").font(size == .full ? .title2 : .body)
+                            .frame(width: size == .full ? 40 : 28, height: size == .full ? 40 : 28)
+                    }
+                    .buttonStyle(.plain)
+                    .pointerTarget { startComposing() }
                 }
-                .buttonStyle(.plain)
-                .pointerTarget { startComposing() }
             }
             if let notes = model.notes {
                 if notes.isEmpty {
@@ -43,7 +46,7 @@ struct NotesPage: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         ForEach(notes) { note in
-                            NoteRow(note: note)
+                            NoteRow(note: note, compact: size != .full)
                                 .contentShape(Rectangle())
                                 .onTapGesture { open(note) }
                                 .pointerTarget { open(note) }
@@ -74,8 +77,23 @@ struct NotesPage: View {
 
 private struct NoteRow: View {
     let note: NoteSummary
+    var compact = false
 
     var body: some View {
+        if compact {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(note.title.isEmpty ? "Без названия" : note.title).font(.caption.weight(.semibold)).lineLimit(1)
+                Text(note.modified.formatted(.relative(presentation: .named))).font(.caption2).foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 6).padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 8).fill(.white.opacity(0.05)))
+        } else {
+            full
+        }
+    }
+
+    private var full: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(note.title.isEmpty ? "Без названия" : note.title).font(.headline).lineLimit(1)
             HStack(spacing: 6) {

@@ -5,22 +5,34 @@ import SwiftUI
 /// the Mac runs nothing it didn't offer itself.
 struct LauncherPage: View {
     @EnvironmentObject private var model: PhoneModel
+    @Environment(\.widgetSize) private var size
     @State private var flashed: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             WidgetHeader(title: "Команды", symbol: "square.grid.3x3.fill")
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
-                    section("Система", items: model.launcher.filter { $0.kind == .system })
-                    section("Dock", items: model.launcher.filter { $0.kind == .app })
-                    section("Команды", items: model.launcher.filter { $0.kind == .shortcut })
+                if size == .full {
+                    VStack(alignment: .leading, spacing: 18) {
+                        section("Система", items: model.launcher.filter { $0.kind == .system })
+                        section("Dock", items: model.launcher.filter { $0.kind == .app })
+                        section("Команды", items: model.launcher.filter { $0.kind == .shortcut })
+                    }
+                } else {
+                    // Card: one dense grid, no section titles.
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 46), spacing: 8)], spacing: 10) {
+                        ForEach(model.launcher) { item in
+                            LauncherTile(item: item, flashed: flashed == item.id, compact: true)
+                                .contentShape(Rectangle())
+                                .onTapGesture { run(item) }
+                                .pointerTarget { run(item) }
+                        }
+                    }
                 }
             }
             .pointerScrollable()
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 36)
+        .widgetPadding()
     }
 
     @ViewBuilder
@@ -48,6 +60,7 @@ struct LauncherPage: View {
 private struct LauncherTile: View {
     let item: LauncherItem
     let flashed: Bool
+    var compact = false
 
     var body: some View {
         VStack(spacing: 6) {
@@ -57,14 +70,16 @@ private struct LauncherTile: View {
                 } else {
                     RoundedRectangle(cornerRadius: 14)
                         .fill(item.kind == .shortcut ? Color.indigo.gradient : Color.gray.opacity(0.35).gradient)
-                    Image(systemName: item.symbol ?? "questionmark").font(.title2).foregroundStyle(.white)
+                    Image(systemName: item.symbol ?? "questionmark").font(compact ? .body : .title2).foregroundStyle(.white)
                 }
             }
-            .frame(width: 56, height: 56)
+            .frame(width: compact ? 40 : 56, height: compact ? 40 : 56)
             .scaleEffect(flashed ? 0.88 : 1)
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(flashed ? 0.8 : 0), lineWidth: 2))
-            Text(item.title).font(.caption2).lineLimit(2).multilineTextAlignment(.center)
-                .frame(height: 28, alignment: .top)
+            if !compact {
+                Text(item.title).font(.caption2).lineLimit(2).multilineTextAlignment(.center)
+                    .frame(height: 28, alignment: .top)
+            }
         }
     }
 }

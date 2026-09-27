@@ -39,15 +39,36 @@ final class AppModel: ObservableObject {
     var captureEntry: CGPoint?
     var accessibilityPoll: Timer?
 
-    let pages: [PageInfo] = [
-        PageInfo(id: "music", kind: .music, title: "Музыка"),
-        PageInfo(id: "calendar", kind: .calendar, title: "Календарь"),
-        PageInfo(id: "reminders", kind: .reminders, title: "Напоминания"),
-        PageInfo(id: "notes", kind: .notes, title: "Заметки"),
-        PageInfo(id: "launcher", kind: .launcher, title: "Команды"),
-        PageInfo(id: "monitor", kind: .monitor, title: "Мониторинг"),
-        PageInfo(id: "weather", kind: .weather, title: "Погода"),
-    ]
+    /// The phone's pages, edited in Settings → Pages. Saved, and pushed to the phone on every change.
+    @Published var pages: [PageInfo] = AppModel.loadPages() {
+        didSet {
+            guard pages != oldValue else { return }
+            if pages.isEmpty { pages = [PageInfo(.music)]; return }
+            Self.savePages(pages)
+            if currentPage >= pages.count { currentPage = pages.count - 1 }
+            pool.send(.pages(list: pages, current: currentPage))
+            pageBecameVisible()
+        }
+    }
+    /// Which Settings tab to show.
+    @Published var settingsTab = SettingsTab.pages
+
+    enum SettingsTab: Hashable { case pages, arrangement }
+
+    private static let pagesKey = "phonePages"
+
+    private static func loadPages() -> [PageInfo] {
+        UserDefaults.standard.data(forKey: pagesKey).flatMap { try? JSONDecoder().decode([PageInfo].self, from: $0) }
+            ?? PageInfo.defaults
+    }
+
+    private static func savePages(_ pages: [PageInfo]) {
+        if let data = try? JSONEncoder().encode(pages) { UserDefaults.standard.set(data, forKey: pagesKey) }
+    }
+
+    var currentWidgets: [WidgetKind] {
+        pages.indices.contains(currentPage) ? pages[currentPage].visibleWidgets : []
+    }
 
     private let sessionId = UUID()
     let pool: ChannelPool
@@ -223,18 +244,15 @@ final class AppModel: ObservableObject {
         // Notes change on other devices too; poll only while their page is on screen.
         notesTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
-                guard let self, self.pages[self.currentPage].kind == .notes else { return }
+                guard let self, self.currentWidgets.contains(.notes) else { return }
                 self.notes.refresh()
             }
         }
     }
 
-    private func pageBecameVisible() {
-        switch pages[currentPage].kind {
-        case .notes: notes.refresh()
-        case .launcher: launcher.refresh()
-        default: break
-        }
+    func pageBecameVisible() {
+        if currentWidgets.contains(.notes) { notes.refresh() }
+        if currentWidgets.contains(.launcher) { launcher.refresh() }
     }
 
     private func sendLauncher() {
@@ -289,7 +307,7 @@ final class AppModel: ObservableObject {
         sendNowPlaying()
         sendLauncher()
         // Notes are fetched only when their page is shown: asking Notes launches the app.
-        if pages[currentPage].kind == .notes { notes.refresh(force: true) }
+        if currentWidgets.contains(.notes) { notes.refresh(force: true) }
     }
 
     private func sendNowPlaying() {

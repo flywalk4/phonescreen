@@ -9,7 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         // `--snapshot <file.png>`: render the arrangement editor offscreen and quit (visual checks without screen recording).
         if let i = CommandLine.arguments.firstIndex(of: "--snapshot"), i + 1 < CommandLine.arguments.count {
-            let renderer = ImageRenderer(content: ArrangementView().environmentObject(model).frame(width: 720, height: 500)
+            let renderer = ImageRenderer(content: PagesEditor().environmentObject(model).frame(width: 760, height: 520)
                 .background(Color(nsColor: .windowBackgroundColor)))
             renderer.scale = 2
             if let tiff = renderer.nsImage?.tiffRepresentation, let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
@@ -21,16 +21,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.start()
         // First run (or --arrangement): show where the phone is, so the user can place it right away.
         if !model.isArrangementConfigured || CommandLine.arguments.contains("--arrangement") {
-            showArrangement()
+            showSettings(.arrangement)
         }
+        #if DEBUG
+        if CommandLine.arguments.contains("--pages") { showSettings(.pages) }
+        #endif
     }
 
-    @MainActor func showArrangement() {
+    @MainActor func showSettings(_ tab: AppModel.SettingsTab) {
+        model.settingsTab = tab
         if arrangementWindow == nil {
-            let window = NSWindow(contentViewController: NSHostingController(rootView: ArrangementView().environmentObject(model)))
-            window.title = "Расположение iPhone"
+            let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView().environmentObject(model)))
+            window.title = "Настройки PhoneScreen"
             window.styleMask = [.titled, .closable, .resizable, .miniaturizable]
-            window.setContentSize(NSSize(width: 720, height: 520))
+            window.setContentSize(NSSize(width: 760, height: 560))
             window.isReleasedWhenClosed = false
             window.center()
             arrangementWindow = window
@@ -46,7 +50,7 @@ struct PhoneScreenMacApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarView(showArrangement: { delegate.showArrangement() }).environmentObject(delegate.model)
+            MenuBarView(showSettings: { delegate.showSettings($0) }).environmentObject(delegate.model)
         } label: {
             MenuBarIcon(model: delegate.model)
         }
@@ -64,7 +68,7 @@ struct MenuBarIcon: View {
 
 struct MenuBarView: View {
     @EnvironmentObject private var model: AppModel
-    let showArrangement: () -> Void
+    let showSettings: (AppModel.SettingsTab) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -80,9 +84,10 @@ struct MenuBarView: View {
                 Text("\(track.title) — \(track.artist)").font(.caption).lineLimit(1)
             }
             pointerSection
-            Text("⌃⌥← / ⌃⌥→ — листать, ⌃⌥1…7 — страница").font(.caption2).foregroundStyle(.secondary)
+            Text("⌃⌥← / ⌃⌥→ — листать, ⌃⌥1…9 — страница").font(.caption2).foregroundStyle(.secondary)
             Divider()
-            Button("Расположение iPhone…", action: showArrangement)
+            Button("Страницы и виджеты…") { showSettings(.pages) }
+            Button("Расположение iPhone…") { showSettings(.arrangement) }
             Button("Выйти") { NSApplication.shared.terminate(nil) }
         }
         .padding(14)

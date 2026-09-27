@@ -84,3 +84,27 @@ import Testing
         #expect(try MessageCoder.decoder.decode(Message.self, from: MessageCoder.encoder.encode(m)) == m)
     }
 }
+
+@Suite struct PageModelTests {
+    @Test func layoutChangeKeepsWidgetsAndFillsNewSlots() {
+        var page = PageInfo(.music)
+        page.setLayout(.grid)
+        #expect(page.widgets.count == 4)
+        #expect(page.widgets.first == .music)
+        #expect(Set(page.widgets).count == 4) // filled with distinct, unused widgets
+        page.setLayout(.split)
+        #expect(page.widgets == Array(page.widgets.prefix(2)))
+        #expect(page.widgets.first == .music)
+    }
+
+    @Test func sizesMatchSlots() {
+        for layout in PageLayout.allCases {
+            #expect(WidgetSize.sizes(for: layout).count == layout.slots)
+        }
+    }
+
+    @Test func titleListsVisibleWidgets() {
+        let page = PageInfo(layout: .split, widgets: [.music, .weather, .notes])
+        #expect(page.title == "Музыка + Погода")
+    }
+}

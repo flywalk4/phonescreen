@@ -64,7 +64,10 @@ final class PhoneModel: ObservableObject {
         // `--demo [--page N]`: all pages without a Mac, for layout checks in the Simulator.
         let args = ProcessInfo.processInfo.arguments
         if args.contains("--demo") {
-            pages = PageKind.allCases.map { PageInfo(id: $0.rawValue, kind: $0, title: $0.rawValue) }
+            pages = [PageInfo(id: "grid", layout: .grid, widgets: [.music, .weather, .calendar, .monitor]),
+                     PageInfo(id: "trio", layout: .trio, widgets: [.music, .notes, .launcher]),
+                     PageInfo(id: "split", layout: .split, widgets: [.reminders, .weather])]
+                + WidgetKind.allCases.map { PageInfo($0) }
             if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]) { currentPage = n }
             nowPlaying = NowPlaying(title: "Тем кто с нами", artist: "Кино", album: "Группа крови", duration: 240, elapsed: 70, playing: true)
             notes = [NoteSummary(id: "1", title: "Покупки", snippet: "молоко, хлеб, кофе", folder: "Заметки", modified: Date().addingTimeInterval(-600)),
@@ -89,6 +92,7 @@ final class PhoneModel: ObservableObject {
     }
 
     func userChangedPage(to index: Int) {
+        keyboard.endEditing() // a field on the page we left must not keep focus (or the keyboard)
         requestDataIfNeeded(for: index)
         guard !applyingRemotePage else { return }
         pool.send(.pageChanged(index: index))
@@ -97,8 +101,7 @@ final class PhoneModel: ObservableObject {
     /// Notes are fetched through the Mac only while their page is on screen (asking Notes launches the app).
     private func requestDataIfNeeded(for index: Int) {
         guard pages.indices.contains(index) else { return }
-        let kind = pages[index].kind
-        if kind == .notes || kind == .launcher { refresh(kind) }
+        for kind in pages[index].visibleWidgets where kind == .notes || kind == .launcher { refresh(kind) }
     }
 
     func perform(_ action: MediaAction) {
@@ -106,7 +109,7 @@ final class PhoneModel: ObservableObject {
     }
 
     /// A page showing Mac-provided data appeared: ask for fresh data.
-    func refresh(_ kind: PageKind) { pool.send(.refresh(kind)) }
+    func refresh(_ kind: WidgetKind) { pool.send(.refresh(kind)) }
     func openNote(_ id: String) { pool.send(.noteRequest(id: id)) }
     func createNote(_ text: String) { pool.send(.noteCreate(text: text)) }
     func showNoteOnMac(_ id: String) { pool.send(.noteShowOnMac(id: id)) }

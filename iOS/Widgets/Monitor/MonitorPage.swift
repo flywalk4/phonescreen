@@ -5,8 +5,38 @@ import SwiftUI
 /// Mac load at a glance: gauges, per-core bars and the last minute as charts.
 struct MonitorPage: View {
     @EnvironmentObject private var model: PhoneModel
+    @Environment(\.widgetSize) private var size
 
     var body: some View {
+        if size == .full { full } else { compact }
+    }
+
+    /// Card version: gauges (and, with room, the load chart).
+    private var compact: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            WidgetHeader(title: "Mac", symbol: "gauge.with.dots.needle.33percent")
+            if let stats = model.stats {
+                GeometryReader { geo in
+                    let wide = geo.size.width > geo.size.height
+                    let side = min(size == .small ? 58 : 70, (wide ? geo.size.width / 3 : geo.size.height / 3) - 18)
+                    let layout = wide || size == .medium ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 6))
+                    VStack(spacing: 10) {
+                        layout {
+                            Gauge(title: "CPU", value: stats.cpu, diameter: side)
+                            Gauge(title: "GPU", value: stats.gpu, diameter: side)
+                            Gauge(title: "RAM", value: Double(stats.memoryUsed) / Double(max(stats.memoryTotal, 1)), diameter: side)
+                        }
+                        if size == .medium { LoadChart(history: model.statsHistory) }
+                    }
+                    .frame(width: geo.size.width, height: geo.size.height)
+                }
+            } else {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+
+    private var full: some View {
         VStack(spacing: 20) {
             if let stats = model.stats {
                 HStack(spacing: 14) {
@@ -44,20 +74,21 @@ private struct Gauge: View {
     let title: String
     let value: Double?
     var caption: String?
+    var diameter: CGFloat = 88
 
     var body: some View {
         VStack(spacing: 8) {
             ZStack {
-                Circle().stroke(.white.opacity(0.1), lineWidth: 8)
+                Circle().stroke(.white.opacity(0.1), lineWidth: diameter * 0.09)
                 Circle()
                     .trim(from: 0, to: value ?? 0)
-                    .stroke(color, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                    .stroke(color, style: StrokeStyle(lineWidth: diameter * 0.09, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.easeOut(duration: 0.4), value: value)
                 Text(value.map { "\(Int(($0 * 100).rounded()))%" } ?? "—")
-                    .font(.title3.weight(.semibold).monospacedDigit())
+                    .font(.system(size: diameter * 0.22, weight: .semibold).monospacedDigit())
             }
-            .frame(width: 88, height: 88)
+            .frame(width: diameter, height: diameter)
             Text(caption.map { "\(title) · \($0)" } ?? title).font(.caption).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)

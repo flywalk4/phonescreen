@@ -37,20 +37,116 @@ public struct Hello: Codable, Equatable, Sendable {
     }
 }
 
-public enum PageKind: String, Codable, CaseIterable, Sendable {
+public enum WidgetKind: String, Codable, CaseIterable, Sendable {
     case music, monitor, notes, reminders, calendar, weather, launcher
+
+    public var title: String {
+        switch self {
+        case .music: "Музыка"
+        case .monitor: "Мониторинг"
+        case .notes: "Заметки"
+        case .reminders: "Напоминания"
+        case .calendar: "Календарь"
+        case .weather: "Погода"
+        case .launcher: "Команды"
+        }
+    }
+
+    public var symbol: String {
+        switch self {
+        case .music: "music.note"
+        case .monitor: "gauge.with.dots.needle.33percent"
+        case .notes: "note.text"
+        case .reminders: "checklist"
+        case .calendar: "calendar"
+        case .weather: "cloud.sun.fill"
+        case .launcher: "square.grid.3x3.fill"
+        }
+    }
+}
+
+/// How many widgets a page holds and how they are arranged.
+public enum PageLayout: String, Codable, CaseIterable, Sendable {
+    /// One widget, full screen.
+    case single
+    /// Two widgets: stacked in portrait, side by side in landscape.
+    case split
+    /// One large widget and two small ones.
+    case trio
+    /// Four small widgets, 2×2.
+    case grid
+
+    public var slots: Int {
+        switch self {
+        case .single: 1
+        case .split: 2
+        case .trio: 3
+        case .grid: 4
+        }
+    }
+
+    public var title: String {
+        switch self {
+        case .single: "Один"
+        case .split: "Два"
+        case .trio: "Один + два"
+        case .grid: "Сетка 2×2"
+        }
+    }
+}
+
+/// How much room a widget has: it shows less as it gets smaller.
+public enum WidgetSize: String, Codable, Sendable {
+    case full, medium, small
+
+    /// Size of each slot of a layout, in slot order.
+    public static func sizes(for layout: PageLayout) -> [WidgetSize] {
+        switch layout {
+        case .single: [.full]
+        case .split: [.medium, .medium]
+        case .trio: [.medium, .small, .small]
+        case .grid: [.small, .small, .small, .small]
+        }
+    }
 }
 
 public struct PageInfo: Codable, Equatable, Identifiable, Sendable {
     public var id: String
-    public var kind: PageKind
-    public var title: String
+    public var layout: PageLayout
+    /// One per slot of `layout` (extra ones are ignored, missing ones are empty slots).
+    public var widgets: [WidgetKind]
 
-    public init(id: String, kind: PageKind, title: String) {
+    public init(id: String = UUID().uuidString, layout: PageLayout, widgets: [WidgetKind]) {
         self.id = id
-        self.kind = kind
-        self.title = title
+        self.layout = layout
+        self.widgets = widgets
     }
+
+    public init(_ widget: WidgetKind) {
+        self.init(id: widget.rawValue, layout: .single, widgets: [widget])
+    }
+
+    /// The widgets actually shown (as many as the layout has slots).
+    public var visibleWidgets: [WidgetKind] { Array(widgets.prefix(layout.slots)) }
+
+    public var title: String { visibleWidgets.map(\.title).joined(separator: " + ") }
+
+    /// Change the layout, keeping the widgets that still fit and filling new slots with unused ones.
+    public mutating func setLayout(_ new: PageLayout) {
+        layout = new
+        var result = Array(widgets.prefix(new.slots))
+        for kind in WidgetKind.allCases where result.count < new.slots && !result.contains(kind) {
+            result.append(kind)
+        }
+        widgets = result
+    }
+
+    /// Out-of-the-box pages: a dashboard first, then every widget on its own.
+    public static let defaults: [PageInfo] = [
+        PageInfo(id: "dashboard", layout: .grid, widgets: [.music, .weather, .calendar, .monitor]),
+        PageInfo(.music), PageInfo(.calendar), PageInfo(.reminders), PageInfo(.notes),
+        PageInfo(.launcher), PageInfo(.monitor), PageInfo(.weather),
+    ]
 }
 
 public struct NowPlaying: Codable, Equatable, Sendable {

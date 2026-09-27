@@ -77,6 +77,7 @@ final class RemindersModel: ObservableObject {
 }
 
 struct RemindersPage: View {
+    @Environment(\.widgetSize) private var size
     @StateObject private var model = RemindersModel()
     @ObservedObject private var kit = EventKitStore.shared
     @State private var draft = ""
@@ -101,19 +102,7 @@ struct RemindersPage: View {
         VStack(alignment: .leading, spacing: 12) {
             WidgetHeader(title: "Напоминания", symbol: "checklist",
                          subtitle: model.items.isEmpty ? "Всё сделано" : "\(model.items.filter { !$0.isCompleted }.count) осталось")
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(model.lists, id: \.calendarIdentifier) { list in
-                        let selected = list.calendarIdentifier == model.selectedListID
-                        Text(list.title)
-                            .font(.subheadline.weight(.medium))
-                            .padding(.horizontal, 12).padding(.vertical, 6)
-                            .background(Capsule().fill(selected ? Color(cgColor: list.cgColor) : .white.opacity(0.08)))
-                            .onTapGesture { model.selectedListID = list.calendarIdentifier }
-                            .pointerTarget { model.selectedListID = list.calendarIdentifier }
-                    }
-                }
-            }
+            if size == .full { listChips }
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
                     ForEach(model.items, id: \.calendarItemIdentifier) { reminder in
@@ -124,23 +113,42 @@ struct RemindersPage: View {
                 }
             }
             .pointerScrollable()
-            HStack {
-                Image(systemName: "plus.circle.fill").foregroundStyle(.secondary)
-                TextField("Новое напоминание", text: $draft)
-                    .focused($adding)
-                    .submitLabel(.done)
-                    .onSubmit {
-                        model.add(draft)
-                        draft = ""
-                        adding = true // keep typing the next one
-                    }
-            }
-            .padding(12)
-            .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(adding ? 0.12 : 0.06)))
-            .pointerTarget(highlight: false) { adding = true }
+            if size != .small { addField }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 36)
+        .widgetPadding()
+    }
+
+    private var listChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(model.lists, id: \.calendarIdentifier) { list in
+                    let selected = list.calendarIdentifier == model.selectedListID
+                    Text(list.title)
+                        .font(.subheadline.weight(.medium))
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(Capsule().fill(selected ? Color(cgColor: list.cgColor) : .white.opacity(0.08)))
+                        .onTapGesture { model.selectedListID = list.calendarIdentifier }
+                        .pointerTarget { model.selectedListID = list.calendarIdentifier }
+                }
+            }
+        }
+    }
+
+    private var addField: some View {
+        HStack {
+            Image(systemName: "plus.circle.fill").foregroundStyle(.secondary)
+            TextField("Новое напоминание", text: $draft)
+                .focused($adding)
+                .submitLabel(.done)
+                .onSubmit {
+                    model.add(draft)
+                    draft = ""
+                    adding = true // keep typing the next one
+                }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(adding ? 0.12 : 0.06)))
+        .pointerTarget(highlight: false) { adding = true }
     }
 }
 
@@ -184,12 +192,17 @@ struct WidgetHeader: View {
     let title: String
     let symbol: String
     var subtitle: String?
+    @Environment(\.widgetSize) private var size
 
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            Label(title, systemImage: symbol).font(.title2.weight(.bold))
-            Spacer()
-            if let subtitle { Text(subtitle).font(.subheadline).foregroundStyle(.secondary) }
+            Label(title, systemImage: symbol)
+                .font(size == .full ? .title2.weight(.bold) : .subheadline.weight(.semibold))
+                .lineLimit(1)
+            Spacer(minLength: 4)
+            if let subtitle, size != .small {
+                Text(subtitle).font(size == .full ? .subheadline : .caption).foregroundStyle(.secondary).lineLimit(1)
+            }
         }
     }
 }

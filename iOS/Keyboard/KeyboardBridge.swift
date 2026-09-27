@@ -100,6 +100,9 @@ final class KeyboardBridge {
             setInputView(UIView(frame: .zero), on: responder)
             suppressed = responder
         } else if !macInputActive, let suppressed {
+            // The Mac keyboard was typing here: leaving the phone ends that editing session. Restoring the
+            // input view on a still-focused field would pop the on-screen keyboard up instead.
+            if suppressed.isFirstResponder { suppressed.resignFirstResponder() }
             setInputView(nil, on: suppressed)
             self.suppressed = nil
         }

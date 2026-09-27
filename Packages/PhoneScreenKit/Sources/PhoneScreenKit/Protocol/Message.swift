@@ -35,7 +35,7 @@ public enum Message: Equatable, Sendable {
     case launcher([LauncherItem])
 
     /// Phone → Mac: a page became visible; send fresh data for it now.
-    case refresh(PageKind)
+    case refresh(WidgetKind)
 
     // Actions (phone → Mac)
     case mediaAction(MediaAction)
@@ -94,7 +94,7 @@ extension Message: Codable {
         case .noteCreate: self = .noteCreate(text: try c.decode(String.self, forKey: .text))
         case .noteShowOnMac: self = .noteShowOnMac(id: try c.decode(String.self, forKey: .id))
         case .launcher: self = .launcher(try c.decode([LauncherItem].self, forKey: .list))
-        case .refresh: self = .refresh(try c.decode(PageKind.self, forKey: .value))
+        case .refresh: self = .refresh(try c.decode(WidgetKind.self, forKey: .value))
         case .pointerEnter: self = .pointerEnter(along: try c.decode(Double.self, forKey: .along))
         case .pointerDelta: self = .pointerDelta(dx: try c.decode(Double.self, forKey: .dx),
                                                  dy: try c.decode(Double.self, forKey: .dy))

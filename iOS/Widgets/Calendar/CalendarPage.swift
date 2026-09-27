@@ -24,13 +24,16 @@ final class CalendarModel: ObservableObject {
 }
 
 struct CalendarPage: View {
+    @Environment(\.widgetSize) private var size
     @StateObject private var model = CalendarModel()
     @ObservedObject private var kit = EventKitStore.shared
 
     var body: some View {
         Group {
             if kit.eventsAccess == .fullAccess {
-                TimelineView(.everyMinute) { context in content(now: context.date) }
+                TimelineView(.everyMinute) { context in
+                    if size == .full { content(now: context.date) } else { compact(now: context.date) }
+                }
             } else {
                 AccessPrompt(symbol: "calendar", title: "Календарь", status: kit.eventsAccess) {
                     await kit.requestEvents()
@@ -40,6 +43,35 @@ struct CalendarPage: View {
         }
         .onAppear { model.reload() }
         .onChange(of: kit.changeTick) { model.reload() }
+    }
+
+    /// Card version: what's next today, compact rows.
+    private func compact(now: Date) -> some View {
+        let upcoming = model.today.filter { $0.isAllDay || $0.endDate > now }
+        return VStack(alignment: .leading, spacing: 8) {
+            WidgetHeader(title: now.formatted(.dateTime.weekday(.abbreviated).day()).capitalized, symbol: "calendar")
+            if upcoming.isEmpty {
+                Text(model.tomorrow.isEmpty ? "Сегодня встреч нет" : "Сегодня всё. Завтра: \(model.tomorrow[0].title ?? "")")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(upcoming, id: \.eventIdentifier) { event in
+                        let ongoing = !event.isAllDay && event.startDate <= now
+                        HStack(spacing: 6) {
+                            RoundedRectangle(cornerRadius: 1.5).fill(Color(cgColor: event.calendar.cgColor)).frame(width: 3)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(event.title ?? "").font(.caption.weight(ongoing ? .bold : .medium)).lineLimit(1)
+                                Text(event.isAllDay ? "весь день" : ongoing ? "сейчас"
+                                     : event.startDate.formatted(date: .omitted, time: .shortened))
+                                    .font(.caption2.monospacedDigit()).foregroundStyle(ongoing ? .green : .secondary)
+                            }
+                        }
+                    }
+                }
+            }
+            .pointerScrollable()
+        }
     }
 
     private func content(now: Date) -> some View {
@@ -73,8 +105,7 @@ struct CalendarPage: View {
             }
             .pointerScrollable()
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 36)
+        .widgetPadding()
     }
 }
 
