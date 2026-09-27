@@ -314,7 +314,8 @@ function check(result, fx) {
 
 const THEMES = {
   dark: { bg: "#000", text: "#fff", sec: "#98989F", accent: "#0A84FF", card: "rgba(255,255,255,.07)", surface: "rgba(255,255,255,.07)", style: "flat", radius: 22 },
-  light: { bg: "#F2F2F7", text: "#000", sec: "#6C6C70", accent: "#007AFF", card: "#fff", surface: "rgba(0,0,0,.05)", style: "flat", radius: 22 },
+  light: { bg: "#F2F2F7", text: "#000", sec: "#6C6C70", accent: "#007AFF", card: "#fff", surface: "rgba(0,0,0,.05)", style: "flat", radius: 22,
+    palette: {"green": "#248A3D", "mint": "#0C817B", "teal": "#008299", "cyan": "#0071A4", "yellow": "#B25000", "orange": "#C93400"} }, // the light theme's darker variants (readable on white)
   glass: { bg: "linear-gradient(145deg,#1B2A6B,#6A2C8F,#0E7C86)", text: "#fff", sec: "rgba(255,255,255,.7)", accent: "#7FD4FF", card: "rgba(255,255,255,.12)", surface: "rgba(255,255,255,.14)", style: "glass", radius: 28 },
   ascii: { bg: "#050805", text: "#39FF14", sec: "#1FA30C", accent: "#39FF14", card: "transparent", surface: "transparent", style: "ascii", radius: 0 },
 };

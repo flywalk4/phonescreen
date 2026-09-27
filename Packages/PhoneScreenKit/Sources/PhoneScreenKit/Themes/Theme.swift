@@ -200,7 +200,10 @@ public extension Theme {
         description: "Светло-серый фон, белые карточки, тёмный текст.",
         style: .flat, appearance: .light, font: .system, radius: 22,
         background: .init(colors: ["#F2F2F7"]),
-        colors: .init(text: "#000000", secondary: "#6C6C70", accent: "#007AFF", card: "#FFFFFF", border: "#0000000F"))
+        colors: .init(text: "#000000", secondary: "#6C6C70", accent: "#007AFF", card: "#FFFFFF", border: "#0000000F",
+                      // Apple's increased-contrast variants: the stock yellow, mint, cyan and green fade on white.
+                      palette: ["green": "#248A3D", "mint": "#0C817B", "teal": "#008299", "cyan": "#0071A4",
+                                "yellow": "#B25000", "orange": "#C93400"]))
 
     static let glass = Theme(
         id: "builtin.glass", name: "Liquid Glass", author: "PhoneScreen",

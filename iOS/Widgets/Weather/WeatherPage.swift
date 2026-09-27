@@ -183,9 +183,16 @@ struct WeatherPage: View {
                 }
             } else {
                 VStack(spacing: 12) {
-                    ThemedSpinner()
-                    Text(model.error ?? "Загружаю погоду…").foregroundStyle(.secondary)
+                    if let error = model.error {
+                        Glyph(systemName: "cloud.fill").font(.system(size: 36)).foregroundStyle(.secondary)
+                        Text(error).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        Button("Повторить") { model.start() }.buttonStyle(.bordered)
+                    } else {
+                        ThemedSpinner()
+                        Text("Загружаю погоду…").foregroundStyle(.secondary)
+                    }
                 }
+                .padding()
             }
         }
         .onAppear { model.start() }

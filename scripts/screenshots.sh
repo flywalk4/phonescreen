@@ -28,6 +28,7 @@ xcrun simctl boot "$DEV" 2>/dev/null || true
 xcrun simctl bootstatus "$DEV" -b >/dev/null
 xcrun simctl ui "$DEV" appearance dark
 xcrun simctl install "$DEV" "$APP"
+xcrun simctl location "$DEV" set 55.7558,37.6173 || true # Moscow, so the weather page has a place
 for service in calendar reminders location photos; do xcrun simctl privacy "$DEV" grant "$service" "$BUNDLE_ID" || true; done
 DATA=$(xcrun simctl get_app_container "$DEV" "$BUNDLE_ID" data)
 mkdir -p "$DATA/Documents"

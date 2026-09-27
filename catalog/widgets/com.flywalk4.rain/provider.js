@@ -32,16 +32,24 @@ async function refresh(ctx) {
   const kind = snowy ? "Снег" : "Дождь";
   const minutes = change > 0 ? Math.max(5, Math.round((slots[change].at - now) / 60 / 5) * 5) : null;
 
-  let headline, sub;
+  // headline — фраза для больших плиток; big + bigLabel — коротко для маленькой («35 мин» / «до дождя»).
+  const genitive = snowy ? "снега" : "дождя";
+  let headline, sub, big, bigLabel;
   if (wetNow) {
     headline = `${kind} идёт`;
     sub = minutes ? `закончится ${inText(minutes)}` : "и не прекратится ближайшие 3 часа";
+    big = minutes ? short(minutes) : ["3+", "ч"];
+    bigLabel = `${kind.toLowerCase()} идёт, ещё`;
   } else if (minutes) {
     headline = `${kind} ${inText(minutes)}`;
     sub = `около ${fmt(Math.max(...slots.slice(change).map((s) => s.mm)))} мм за 15 минут`;
+    big = short(minutes);
+    bigLabel = `до ${genitive}`;
   } else {
     headline = "Без осадков";
     sub = "ближайшие 3 часа";
+    big = ["Сухо", ""];
+    bigLabel = "осадков не будет";
   }
 
   const h = data.hourly || {};
@@ -55,7 +63,7 @@ async function refresh(ctx) {
   const wetSoon = wetNow || minutes !== null;
   return {
     place: place.name,
-    headline, sub,
+    headline, sub, bigLabel, bigValue: big[0], bigUnit: big[1],
     icon: wetSoon ? (snowy ? "cloud.snow.fill" : "cloud.rain.fill") : "sun.max.fill",
     color: wetSoon ? "blue" : "orange",
     temp: data.current?.temperature_2m != null ? `${Math.round(data.current.temperature_2m)}°` : "",
@@ -79,6 +87,11 @@ async function locate(text) {
   const place = { query: text, lat: r.latitude, lon: r.longitude, name: r.name };
   storage.set("place", place);
   return place;
+}
+
+// 35 → ["35", "мин"], 90 → ["1,5", "ч"] — число крупно, единица мелко.
+function short(min) {
+  return min < 60 ? [String(min), "мин"] : [format.number(Math.round(min / 30) / 2, min % 60 ? 1 : 0), "ч"];
 }
 
 function inText(min) {
