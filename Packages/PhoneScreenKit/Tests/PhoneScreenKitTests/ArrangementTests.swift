@@ -90,11 +90,11 @@ import Testing
         var page = PageInfo(.music)
         page.setLayout(.grid)
         #expect(page.widgets.count == 4)
-        #expect(page.widgets.first == .music)
+        #expect(page.widgets.first == .builtin(.music))
         #expect(Set(page.widgets).count == 4) // filled with distinct, unused widgets
         page.setLayout(.split)
         #expect(page.widgets == Array(page.widgets.prefix(2)))
-        #expect(page.widgets.first == .music)
+        #expect(page.widgets.first == .builtin(.music))
     }
 
     @Test func sizesMatchSlots() {
@@ -104,7 +104,21 @@ import Testing
     }
 
     @Test func titleListsVisibleWidgets() {
-        let page = PageInfo(layout: .split, widgets: [.music, .weather, .notes])
+        let page = PageInfo(layout: .split, builtins: [.music, .weather, .notes])
         #expect(page.title == "Музыка + Погода")
+        let custom = PageInfo(layout: .split, widgets: [.custom("com.example.rates"), .builtin(.music)])
+        #expect(custom.title(customNames: ["com.example.rates": "Курсы валют"]) == "Курсы валют + Музыка")
+        #expect(custom.title == "rates + Музыка")
+    }
+
+    @Test func widgetRefIsAStringOnTheWire() throws {
+        // Pages saved before custom widgets existed are plain arrays of built-in names.
+        let old = Data(#"{"id":"p","layout":"split","widgets":["music","weather"]}"#.utf8)
+        let page = try JSONDecoder().decode(PageInfo.self, from: old)
+        #expect(page.widgets == [.builtin(.music), .builtin(.weather)])
+        let mixed = PageInfo(id: "q", layout: .split, widgets: [.custom("a.b"), .builtin(.notes)])
+        let json = String(decoding: try JSONEncoder().encode(mixed.widgets), as: UTF8.self)
+        #expect(json == #"["custom:a.b","notes"]"#)
+        #expect(try JSONDecoder().decode(PageInfo.self, from: JSONEncoder().encode(mixed)) == mixed)
     }
 }

@@ -17,6 +17,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             exit(0)
         }
+        // `--widget-test <package folder>`: run a widget once headlessly, print the resolved UI (or the error), quit.
+        if let i = CommandLine.arguments.firstIndex(of: "--widget-test"), i + 1 < CommandLine.arguments.count {
+            WidgetTestRunner.run(folder: URL(fileURLWithPath: CommandLine.arguments[i + 1]))
+            return
+        }
+        if let i = CommandLine.arguments.firstIndex(of: "--catalog-test"), i + 1 < CommandLine.arguments.count {
+            WidgetTestRunner.runCatalog(CommandLine.arguments[i + 1])
+            return
+        }
         #endif
         model.start()
         // First run (or --arrangement): show where the phone is, so the user can place it right away.
@@ -25,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         #if DEBUG
         if CommandLine.arguments.contains("--pages") { showSettings(.pages) }
+        if CommandLine.arguments.contains("--widgets") { showSettings(.widgets) }
         #endif
     }
 
@@ -86,7 +96,8 @@ struct MenuBarView: View {
             pointerSection
             Text("⌃⌥← / ⌃⌥→ — листать, ⌃⌥1…9 — страница").font(.caption2).foregroundStyle(.secondary)
             Divider()
-            Button("Страницы и виджеты…") { showSettings(.pages) }
+            Button("Страницы…") { showSettings(.pages) }
+            Button("Виджеты…") { showSettings(.widgets) }
             Button("Расположение iPhone…") { showSettings(.arrangement) }
             Button("Выйти") { NSApplication.shared.terminate(nil) }
         }

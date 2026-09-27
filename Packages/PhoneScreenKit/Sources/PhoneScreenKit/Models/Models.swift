@@ -110,40 +110,105 @@ public enum WidgetSize: String, Codable, Sendable {
     }
 }
 
+/// What sits in a page slot: a built-in widget, or an installed JavaScript widget (by its id).
+/// Encoded as one string ("music", "custom:com.author.rates"), so pages saved before custom widgets still load.
+public enum WidgetRef: Hashable, Codable, Sendable {
+    case builtin(WidgetKind)
+    case custom(String)
+
+    private static let customPrefix = "custom:"
+
+    public var rawValue: String {
+        switch self {
+        case .builtin(let kind): kind.rawValue
+        case .custom(let id): Self.customPrefix + id
+        }
+    }
+
+    public init?(rawValue: String) {
+        if rawValue.hasPrefix(Self.customPrefix) {
+            self = .custom(String(rawValue.dropFirst(Self.customPrefix.count)))
+        } else if let kind = WidgetKind(rawValue: rawValue) {
+            self = .builtin(kind)
+        } else {
+            return nil
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        guard let value = WidgetRef(rawValue: raw) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "Unknown widget \(raw)"))
+        }
+        self = value
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var c = encoder.singleValueContainer()
+        try c.encode(rawValue)
+    }
+
+    public var builtin: WidgetKind? { if case .builtin(let k) = self { k } else { nil } }
+    public var customID: String? { if case .custom(let id) = self { id } else { nil } }
+
+    /// Display name; custom widgets are named by whoever knows the installed ones.
+    public func title(customNames: [String: String] = [:]) -> String {
+        switch self {
+        case .builtin(let kind): kind.title
+        case .custom(let id): customNames[id] ?? id.split(separator: ".").last.map(String.init) ?? id
+        }
+    }
+}
+
 public struct PageInfo: Codable, Equatable, Identifiable, Sendable {
     public var id: String
     public var layout: PageLayout
     /// One per slot of `layout` (extra ones are ignored, missing ones are empty slots).
-    public var widgets: [WidgetKind]
+    public var widgets: [WidgetRef]
 
-    public init(id: String = UUID().uuidString, layout: PageLayout, widgets: [WidgetKind]) {
+    public init(id: String = UUID().uuidString, layout: PageLayout, widgets: [WidgetRef]) {
         self.id = id
         self.layout = layout
         self.widgets = widgets
     }
 
+    public init(id: String = UUID().uuidString, layout: PageLayout, builtins: [WidgetKind]) {
+        self.init(id: id, layout: layout, widgets: builtins.map(WidgetRef.builtin))
+    }
+
     public init(_ widget: WidgetKind) {
-        self.init(id: widget.rawValue, layout: .single, widgets: [widget])
+        self.init(id: widget.rawValue, layout: .single, widgets: [.builtin(widget)])
+    }
+
+    /// A copy with another id and widgets (same layout).
+    public func with(id: String, widgets: [WidgetRef]) -> PageInfo {
+        PageInfo(id: id, layout: layout, widgets: widgets)
     }
 
     /// The widgets actually shown (as many as the layout has slots).
-    public var visibleWidgets: [WidgetKind] { Array(widgets.prefix(layout.slots)) }
+    public var visibleWidgets: [WidgetRef] { Array(widgets.prefix(layout.slots)) }
 
-    public var title: String { visibleWidgets.map(\.title).joined(separator: " + ") }
+    public func contains(_ kind: WidgetKind) -> Bool { visibleWidgets.contains(.builtin(kind)) }
 
-    /// Change the layout, keeping the widgets that still fit and filling new slots with unused ones.
+    public var title: String { title(customNames: [:]) }
+
+    public func title(customNames: [String: String]) -> String {
+        visibleWidgets.map { $0.title(customNames: customNames) }.joined(separator: " + ")
+    }
+
+    /// Change the layout, keeping the widgets that still fit and filling new slots with unused built-ins.
     public mutating func setLayout(_ new: PageLayout) {
         layout = new
         var result = Array(widgets.prefix(new.slots))
-        for kind in WidgetKind.allCases where result.count < new.slots && !result.contains(kind) {
-            result.append(kind)
+        for kind in WidgetKind.allCases where result.count < new.slots && !result.contains(.builtin(kind)) {
+            result.append(.builtin(kind))
         }
         widgets = result
     }
 
     /// Out-of-the-box pages: a dashboard first, then every widget on its own.
     public static let defaults: [PageInfo] = [
-        PageInfo(id: "dashboard", layout: .grid, widgets: [.music, .weather, .calendar, .monitor]),
+        PageInfo(id: "dashboard", layout: .grid, builtins: [.music, .weather, .calendar, .monitor]),
         PageInfo(.music), PageInfo(.calendar), PageInfo(.reminders), PageInfo(.notes),
         PageInfo(.launcher), PageInfo(.monitor), PageInfo(.weather),
     ]

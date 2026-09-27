@@ -1,0 +1,48 @@
+{
+  "full": {
+    "type": "vstack", "spacing": 14, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 8, "children": [
+        { "type": "symbol", "name": "dollarsign.arrow.circlepath", "color": "green" },
+        { "type": "text", "text": "Курсы валют", "style": "title2" },
+        { "type": "spacer" },
+        { "type": "button", "title": "Обновить", "symbol": "arrow.clockwise", "action": "reload" }
+      ]},
+      { "type": "text", "text": "1 {{main.code}} = {{main.value}} {{target}}", "style": "largeTitle" },
+      { "type": "text", "text": "{{change}} за день", "color": "{{changeColor}}", "style": "headline", "if": "{{change}}" },
+      { "type": "chart", "values": "{{history}}", "color": "green", "if": "{{hasHistory}}" },
+      { "type": "divider" },
+      { "type": "list", "items": "{{rows}}", "spacing": 10, "template":
+        { "type": "hstack", "children": [
+          { "type": "text", "text": "{{item.code}}", "style": "headline" },
+          { "type": "spacer" },
+          { "type": "text", "text": "{{item.value}} {{target}}", "style": "body" }
+        ]}
+      },
+      { "type": "spacer" },
+      { "type": "text", "text": "Обновлено {{updated}} · open.er-api.com", "style": "caption", "color": "secondary" }
+    ]
+  },
+  "medium": {
+    "type": "vstack", "spacing": 8, "align": "leading",
+    "children": [
+      { "type": "text", "text": "1 {{main.code}} = {{main.value}} {{target}}", "style": "title2" },
+      { "type": "text", "text": "{{change}}", "color": "{{changeColor}}", "style": "caption", "if": "{{change}}" },
+      { "type": "list", "items": "{{rows}}", "spacing": 4, "template":
+        { "type": "hstack", "children": [
+          { "type": "text", "text": "{{item.code}}", "style": "subheadline" },
+          { "type": "spacer" },
+          { "type": "text", "text": "{{item.value}}", "style": "subheadline" }
+        ]}
+      }
+    ]
+  },
+  "small": {
+    "type": "vstack", "spacing": 4, "align": "leading",
+    "children": [
+      { "type": "text", "text": "{{main.code}}", "style": "caption", "color": "secondary" },
+      { "type": "text", "text": "{{main.value}}", "style": "title" },
+      { "type": "text", "text": "{{change}}", "color": "{{changeColor}}", "style": "caption2", "if": "{{change}}" }
+    ]
+  }
+}

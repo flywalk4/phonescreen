@@ -3,6 +3,7 @@ import SwiftUI
 
 /// All pages at once, as live miniature tiles (pinch in to get here). Tap / click / spread a tile to open it.
 struct OverviewGrid: View {
+    @EnvironmentObject private var model: PhoneModel
     let pages: [PageInfo]
     let current: Int
     let open: (Int) -> Void
@@ -22,7 +23,8 @@ struct OverviewGrid: View {
                     LazyVGrid(columns: Array(repeating: GridItem(.fixed(tileWidth), spacing: spacing), count: columns),
                               spacing: spacing) {
                         ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in
-                            Tile(page: page, pageSize: pageSize, scale: scale, isCurrent: index == current)
+                            Tile(page: page, title: page.title(customNames: model.customNames),
+                                 pageSize: pageSize, scale: scale, isCurrent: index == current)
                                 .contentShape(Rectangle())
                                 .onTapGesture { open(index) }
                                 .pointerTarget { open(index) }
@@ -37,6 +39,7 @@ struct OverviewGrid: View {
 
 private struct Tile: View {
     let page: PageInfo
+    let title: String
     let pageSize: CGSize
     let scale: CGFloat
     let isCurrent: Bool
@@ -53,7 +56,7 @@ private struct Tile: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(isCurrent ? Color.white : Color.white.opacity(0.15), lineWidth: isCurrent ? 2 : 1))
-            Text(page.title).font(.caption2).foregroundStyle(isCurrent ? .primary : .secondary).lineLimit(1)
+            Text(title).font(.caption2).foregroundStyle(isCurrent ? .primary : .secondary).lineLimit(1)
         }
     }
 }

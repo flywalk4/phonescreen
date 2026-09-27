@@ -37,6 +37,14 @@ public enum Message: Equatable, Sendable {
     /// Phone → Mac: a page became visible; send fresh data for it now.
     case refresh(WidgetKind)
 
+    // JavaScript widgets (run on the Mac; the phone only draws their resolved UI)
+    /// Mac → phone: a widget's current UI (after every refresh).
+    case customWidget(CustomWidgetState)
+    /// Mac → phone: a widget was uninstalled.
+    case customWidgetRemoved(id: String)
+    /// Phone → Mac: a button in a widget was pressed.
+    case customAction(id: String, action: String)
+
     /// Mac → phone: tracks coming up.
     case musicQueue(MusicQueue)
     /// Mac → phone: system volume and AirPlay speakers.
@@ -77,6 +85,7 @@ extension Message: Codable {
     private enum Kind: String, Codable {
         case hello, ping, pong, pages, setPage, pageChanged, layout, nowPlaying, stats, mediaAction, command
         case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh, musicQueue, audio, music
+        case customWidget, customWidgetRemoved, customAction
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit, textFocus, keyText, key
         case pointerPinch, pointerSmartZoom
     }
@@ -107,6 +116,9 @@ extension Message: Codable {
         case .noteShowOnMac: self = .noteShowOnMac(id: try c.decode(String.self, forKey: .id))
         case .launcher: self = .launcher(try c.decode([LauncherItem].self, forKey: .list))
         case .refresh: self = .refresh(try c.decode(WidgetKind.self, forKey: .value))
+        case .customWidget: self = .customWidget(try c.decode(CustomWidgetState.self, forKey: .value))
+        case .customWidgetRemoved: self = .customWidgetRemoved(id: try c.decode(String.self, forKey: .id))
+        case .customAction: self = .customAction(id: try c.decode(String.self, forKey: .id), action: try c.decode(String.self, forKey: .text))
         case .musicQueue: self = .musicQueue(try c.decode(MusicQueue.self, forKey: .value))
         case .audio: self = .audio(try c.decode(AudioState.self, forKey: .value))
         case .music: self = .music(try c.decode(MusicCommand.self, forKey: .value))
@@ -151,6 +163,10 @@ extension Message: Codable {
         case .noteShowOnMac(let id): try c.encode(Kind.noteShowOnMac, forKey: .t); try c.encode(id, forKey: .id)
         case .launcher(let v): try c.encode(Kind.launcher, forKey: .t); try c.encode(v, forKey: .list)
         case .refresh(let v): try c.encode(Kind.refresh, forKey: .t); try c.encode(v, forKey: .value)
+        case .customWidget(let v): try c.encode(Kind.customWidget, forKey: .t); try c.encode(v, forKey: .value)
+        case .customWidgetRemoved(let id): try c.encode(Kind.customWidgetRemoved, forKey: .t); try c.encode(id, forKey: .id)
+        case .customAction(let id, let action):
+            try c.encode(Kind.customAction, forKey: .t); try c.encode(id, forKey: .id); try c.encode(action, forKey: .text)
         case .musicQueue(let v): try c.encode(Kind.musicQueue, forKey: .t); try c.encode(v, forKey: .value)
         case .audio(let v): try c.encode(Kind.audio, forKey: .t); try c.encode(v, forKey: .value)
         case .music(let v): try c.encode(Kind.music, forKey: .t); try c.encode(v, forKey: .value)

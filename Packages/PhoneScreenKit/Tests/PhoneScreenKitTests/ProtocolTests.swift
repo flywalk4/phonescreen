@@ -42,7 +42,7 @@ import Testing
         .hello(Hello(role: .phone, name: "iPhone", sessionId: UUID(),
                      screen: ScreenInfo(width: 393, height: 852, scale: 3), lowBandwidth: true)),
         .ping(t: 12.5), .pong(t: 12.5),
-        .pages(list: [PageInfo(.music), PageInfo(id: "d", layout: .trio, widgets: [.calendar, .weather, .music])], current: 0),
+        .pages(list: [PageInfo(.music), PageInfo(id: "d", layout: .trio, builtins: [.calendar, .weather, .music])], current: 0),
         .setPage(index: 2), .pageChanged(index: 1),
         .nowPlaying(NowPlaying(title: "Song", artist: "Artist", artwork: Data([1, 2, 3]), duration: 200,
                                elapsed: 10, playing: true, timestamp: Date(timeIntervalSince1970: 1_700_000_000))),

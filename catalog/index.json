@@ -1,0 +1,18 @@
+{
+  "widgets": [
+    {
+      "id": "com.flywalk4.rates",
+      "name": "Курсы валют",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Курсы валют к рублю (или другой валюте) по данным open.er-api.com, с графиком изменений.",
+      "symbol": "dollarsign.arrow.circlepath",
+      "path": "widgets/com.flywalk4.rates",
+      "files": {
+        "manifest.json": "ea38eebef225c1ca7c1ceaa35b543fc3552023cdbb32eb5ec45fed0760fc1443",
+        "view.json": "e52445472d52e74b192804ac8110b55ece585e458c238f6581e0f4903d17a21b",
+        "provider.js": "d1a30603250437f5ef2ef8f85c60dc1d4ee2886175c46a2a6d2a1bc93c1edb47"
+      }
+    }
+  ]
+}

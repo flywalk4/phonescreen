@@ -16,12 +16,12 @@ struct PageView: View {
             let widgets = page.visibleWidgets
             let sizes = WidgetSize.sizes(for: page.layout)
             let slot = { (i: Int) -> AnyView in
-                AnyView(Card(kind: widgets.indices.contains(i) ? widgets[i] : nil, size: sizes[i]))
+                AnyView(Card(ref: widgets.indices.contains(i) ? widgets[i] : nil, size: sizes[i]))
             }
             Group {
                 switch page.layout {
                 case .single:
-                    if let kind = widgets.first { WidgetView(kind: kind).environment(\.widgetSize, .full) }
+                    if let ref = widgets.first { WidgetView(ref: ref).environment(\.widgetSize, .full) }
                 case .split:
                     let layout = landscape ? AnyLayout(HStackLayout(spacing: 12)) : AnyLayout(VStackLayout(spacing: 12))
                     layout { slot(0); slot(1) }
@@ -46,14 +46,14 @@ struct PageView: View {
 }
 
 private struct Card: View {
-    let kind: WidgetKind?
+    let ref: WidgetRef?
     let size: WidgetSize
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 22, style: .continuous).fill(.white.opacity(0.07))
-            if let kind {
-                WidgetView(kind: kind)
+            if let ref {
+                WidgetView(ref: ref)
                     .environment(\.widgetSize, size)
                     .padding(14)
             } else {
@@ -65,17 +65,22 @@ private struct Card: View {
 }
 
 struct WidgetView: View {
-    let kind: WidgetKind
+    let ref: WidgetRef
 
     var body: some View {
-        switch kind {
-        case .music: MusicPage()
-        case .monitor: MonitorPage()
-        case .calendar: CalendarPage()
-        case .reminders: RemindersPage()
-        case .notes: NotesPage()
-        case .launcher: LauncherPage()
-        case .weather: WeatherPage()
+        switch ref {
+        case .builtin(let kind):
+            switch kind {
+            case .music: MusicPage()
+            case .monitor: MonitorPage()
+            case .calendar: CalendarPage()
+            case .reminders: RemindersPage()
+            case .notes: NotesPage()
+            case .launcher: LauncherPage()
+            case .weather: WeatherPage()
+            }
+        case .custom(let id):
+            CustomWidgetView(id: id)
         }
     }
 }

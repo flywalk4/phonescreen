@@ -53,7 +53,7 @@ final class AppModel: ObservableObject {
     /// Which Settings tab to show.
     @Published var settingsTab = SettingsTab.pages
 
-    enum SettingsTab: Hashable { case pages, arrangement }
+    enum SettingsTab: Hashable { case pages, widgets, arrangement }
 
     private static let pagesKey = "phonePages"
 
@@ -66,9 +66,13 @@ final class AppModel: ObservableObject {
         if let data = try? JSONEncoder().encode(pages) { UserDefaults.standard.set(data, forKey: pagesKey) }
     }
 
+    /// Built-in widgets on the current page.
     var currentWidgets: [WidgetKind] {
-        pages.indices.contains(currentPage) ? pages[currentPage].visibleWidgets : []
+        pages.indices.contains(currentPage) ? pages[currentPage].visibleWidgets.compactMap(\.builtin) : []
     }
+
+    /// Installed JavaScript widgets.
+    let widgets = WidgetManager()
 
     private let sessionId = UUID()
     let pool: ChannelPool
@@ -254,6 +258,8 @@ final class AppModel: ObservableObject {
             self?.sendLauncher()
         }
         launcher.refresh()
+        widgets.send = { [weak self] in self?.pool.send($0) }
+        widgets.start()
         // Notes change on other devices too; poll only while their page is on screen.
         notesTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
@@ -300,6 +306,8 @@ final class AppModel: ObservableObject {
             notes.showOnMac(id: id)
         case .command(let id):
             launcher.run(id)
+        case .customAction(let id, let action):
+            widgets.action(id, action)
         case .pointerExit(let along):
             pointerLeftPhone(along: along)
         case .textFocus(let focused):
@@ -321,6 +329,7 @@ final class AppModel: ObservableObject {
         pool.send(.pages(list: pages, current: currentPage))
         sendNowPlaying()
         sendLauncher()
+        widgets.sendAll()
         // Notes are fetched only when their page is shown: asking Notes launches the app.
         if currentWidgets.contains(.notes) { notes.refresh(force: true) }
     }

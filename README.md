@@ -27,6 +27,16 @@ iPhone как пристыкованный вспомогательный экр
 
 При первом открытии страниц iOS/macOS спросят доступ (календарь, напоминания, геопозиция, управление «Заметками»).
 
+## Свои виджеты (JavaScript)
+
+Логика виджета выполняется на Mac в песочнице JavaScriptCore (сеть — только на объявленные HTTPS-хосты, секреты — из Связки ключей), интерфейс — декларативный `view.json`, который телефон рисует нативно. Установка: Mac → «Виджеты…» (каталог с GitHub, из папки, папка разработки с автоперезагрузкой). Документация для авторов — [`catalog/README.md`](catalog/README.md), скилл для ИИ-агентов — [`skills/phonescreen-widget`](skills/phonescreen-widget/SKILL.md).
+
+```bash
+python3 scripts/validate-widget.py catalog/widgets/<id>   # статическая проверка
+PhoneScreen --widget-test catalog/widgets/<id>            # запуск в настоящей песочнице
+python3 scripts/build-catalog.py                          # пересобрать catalog/index.json
+```
+
 ## Структура
 
 - `Packages/PhoneScreenKit` — общий код: протокол (`Message`, кадры `[UInt32 BE длина][JSON]`), `ByteChannel`, `ChannelPool`.

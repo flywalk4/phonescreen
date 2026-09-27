@@ -1,0 +1,19 @@
+{
+  "full": {
+    "type": "vstack", "spacing": 12, "align": "leading",
+    "children": [
+      { "type": "text", "text": "{{title}}", "style": "title2" },
+      { "type": "text", "text": "{{value}}", "style": "largeTitle" },
+      { "type": "spacer" },
+      { "type": "button", "title": "Обновить", "symbol": "arrow.clockwise", "action": "reload" }
+    ]
+  },
+  "medium": {
+    "type": "vstack", "spacing": 6, "align": "leading",
+    "children": [
+      { "type": "text", "text": "{{title}}", "style": "headline", "lines": 1 },
+      { "type": "text", "text": "{{value}}", "style": "title" }
+    ]
+  },
+  "small": { "type": "text", "text": "{{value}}", "style": "title" }
+}

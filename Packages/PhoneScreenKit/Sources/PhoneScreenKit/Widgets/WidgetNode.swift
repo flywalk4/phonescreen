@@ -1,0 +1,215 @@
+import Foundation
+
+/// A resolved piece of a JavaScript widget's UI, as the phone draws it (natively, in SwiftUI).
+/// Built on the Mac from the widget's `view.json` template and its latest data; the phone never runs widget code.
+public indirect enum WidgetNode: Codable, Equatable, Sendable {
+    case vstack(spacing: Double?, align: String?, children: [WidgetNode])
+    case hstack(spacing: Double?, align: String?, children: [WidgetNode])
+    /// `style`: largeTitle, title, title2, title3, headline, body, callout, subheadline, footnote, caption, caption2.
+    case text(String, style: String?, color: String?, lines: Int?, align: String?)
+    /// An SF Symbol.
+    case symbol(String, color: String?, size: Double?)
+    /// Ring, value 0…1.
+    case gauge(value: Double, label: String?, color: String?)
+    /// Bar, value 0…1.
+    case progress(value: Double, color: String?)
+    /// Line chart of the values.
+    case chart(values: [Double], color: String?)
+    /// Calls the widget's `action(name)` on the Mac.
+    case button(title: String, symbol: String?, action: String)
+    case spacer
+    case divider
+}
+
+/// Everything the phone needs to show one installed JavaScript widget.
+public struct CustomWidgetState: Codable, Equatable, Sendable {
+    public var id: String
+    public var name: String
+    public var symbol: String
+    /// Resolved UI per size (`full`, `medium`, `small`); a missing size falls back to the next bigger one.
+    public var views: [WidgetSize: WidgetNode]
+    /// Shown instead of the UI when the widget failed (script error, network, missing secret…).
+    public var error: String?
+    public var updated: Date
+
+    public init(id: String, name: String, symbol: String, views: [WidgetSize: WidgetNode], error: String?, updated: Date) {
+        self.id = id
+        self.name = name
+        self.symbol = symbol
+        self.views = views
+        self.error = error
+        self.updated = updated
+    }
+
+    public func view(for size: WidgetSize) -> WidgetNode? {
+        switch size {
+        case .full: views[.full] ?? views[.medium] ?? views[.small]
+        case .medium: views[.medium] ?? views[.full] ?? views[.small]
+        case .small: views[.small] ?? views[.medium] ?? views[.full]
+        }
+    }
+}
+
+extension WidgetSize: CodingKeyRepresentable {}
+
+/// Turns a `view.json` template plus the data returned by `refresh()` into `WidgetNode`s.
+///
+/// Template nodes are JSON objects with a `"type"`; any string may contain `{{path}}` bindings
+/// (`"{{rate}}"` alone keeps the value's type — number, array — otherwise it's interpolated as text).
+/// Extras: `"if": "{{path}}"` drops the node when the value is falsy; `{"type": "list", "items": "{{rows}}",
+/// "template": {...}}` repeats a template with `item` / `index` bound. Unknown types are skipped, so newer
+/// templates degrade gracefully on older apps.
+public enum WidgetTemplate {
+    public struct Error: Swift.Error, Equatable, CustomStringConvertible {
+        public var description: String
+    }
+
+    public static let maxNodes = 500
+    public static let maxText = 2_000
+
+    public static func resolve(_ template: Any, data: Any) throws -> WidgetNode {
+        var budget = maxNodes
+        guard let node = try node(template, scope: ["$": data], budget: &budget) else {
+            throw Error(description: "Шаблон пустой")
+        }
+        return node
+    }
+
+    // MARK: - Nodes
+
+    private static func node(_ template: Any, scope: [String: Any], budget: inout Int) throws -> WidgetNode? {
+        guard let t = template as? [String: Any] else { throw Error(description: "Узел шаблона должен быть объектом") }
+        if let condition = t["if"], !truthy(value(condition, scope)) { return nil }
+        budget -= 1
+        guard budget >= 0 else { throw Error(description: "Слишком много элементов (больше \(maxNodes))") }
+
+        func str(_ key: String) -> String? { t[key].map { text(value($0, scope)) } }
+        func num(_ key: String) -> Double? { t[key].flatMap { number(value($0, scope)) } }
+        func children() throws -> [WidgetNode] {
+            try ((t["children"] as? [Any]) ?? []).compactMap { try node($0, scope: scope, budget: &budget) }
+        }
+
+        switch t["type"] as? String {
+        case "vstack":
+            return .vstack(spacing: num("spacing"), align: str("align"), children: try children())
+        case "hstack":
+            return .hstack(spacing: num("spacing"), align: str("align"), children: try children())
+        case "text":
+            return .text(String((str("text") ?? "").prefix(maxText)), style: str("style"), color: str("color"),
+                         lines: num("lines").map { Int($0) }, align: str("align"))
+        case "symbol":
+            return .symbol(str("name") ?? "questionmark", color: str("color"), size: num("size"))
+        case "gauge":
+            return .gauge(value: clamp01(num("value")), label: str("label"), color: str("color"))
+        case "progress":
+            return .progress(value: clamp01(num("value")), color: str("color"))
+        case "chart":
+            let values = (t["values"].map { value($0, scope) } as? [Any] ?? []).compactMap(number)
+            return .chart(values: Array(values.suffix(200)), color: str("color"))
+        case "button":
+            guard let action = t["action"] as? String else { throw Error(description: "У кнопки нет action") }
+            return .button(title: str("title") ?? "", symbol: str("symbol"), action: action)
+        case "spacer":
+            return .spacer
+        case "divider":
+            return .divider
+        case "list":
+            let items = t["items"].map { value($0, scope) } as? [Any] ?? []
+            guard let itemTemplate = t["template"] else { throw Error(description: "У списка нет template") }
+            var rows: [WidgetNode] = []
+            for (i, item) in items.enumerated() {
+                var inner = scope
+                inner["item"] = item
+                inner["index"] = i
+                if let row = try node(itemTemplate, scope: inner, budget: &budget) { rows.append(row) }
+            }
+            return .vstack(spacing: num("spacing") ?? 6, align: str("align") ?? "leading", children: rows)
+        default:
+            return nil // unknown or missing type: skip
+        }
+    }
+
+    // MARK: - Bindings
+
+    private static let whole = try! NSRegularExpression(pattern: #"^\s*\{\{\s*([^}]+?)\s*\}\}\s*$"#)
+    private static let inline = try! NSRegularExpression(pattern: #"\{\{\s*([^}]+?)\s*\}\}"#)
+
+    /// A template value with its bindings applied.
+    static func value(_ raw: Any, _ scope: [String: Any]) -> Any? {
+        guard let s = raw as? String else { return raw }
+        let ns = s as NSString
+        if let m = whole.firstMatch(in: s, range: NSRange(location: 0, length: ns.length)) {
+            return lookup(ns.substring(with: m.range(at: 1)), scope)
+        }
+        var result = ""
+        var last = 0
+        for m in inline.matches(in: s, range: NSRange(location: 0, length: ns.length)) {
+            result += ns.substring(with: NSRange(location: last, length: m.range.location - last))
+            result += text(lookup(ns.substring(with: m.range(at: 1)), scope))
+            last = m.range.location + m.range.length
+        }
+        result += ns.substring(from: last)
+        return result
+    }
+
+    /// `a.b.0.c`; `item` / `index` inside lists, everything else from the data.
+    static func lookup(_ path: String, _ scope: [String: Any]) -> Any? {
+        var parts = path.split(separator: ".").map(String.init)
+        guard let first = parts.first else { return nil }
+        var current: Any?
+        if first == "item" || first == "index" {
+            current = scope[first]
+            parts.removeFirst()
+        } else {
+            current = scope["$"]
+        }
+        for part in parts {
+            if let dict = current as? [String: Any] {
+                current = dict[part]
+            } else if let array = current as? [Any], let i = Int(part), array.indices.contains(i) {
+                current = array[i]
+            } else {
+                return nil
+            }
+        }
+        return current
+    }
+
+    static func text(_ v: Any?) -> String {
+        switch v {
+        case nil, is NSNull: return ""
+        case let s as String: return s
+        case let n as NSNumber:
+            if CFGetTypeID(n) == CFBooleanGetTypeID() { return n.boolValue ? "да" : "нет" }
+            let d = n.doubleValue
+            return d == d.rounded() && abs(d) < 1e15 ? String(Int64(d)) : String(d)
+        case let d as Double: return d == d.rounded() && abs(d) < 1e15 ? String(Int64(d)) : String(d)
+        case let i as Int: return String(i)
+        case let b as Bool: return b ? "да" : "нет"
+        default: return String(describing: v!)
+        }
+    }
+
+    static func number(_ v: Any?) -> Double? {
+        switch v {
+        case let n as NSNumber: return n.doubleValue
+        case let d as Double: return d
+        case let i as Int: return Double(i)
+        case let s as String: return Double(s)
+        default: return nil
+        }
+    }
+
+    static func truthy(_ v: Any?) -> Bool {
+        switch v {
+        case nil, is NSNull: return false
+        case let n as NSNumber: return n.doubleValue != 0
+        case let b as Bool: return b
+        case let s as String: return !s.isEmpty && s != "false" && s != "0"
+        case let a as [Any]: return !a.isEmpty
+        default: return true
+        }
+    }
+
+    private static func clamp01(_ v: Double?) -> Double { min(max(v ?? 0, 0), 1) }
+}

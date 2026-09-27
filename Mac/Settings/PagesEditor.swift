@@ -23,7 +23,7 @@ struct PagesEditor: View {
                     HStack(spacing: 10) {
                         LayoutGlyph(layout: page.layout).frame(width: 22, height: 30)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(page.title).lineLimit(1)
+                            Text(page.title(customNames: model.widgets.names)).lineLimit(1)
                             Text(index < 9 ? "Страница \(index + 1) · ⌃⌥\(index + 1)" : "Страница \(index + 1)")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
@@ -54,8 +54,8 @@ struct PagesEditor: View {
 
     private func add() {
         let used = Set(model.pages.flatMap(\.widgets))
-        let kind = WidgetKind.allCases.first { !used.contains($0) } ?? .music
-        let page = PageInfo(layout: .single, widgets: [kind])
+        let kind = WidgetKind.allCases.first { !used.contains(.builtin($0)) } ?? .music
+        let page = PageInfo(.music).with(id: UUID().uuidString, widgets: [.builtin(kind)])
         let at = selectedIndex.map { $0 + 1 } ?? model.pages.count
         model.pages.insert(page, at: at)
         selection = page.id
@@ -75,14 +75,15 @@ struct PagesEditor: View {
         if let index = selectedIndex {
             let page = model.pages[index]
             VStack(alignment: .leading, spacing: 18) {
-                Text(page.title).font(.title2.weight(.semibold)).lineLimit(1)
+                Text(page.title(customNames: model.widgets.names)).font(.title2.weight(.semibold)).lineLimit(1)
                 Picker("Раскладка", selection: Binding(get: { page.layout }, set: { model.pages[index].setLayout($0) })) {
                     ForEach(PageLayout.allCases, id: \.self) { layout in
                         Text(layout.title).tag(layout)
                     }
                 }
                 .pickerStyle(.segmented)
-                PagePreview(page: page, landscape: model.arrangement.orientation.isLandscape) { slot, kind in
+                PagePreview(page: page, landscape: model.arrangement.orientation.isLandscape,
+                            custom: model.widgets.installed.map { ($0.id, $0.manifest.name, $0.manifest.symbol) }) { slot, kind in
                     var widgets = model.pages[index].widgets
                     while widgets.count <= slot { widgets.append(kind) }
                     widgets[slot] = kind
@@ -104,7 +105,9 @@ struct PagesEditor: View {
 private struct PagePreview: View {
     let page: PageInfo
     let landscape: Bool
-    let choose: (Int, WidgetKind) -> Void
+    /// Installed JavaScript widgets: id, name, symbol.
+    let custom: [(String, String, String?)]
+    let choose: (Int, WidgetRef) -> Void
 
     var body: some View {
         GeometryReader { geo in
@@ -145,15 +148,24 @@ private struct PagePreview: View {
     }
 
     private func slot(_ i: Int) -> some View {
-        let kind = page.widgets.indices.contains(i) ? page.widgets[i] : nil
+        let ref = page.widgets.indices.contains(i) ? page.widgets[i] : nil
+        let customInfo = ref?.customID.flatMap { id in custom.first { $0.0 == id } }
+        let symbol = ref?.builtin?.symbol ?? customInfo?.2 ?? (ref == nil ? "plus" : "puzzlepiece.extension")
+        let title = ref?.builtin?.title ?? customInfo?.1 ?? ref?.title() ?? "Пусто"
         return Menu {
             ForEach(WidgetKind.allCases, id: \.self) { option in
-                Button { choose(i, option) } label: { Label(option.title, systemImage: option.symbol) }
+                Button { choose(i, .builtin(option)) } label: { Label(option.title, systemImage: option.symbol) }
+            }
+            if !custom.isEmpty {
+                Divider()
+                ForEach(custom, id: \.0) { id, name, symbol in
+                    Button { choose(i, .custom(id)) } label: { Label(name, systemImage: symbol ?? "puzzlepiece.extension") }
+                }
             }
         } label: {
             VStack(spacing: 6) {
-                Image(systemName: kind?.symbol ?? "plus").font(.title2)
-                Text(kind?.title ?? "Пусто").font(.caption).lineLimit(1)
+                Image(systemName: symbol).font(.title2)
+                Text(title).font(.caption).lineLimit(1)
             }
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -199,6 +211,7 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: $model.settingsTab) {
             PagesEditor().tabItem { Label("Страницы", systemImage: "rectangle.grid.2x2") }.tag(AppModel.SettingsTab.pages)
+            WidgetsSettings(widgets: model.widgets).tabItem { Label("Виджеты", systemImage: "puzzlepiece.extension") }.tag(AppModel.SettingsTab.widgets)
             ArrangementView().tabItem { Label("Расположение", systemImage: "iphone.gen3") }.tag(AppModel.SettingsTab.arrangement)
         }
         .frame(minWidth: 680, minHeight: 520)

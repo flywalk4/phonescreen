@@ -21,6 +21,9 @@ final class PhoneModel: ObservableObject {
     @Published private(set) var notes: [NoteSummary]?
     @Published private(set) var noteBodies: [String: String] = [:]
     @Published private(set) var launcher: [LauncherItem] = []
+    /// Installed JavaScript widgets, as last rendered on the Mac.
+    @Published private(set) var customWidgets: [String: CustomWidgetState] = [:]
+    var customNames: [String: String] { customWidgets.mapValues(\.name) }
     @Published private(set) var stats: SystemStats?
     @Published private(set) var statsHistory: [SystemStats] = []
     /// How the phone lies next to the Mac. Remembered, so the UI is right before the Mac reconnects.
@@ -81,12 +84,30 @@ final class PhoneModel: ObservableObject {
         // `--demo [--page N]`: all pages without a Mac, for layout checks in the Simulator.
         let args = ProcessInfo.processInfo.arguments
         if args.contains("--demo") {
-            pages = [PageInfo(id: "grid", layout: .grid, widgets: [.music, .weather, .calendar, .monitor]),
-                     PageInfo(id: "trio", layout: .trio, widgets: [.music, .notes, .launcher]),
-                     PageInfo(id: "split", layout: .split, widgets: [.reminders, .weather])]
+            pages = [PageInfo(id: "grid", layout: .grid, builtins: [.music, .weather, .calendar, .monitor]),
+                     PageInfo(id: "trio", layout: .trio, builtins: [.music, .notes, .launcher]),
+                     PageInfo(id: "split", layout: .split, builtins: [.reminders, .weather])]
                 + WidgetKind.allCases.map { PageInfo($0) }
             if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]) { currentPage = n }
             if args.contains("--overview") { overview = true }
+            let t = { (s: String, st: String?) in WidgetNode.text(s, style: st, color: nil, lines: nil, align: nil) }
+            let row = { (c: String, v: String) in WidgetNode.hstack(spacing: nil, align: nil, children: [t(c, "headline"), .spacer, t(v, nil)]) }
+            customWidgets["com.flywalk4.rates"] = CustomWidgetState(
+                id: "com.flywalk4.rates", name: "Курсы валют", symbol: "dollarsign.arrow.circlepath",
+                views: [.full: .vstack(spacing: 14, align: "leading", children: [
+                            .hstack(spacing: 8, align: nil, children: [.symbol("dollarsign.arrow.circlepath", color: "green", size: nil),
+                                                                       t("Курсы валют", "title2"), .spacer,
+                                                                       .button(title: "Обновить", symbol: "arrow.clockwise", action: "reload")]),
+                            t("1 USD = 84.27 RUB", "largeTitle"),
+                            .text("▲ 0.35 за день", style: "headline", color: "green", lines: nil, align: nil),
+                            .chart(values: [83.1, 83.4, 83.9, 83.7, 84.0, 84.27], color: "green"), .divider,
+                            .vstack(spacing: 10, align: "leading", children: [row("USD", "84.27 RUB"), row("EUR", "96.08 RUB"), row("CNY", "12.63 RUB")])]),
+                        .small: .vstack(spacing: 4, align: "leading", children: [
+                            .text("USD", style: "caption", color: "secondary", lines: nil, align: nil), t("84.27", "title"),
+                            .text("▲ 0.35", style: "caption2", color: "green", lines: nil, align: nil)])],
+                error: nil, updated: Date())
+            pages.insert(PageInfo(id: "custom", layout: .grid, widgets: [.custom("com.flywalk4.rates"), .builtin(.weather), .builtin(.music), .builtin(.monitor)]), at: 0)
+            pages.insert(PageInfo(id: "custom-full", layout: .single, widgets: [.custom("com.flywalk4.rates")]), at: 0)
             musicQueue = MusicQueue(tracks: [QueueTrack(title: "Звезда по имени Солнце", artist: "Кино", duration: 225),
                                              QueueTrack(title: "Пачка сигарет", artist: "Кино", duration: 268)], note: "Далее в плейлисте")
             audio = AudioState(systemVolume: 0.45, muted: false,
@@ -125,7 +146,7 @@ final class PhoneModel: ObservableObject {
     /// Notes are fetched through the Mac only while their page is on screen (asking Notes launches the app).
     private func requestDataIfNeeded(for index: Int) {
         guard pages.indices.contains(index) else { return }
-        for kind in pages[index].visibleWidgets where kind == .notes || kind == .launcher { refresh(kind) }
+        for kind in pages[index].visibleWidgets.compactMap(\.builtin) where kind == .notes || kind == .launcher { refresh(kind) }
     }
 
     func perform(_ action: MediaAction) {
@@ -172,6 +193,7 @@ final class PhoneModel: ObservableObject {
     func createNote(_ text: String) { pool.send(.noteCreate(text: text)) }
     func showNoteOnMac(_ id: String) { pool.send(.noteShowOnMac(id: id)) }
     func run(_ item: LauncherItem) { pool.send(.command(id: item.id)) }
+    func customAction(_ id: String, _ action: String) { pool.send(.customAction(id: id, action: action)) }
 
     private func handle(_ message: Message) {
         switch message {
@@ -216,6 +238,10 @@ final class PhoneModel: ObservableObject {
             noteBodies[id] = text
         case .launcher(let items):
             launcher = items
+        case .customWidget(let state):
+            customWidgets[state.id] = state
+        case .customWidgetRemoved(let id):
+            customWidgets[id] = nil
         case .stats(let value):
             stats = value
             statsHistory = Array((statsHistory + [value]).suffix(60))

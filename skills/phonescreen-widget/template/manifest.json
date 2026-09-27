@@ -1,0 +1,13 @@
+{
+  "id": "com.author.example",
+  "name": "Пример",
+  "version": "1.0.0",
+  "author": "author",
+  "description": "Что показывает виджет — одной фразой.",
+  "symbol": "sparkles",
+  "refresh": 300,
+  "permissions": {
+    "network": ["api.example.com"]
+  },
+  "settings": []
+}
