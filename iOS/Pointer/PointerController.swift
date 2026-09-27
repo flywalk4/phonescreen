@@ -39,6 +39,9 @@ final class PointerController: ObservableObject {
     private var model = PhonePointer(size: CGSize(width: 393, height: 852), macSide: .left)
     private var targets: [UUID: (frame: CGRect, action: () -> Void)] = [:]
     private var scrollers: [UUID: (frame: CGRect, scroll: (CGFloat) -> Void)] = [:]
+    /// Controls that follow a pressed pointer (sliders): get the horizontal position 0…1 within their frame.
+    private var draggers: [UUID: (frame: CGRect, drag: (Double) -> Void)] = [:]
+    private var activeDrag: UUID?
     private enum Axis { case horizontal, vertical }
     /// Locked on the first real movement of a trackpad gesture, kept for its momentum.
     private var gestureAxis: Axis?
@@ -80,14 +83,30 @@ final class PointerController: ObservableObject {
             return
         }
         layerView?.move(to: model.position)
-        updateHover()
+        if let id = activeDrag { drag(id) } else { updateHover() }
+    }
+
+    private func drag(_ id: UUID) {
+        guard let d = draggers[id], d.frame.width > 0 else { return }
+        d.drag(min(max((model.position.x - d.frame.minX) / d.frame.width, 0), 1))
     }
 
     func button(_ button: PointerButton, down: Bool) {
         guard isVisible, button == .left else { return }
         if down {
+            if let id = draggers.filter({ $0.value.frame.contains(model.position) }).first?.key {
+                activeDrag = id
+                drag(id)
+                layerView?.setPressed(true)
+                return
+            }
             pressed = hit(model.position)
         } else {
+            if activeDrag != nil {
+                activeDrag = nil
+                layerView?.setPressed(false)
+                return
+            }
             // Like a real button: fires when released over the same control it was pressed on.
             if let id = pressed, hit(model.position) == id { targets[id]?.action() }
             if pressed == nil, hit(model.position) == nil { onEmptyClick?() }
@@ -188,11 +207,17 @@ final class PointerController: ObservableObject {
     func unregister(_ id: UUID) {
         targets[id] = nil
         scrollers[id] = nil
+        draggers[id] = nil
+        if activeDrag == id { activeDrag = nil }
         if hovered == id { hovered = nil }
     }
 
     func registerScroller(_ id: UUID, frame: CGRect, scroll: @escaping (CGFloat) -> Void) {
         scrollers[id] = (frame, scroll)
+    }
+
+    func registerDragger(_ id: UUID, frame: CGRect, drag: @escaping (Double) -> Void) {
+        draggers[id] = (frame, drag)
     }
 
     private func scroller(at point: CGPoint) -> UUID? {
@@ -284,7 +309,39 @@ struct PointerScrollable: ViewModifier {
     }
 }
 
+/// A slider the Mac pointer can press-and-drag, and scroll over (two fingers / wheel) to nudge.
+struct PointerDraggable: ViewModifier {
+    @EnvironmentObject private var pointer: PointerController
+    @Environment(\.pointerInteractive) private var interactive
+    @State private var id = UUID()
+    let value: Double
+    let onChange: (Double) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .background(GeometryReader { geo in
+                let frame = geo.frame(in: .named(pointerSpace))
+                Color.clear
+                    .onAppear { register(frame) }
+                    .onChange(of: frame) { _, new in register(new) }
+                    .onChange(of: value) { register(frame) }
+            })
+            .onDisappear { pointer.unregister(id) }
+    }
+
+    private func register(_ frame: CGRect) {
+        guard interactive else { return }
+        pointer.registerDragger(id, frame: frame, drag: onChange)
+        // Scrolling up over the slider turns it up (natural scrolling: fingers up = negative dy).
+        pointer.registerScroller(id, frame: frame) { [value] dy in onChange(min(max(value - dy / 300, 0), 1)) }
+    }
+}
+
 extension View {
+    func pointerDraggable(value: Double, onChange: @escaping (Double) -> Void) -> some View {
+        modifier(PointerDraggable(value: value, onChange: onChange))
+    }
+
     func pointerTarget(highlight: Bool = true, action: @escaping () -> Void) -> some View {
         modifier(PointerTarget(highlight: highlight, action: action))
     }

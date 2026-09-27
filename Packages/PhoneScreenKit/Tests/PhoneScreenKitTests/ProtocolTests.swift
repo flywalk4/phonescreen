@@ -61,6 +61,12 @@ import Testing
         .refresh(.notes),
         .textFocus(true), .keyText("Привет, мир"), .key(.deleteWordBackward),
         .pointerPinch(magnification: -0.12, phase: .changed), .pointerSmartZoom,
+        .musicQueue(MusicQueue(tracks: [QueueTrack(title: "Звезда по имени Солнце", artist: "Кино", duration: 225)],
+                               note: "Далее в плейлисте")),
+        .audio(AudioState(systemVolume: 0.4, muted: false,
+                          airPlay: [AirPlayDevice(name: "Колонки MacBook Pro", kind: "computer", selected: true)])),
+        .music(.setPlayerVolume(0.7)), .music(.seek(61.5)), .music(.cycleRepeat), .music(.playQueueItem(2)),
+        .music(.setAirPlay(["HomePod", "Колонки MacBook Pro"])),
     ]
 
     @Test(arguments: all) func roundTrip(_ message: Message) throws {

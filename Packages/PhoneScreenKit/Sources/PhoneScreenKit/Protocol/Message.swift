@@ -37,6 +37,13 @@ public enum Message: Equatable, Sendable {
     /// Phone → Mac: a page became visible; send fresh data for it now.
     case refresh(WidgetKind)
 
+    /// Mac → phone: tracks coming up.
+    case musicQueue(MusicQueue)
+    /// Mac → phone: system volume and AirPlay speakers.
+    case audio(AudioState)
+    /// Phone → Mac: volume, seek, shuffle, repeat, like, queue, AirPlay.
+    case music(MusicCommand)
+
     // Actions (phone → Mac)
     case mediaAction(MediaAction)
     case command(id: String)
@@ -69,7 +76,7 @@ public enum Message: Equatable, Sendable {
 extension Message: Codable {
     private enum Kind: String, Codable {
         case hello, ping, pong, pages, setPage, pageChanged, layout, nowPlaying, stats, mediaAction, command
-        case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh
+        case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh, musicQueue, audio, music
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit, textFocus, keyText, key
         case pointerPinch, pointerSmartZoom
     }
@@ -100,6 +107,9 @@ extension Message: Codable {
         case .noteShowOnMac: self = .noteShowOnMac(id: try c.decode(String.self, forKey: .id))
         case .launcher: self = .launcher(try c.decode([LauncherItem].self, forKey: .list))
         case .refresh: self = .refresh(try c.decode(WidgetKind.self, forKey: .value))
+        case .musicQueue: self = .musicQueue(try c.decode(MusicQueue.self, forKey: .value))
+        case .audio: self = .audio(try c.decode(AudioState.self, forKey: .value))
+        case .music: self = .music(try c.decode(MusicCommand.self, forKey: .value))
         case .pointerEnter: self = .pointerEnter(along: try c.decode(Double.self, forKey: .along))
         case .pointerDelta: self = .pointerDelta(dx: try c.decode(Double.self, forKey: .dx),
                                                  dy: try c.decode(Double.self, forKey: .dy))
@@ -141,6 +151,9 @@ extension Message: Codable {
         case .noteShowOnMac(let id): try c.encode(Kind.noteShowOnMac, forKey: .t); try c.encode(id, forKey: .id)
         case .launcher(let v): try c.encode(Kind.launcher, forKey: .t); try c.encode(v, forKey: .list)
         case .refresh(let v): try c.encode(Kind.refresh, forKey: .t); try c.encode(v, forKey: .value)
+        case .musicQueue(let v): try c.encode(Kind.musicQueue, forKey: .t); try c.encode(v, forKey: .value)
+        case .audio(let v): try c.encode(Kind.audio, forKey: .t); try c.encode(v, forKey: .value)
+        case .music(let v): try c.encode(Kind.music, forKey: .t); try c.encode(v, forKey: .value)
         case .pointerEnter(let a): try c.encode(Kind.pointerEnter, forKey: .t); try c.encode(a, forKey: .along)
         case .pointerDelta(let dx, let dy):
             try c.encode(Kind.pointerDelta, forKey: .t); try c.encode(dx, forKey: .dx); try c.encode(dy, forKey: .dy)

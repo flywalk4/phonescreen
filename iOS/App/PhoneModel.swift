@@ -9,13 +9,15 @@ final class PhoneModel: ObservableObject {
     @Published var currentPage = 0
     /// All pages as tiles (pinch in on the phone or the trackpad).
     @Published var overview = false
-    @Published private(set) var nowPlaying: NowPlaying? {
+    @Published var nowPlaying: NowPlaying? {
         didSet {
             // Decode the cover once per change, not on every render of the music page.
             if nowPlaying?.artwork != oldValue?.artwork { artwork = nowPlaying?.artwork.flatMap(UIImage.init(data:)) }
         }
     }
     @Published private(set) var artwork: UIImage?
+    @Published private(set) var musicQueue: MusicQueue?
+    @Published var audio: AudioState?
     @Published private(set) var notes: [NoteSummary]?
     @Published private(set) var noteBodies: [String: String] = [:]
     @Published private(set) var launcher: [LauncherItem] = []
@@ -82,7 +84,13 @@ final class PhoneModel: ObservableObject {
                 + WidgetKind.allCases.map { PageInfo($0) }
             if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]) { currentPage = n }
             if args.contains("--overview") { overview = true }
+            musicQueue = MusicQueue(tracks: [QueueTrack(title: "Звезда по имени Солнце", artist: "Кино", duration: 225),
+                                             QueueTrack(title: "Пачка сигарет", artist: "Кино", duration: 268)], note: "Далее в плейлисте")
+            audio = AudioState(systemVolume: 0.45, muted: false,
+                               airPlay: [AirPlayDevice(name: "Колонки MacBook Pro", kind: "computer", selected: true),
+                                         AirPlayDevice(name: "HomePod", kind: "HomePod", selected: false)])
             nowPlaying = NowPlaying(title: "Тем кто с нами", artist: "Кино", album: "Группа крови", duration: 240, elapsed: 70, playing: true)
+            nowPlaying?.player = "Music"; nowPlaying?.volume = 0.7; nowPlaying?.shuffle = true; nowPlaying?.repeatMode = "all"; nowPlaying?.liked = true
             notes = [NoteSummary(id: "1", title: "Покупки", snippet: "молоко, хлеб, кофе", folder: "Заметки", modified: Date().addingTimeInterval(-600)),
                      NoteSummary(id: "2", title: "Идеи для PhoneScreen", snippet: "дашборд 2×2, клавиатура на телефон", folder: "Проекты", modified: Date().addingTimeInterval(-86_400))]
             launcher = [LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock.fill"),
@@ -119,6 +127,40 @@ final class PhoneModel: ObservableObject {
 
     func perform(_ action: MediaAction) {
         pool.send(.mediaAction(action))
+    }
+
+    func music(_ command: MusicCommand) {
+        // Optimistic: sliders must not jump back while the Mac catches up.
+        switch command {
+        case .setPlayerVolume(let v): nowPlaying?.volume = v
+        case .setSystemVolume(let v): audio?.systemVolume = v
+        case .seek(let t): nowPlaying?.elapsed = t; nowPlaying?.timestamp = Date()
+        default: break
+        }
+        switch command {
+        case .setPlayerVolume, .setSystemVolume, .seek:
+            // Sliders fire 60–120 times a second and each value is an AppleScript call on the Mac:
+            // send at most every 80 ms, and always the latest value.
+            throttledMusic = command
+            guard !musicThrottleScheduled else { return }
+            musicThrottleScheduled = true
+            if Date().timeIntervalSince(lastThrottledSend) > 0.08 { flushThrottledMusic() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { [weak self] in self?.flushThrottledMusic() }
+        default:
+            pool.send(.music(command))
+        }
+    }
+
+    private var throttledMusic: MusicCommand?
+    private var musicThrottleScheduled = false
+    private var lastThrottledSend = Date.distantPast
+
+    private func flushThrottledMusic() {
+        musicThrottleScheduled = false
+        guard let command = throttledMusic else { return }
+        throttledMusic = nil
+        lastThrottledSend = Date()
+        pool.send(.music(command))
     }
 
     /// A page showing Mac-provided data appeared: ask for fresh data.
@@ -161,6 +203,10 @@ final class PhoneModel: ObservableObject {
             keyboard.press(key)
         case .nowPlaying(let value):
             nowPlaying = value
+        case .musicQueue(let q):
+            musicQueue = q
+        case .audio(let a):
+            audio = a
         case .notes(let list):
             notes = list
         case .noteBody(let id, let text):

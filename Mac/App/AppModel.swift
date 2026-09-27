@@ -81,6 +81,7 @@ final class AppModel: ObservableObject {
     private let launcher = LauncherProvider()
     private var launcherItems: [LauncherItem] = []
     private var notesTimer: Timer?
+    private var musicExtrasTimer: Timer?
 
     init() {
         let sessionId = self.sessionId
@@ -208,6 +209,15 @@ final class AppModel: ObservableObject {
             self?.sendNowPlaying()
         }
         music.start()
+        music.onQueue = { [weak self] q in self?.pool.send(.musicQueue(q)) }
+        music.onAudio = { [weak self] a in self?.pool.send(.audio(a)) }
+        // Queue, system volume and AirPlay are polled only while a music widget is on screen.
+        musicExtrasTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, self.currentWidgets.contains(.music), self.status.active != nil else { return }
+                self.music.refreshExtras()
+            }
+        }
 
         stats.onSample = { [weak self] sample in
             // Always sent (tiny, 1 Hz), so the phone's charts already hold the last minute when shown.
@@ -292,6 +302,8 @@ final class AppModel: ObservableObject {
         case .textFocus(let focused):
             pointerCapture.phoneTextFocus = focused
             isTypingOnPhone = focused
+        case .music(let command):
+            music.perform(command)
         case .mediaAction(let action):
             Self.log.info("mediaAction \(action.rawValue, privacy: .public)")
             music.perform(action)

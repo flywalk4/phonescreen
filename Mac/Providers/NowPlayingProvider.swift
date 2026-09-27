@@ -31,10 +31,16 @@ final class NowPlayingProvider: @unchecked Sendable {
         var position: Double
         var trackID: String
         var artworkURL: String?
+        var volume: Double
+        var shuffle: Bool
+        var repeatMode: String
+        var liked: Bool?
     }
 
     /// Called on the main thread.
     var onChange: (@MainActor (NowPlaying?) -> Void)?
+    var onQueue: (@MainActor (MusicQueue) -> Void)?
+    var onAudio: (@MainActor (AudioState) -> Void)?
 
     // Everything below is confined to `queue`.
     private let queue = DispatchQueue(label: "phonescreen.nowplaying", qos: .utility)
@@ -45,6 +51,9 @@ final class NowPlayingProvider: @unchecked Sendable {
     private var artwork: Data?
     /// Compiled once: compiling is a good part of each run's cost.
     private var compiled: [String: NSAppleScript] = [:]
+    private var queueTrackID: String?
+    private var lastQueue: MusicQueue?
+    private var lastAudio: AudioState?
 
     func start() {
         queue.async { [self] in
@@ -73,6 +82,149 @@ final class NowPlayingProvider: @unchecked Sendable {
         queue.asyncAfter(deadline: .now() + 0.15) { [weak self] in self?.poll() }
     }
 
+    // MARK: - Extras: queue, system volume, AirPlay (polled only while a music widget is on screen)
+
+    func refreshExtras() {
+        queue.async { [self] in
+            fetchAudio()
+            if let current, "\(current.title)|\(current.artist)" != queueTrackID || Date().timeIntervalSince(lastQueueFetch) > 15 {
+                queueTrackID = "\(current.title)|\(current.artist)"
+                fetchQueue()
+            }
+        }
+    }
+
+    private var lastQueueFetch = Date.distantPast
+
+    func perform(_ command: MusicCommand) {
+        queue.async { [self] in
+            let player = (activePlayer ?? runningPlayers().first)?.rawValue ?? "Music"
+            switch command {
+            case .setPlayerVolume(let v):
+                run("-- nocache\ntell application \"\(player)\" to set sound volume to \(Int((v * 100).rounded()))")
+            case .setSystemVolume(let v):
+                run("-- nocache\nset volume output volume \(Int((v * 100).rounded()))")
+            case .toggleMute:
+                run("set volume output muted (not (output muted of (get volume settings)))")
+            case .seek(let seconds):
+                run("-- nocache\ntell application \"\(player)\" to set player position to \(seconds)")
+            case .toggleShuffle:
+                run(player == "Spotify" ? "tell application \"Spotify\" to set shuffling to not shuffling"
+                                        : "tell application \"Music\" to set shuffle enabled to not shuffle enabled")
+            case .cycleRepeat:
+                if player == "Spotify" {
+                    run("tell application \"Spotify\" to set repeating to not repeating")
+                } else {
+                    run("""
+                        tell application "Music"
+                            if song repeat is off then
+                                set song repeat to all
+                            else if song repeat is all then
+                                set song repeat to one
+                            else
+                                set song repeat to off
+                            end if
+                        end tell
+                        """)
+                }
+            case .toggleLike:
+                run("""
+                    tell application "Music"
+                        try
+                            set favorited of current track to not (favorited of current track)
+                        on error
+                            set loved of current track to not (loved of current track)
+                        end try
+                    end tell
+                    """)
+            case .playQueueItem(let n):
+                guard player == "Music" else { break }
+                run("-- nocache\ntell application \"Music\" to play track ((index of current track) + \(n + 1)) of current playlist")
+                queueTrackID = nil
+            case .setAirPlay(let names):
+                let list = names.map(AppleScriptRunner.literal).joined(separator: ", ")
+                run("""
+                    -- nocache
+                    tell application "Music"
+                        set targets to {}
+                        repeat with d in (every AirPlay device)
+                            if name of d is in {\(list)} then set end of targets to contents of d
+                        end repeat
+                        if targets is not {} then set current AirPlay devices to targets
+                    end tell
+                    """)
+            }
+            queue.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.poll()
+                self?.fetchAudio()
+                if case .playQueueItem = command { self?.fetchQueue() }
+            }
+        }
+    }
+
+    private func fetchAudio() {
+        let settings = run("return {output volume of (get volume settings), output muted of (get volume settings)}")
+        var devices: [AirPlayDevice] = []
+        if runningPlayers().contains(.music), let list = run("""
+            tell application "Music"
+                set out to {}
+                repeat with d in (every AirPlay device)
+                    set end of out to {name of d, (kind of d) as text, selected of d}
+                end repeat
+                return out
+            end tell
+            """) {
+            devices = list.listItems.compactMap { item in
+                guard item.numberOfItems >= 3, let name = item.atIndex(1)?.stringValue else { return nil }
+                return AirPlayDevice(name: name, kind: item.atIndex(2)?.stringValue ?? "", selected: item.atIndex(3)?.booleanValue ?? false)
+            }
+        }
+        let state = AudioState(systemVolume: (settings?.atIndex(1)?.doubleValue ?? 0) / 100,
+                               muted: settings?.atIndex(2)?.booleanValue ?? false, airPlay: devices)
+        guard state != lastAudio else { return }
+        lastAudio = state
+        DispatchQueue.main.async { [onAudio] in MainActor.assumeIsolated { onAudio?(state) } }
+    }
+
+    private func fetchQueue() {
+        lastQueueFetch = Date()
+        let result: MusicQueue
+        if activePlayer == .spotify {
+            result = MusicQueue(tracks: [], note: "Spotify не даёт скриптам свою очередь")
+        } else if let list = run("""
+            tell application "Music"
+                if player state is stopped then return {}
+                set out to {}
+                try
+                    set pl to current playlist
+                    set i to index of current track
+                    set n to count of tracks of pl
+                    set lastIndex to i + 20
+                    if lastIndex > n then set lastIndex to n
+                    repeat with k from (i + 1) to lastIndex
+                        set t to track k of pl
+                        set end of out to {name of t, artist of t, duration of t}
+                    end repeat
+                end try
+                return out
+            end tell
+            """) {
+            let tracks = list.listItems.compactMap { item -> QueueTrack? in
+                guard item.numberOfItems >= 3 else { return nil }
+                return QueueTrack(title: item.atIndex(1)?.stringValue ?? "", artist: item.atIndex(2)?.stringValue ?? "",
+                                  duration: item.atIndex(3)?.doubleValue)
+            }
+            let shuffled = current?.shuffle == true
+            result = MusicQueue(tracks: tracks, note: tracks.isEmpty ? "Дальше ничего нет"
+                                : shuffled ? "Далее в плейлисте · перемешивание может изменить порядок" : "Далее в плейлисте")
+        } else {
+            result = MusicQueue(tracks: [], note: nil)
+        }
+        guard result != lastQueue else { return }
+        lastQueue = result
+        DispatchQueue.main.async { [onQueue] in MainActor.assumeIsolated { onQueue?(result) } }
+    }
+
     // MARK: - Polling
 
     private func runningPlayers() -> [Player] {
@@ -94,9 +246,15 @@ final class NowPlayingProvider: @unchecked Sendable {
             artwork = nil
             loadArtwork(for: s)
         }
-        publish(NowPlaying(title: s.title, artist: s.artist, album: s.album.isEmpty ? nil : s.album,
-                           artwork: artwork, duration: s.duration > 0 ? s.duration : nil,
-                           elapsed: s.position, playing: s.state == "playing"))
+        var value = NowPlaying(title: s.title, artist: s.artist, album: s.album.isEmpty ? nil : s.album,
+                               artwork: artwork, duration: s.duration > 0 ? s.duration : nil,
+                               elapsed: s.position, playing: s.state == "playing")
+        value.player = s.player.rawValue
+        value.volume = s.volume / 100
+        value.shuffle = s.shuffle
+        value.repeatMode = s.repeatMode
+        value.liked = s.liked
+        publish(value)
     }
 
     private func publish(_ value: NowPlaying?) {
@@ -121,23 +279,38 @@ final class NowPlayingProvider: @unchecked Sendable {
             tell application "Music"
                 if player state is stopped then return {"stopped"}
                 set t to current track
-                return {player state as text, name of t, artist of t, album of t, duration of t, player position, persistent ID of t, ""}
+                set fav to missing value
+                try
+                    set fav to favorited of t
+                on error
+                    try
+                        set fav to loved of t
+                    end try
+                end try
+                return {player state as text, name of t, artist of t, album of t, duration of t, player position, persistent ID of t, "", sound volume, shuffle enabled, song repeat as text, fav}
             end tell
             """
         case .spotify: """
             tell application "Spotify"
                 if player state is stopped then return {"stopped"}
                 set t to current track
-                return {player state as text, name of t, artist of t, album of t, (duration of t) / 1000, player position, id of t, artwork url of t}
+                set rep to "off"
+                if repeating then set rep to "all"
+                return {player state as text, name of t, artist of t, album of t, (duration of t) / 1000, player position, id of t, artwork url of t, sound volume, shuffling, rep, missing value}
             end tell
             """
         }
-        guard let list = run(script), list.numberOfItems >= 8 else { return nil }
+        guard let list = run(script), list.numberOfItems >= 12 else { return nil }
         func string(_ i: Int) -> String { list.atIndex(i)?.stringValue ?? "" }
         func double(_ i: Int) -> Double { list.atIndex(i).map { Double($0.stringValue ?? "") ?? $0.doubleValue } ?? 0 }
+        let fav = list.atIndex(12)
         return Snapshot(player: player, state: string(1), title: string(2), artist: string(3), album: string(4),
                         duration: double(5), position: double(6), trackID: string(7),
-                        artworkURL: string(8).isEmpty ? nil : string(8))
+                        artworkURL: string(8).isEmpty ? nil : string(8),
+                        volume: double(9), shuffle: list.atIndex(10)?.booleanValue ?? false,
+                        repeatMode: string(11).isEmpty ? "off" : string(11),
+                        liked: fav?.descriptorType == typeTrue || fav?.descriptorType == typeFalse
+                            || fav?.descriptorType == typeBoolean ? fav?.booleanValue : nil)
     }
 
     private func loadArtwork(for s: Snapshot) {
@@ -178,7 +351,7 @@ final class NowPlayingProvider: @unchecked Sendable {
         let script = compiled[source] ?? {
             let script = NSAppleScript(source: source)
             script?.compileAndReturnError(nil)
-            compiled[source] = script
+            if !source.contains("-- nocache") { compiled[source] = script } // one-off scripts (volume values…)
             return script
         }()
         let result = script?.executeAndReturnError(&error)

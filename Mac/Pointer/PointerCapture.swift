@@ -101,9 +101,9 @@ final class PointerCapture: @unchecked Sendable {
         let types: [CGEventType] = [.mouseMoved, .leftMouseDown, .leftMouseUp, .leftMouseDragged,
                                     .rightMouseDown, .rightMouseUp, .rightMouseDragged,
                                     .otherMouseDragged, .scrollWheel, .keyDown, .keyUp]
-        // Trackpad pinch (magnify, 30) and two-finger double tap (smart magnify, 32) have no CGEventType names.
-        let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
-            | (CGEventMask(1) << Self.magnifyType) | (CGEventMask(1) << Self.smartMagnifyType)
+        // Trackpad gestures reach Quartz as one "gesture" event type (29); only converting to NSEvent tells a
+        // pinch (.magnify) or a two-finger double tap (.smartMagnify) apart. (Quartz type 30 is Dock gestures.)
+        let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) } | (CGEventMask(1) << Self.gestureType)
         guard let tap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
                                           eventsOfInterest: mask, callback: { _, type, event, info in
             guard let info else { return Unmanaged.passUnretained(event) }
@@ -136,8 +136,8 @@ final class PointerCapture: @unchecked Sendable {
         return true
     }
 
-    private static let magnifyType: UInt32 = 30
-    private static let smartMagnifyType: UInt32 = 32
+    private static let gestureType: UInt32 = 29
+    private var loggedGestureTypes = Set<UInt>()
 
     /// Tap thread.
     private func handle(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
@@ -152,19 +152,28 @@ final class PointerCapture: @unchecked Sendable {
         }
         guard captured else { return Unmanaged.passUnretained(event) }
 
-        // Pinch / smart zoom go to the phone (page overview) instead of zooming the Mac app underneath.
-        if type.rawValue == Self.magnifyType, let ns = NSEvent(cgEvent: event) {
-            let phase: ScrollPhase = switch ns.phase {
-            case .began, .mayBegin: .began
-            case .ended, .cancelled: .ended
-            default: .changed
+        // Pinch / smart zoom go to the phone (page overview) instead of zooming the Mac app underneath;
+        // every other gesture (Mission Control, swipes between spaces…) stays with macOS.
+        if type.rawValue == Self.gestureType {
+            guard let ns = NSEvent(cgEvent: event) else { return Unmanaged.passUnretained(event) }
+            if loggedGestureTypes.insert(ns.type.rawValue).inserted {
+                AppModel.log.info("gesture event type \(ns.type.rawValue, privacy: .public)")
             }
-            send?(.pointerPinch(magnification: ns.magnification, phase: phase))
-            return nil
-        }
-        if type.rawValue == Self.smartMagnifyType {
-            send?(.pointerSmartZoom)
-            return nil
+            switch ns.type {
+            case .magnify:
+                let phase: ScrollPhase = switch ns.phase {
+                case .began, .mayBegin: .began
+                case .ended, .cancelled: .ended
+                default: .changed
+                }
+                send?(.pointerPinch(magnification: ns.magnification, phase: phase))
+                return nil
+            case .smartMagnify:
+                send?(.pointerSmartZoom)
+                return nil
+            default:
+                return Unmanaged.passUnretained(event)
+            }
         }
 
         switch type {

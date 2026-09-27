@@ -160,6 +160,15 @@ public struct NowPlaying: Codable, Equatable, Sendable {
     public var playing: Bool
     /// When `elapsed` was sampled, so the receiver can extrapolate the progress bar.
     public var timestamp: Date
+    /// "Music" or "Spotify".
+    public var player: String?
+    /// Player volume 0…1.
+    public var volume: Double?
+    public var shuffle: Bool?
+    /// "off", "one" or "all" (Spotify only knows off/all).
+    public var repeatMode: String?
+    /// Favourited in Music (nil when the player can't tell).
+    public var liked: Bool?
 
     public init(title: String, artist: String, album: String? = nil, artwork: Data? = nil,
                 duration: Double? = nil, elapsed: Double? = nil, playing: Bool, timestamp: Date = Date()) {
@@ -176,6 +185,73 @@ public struct NowPlaying: Codable, Equatable, Sendable {
 
 public enum MediaAction: String, Codable, Sendable {
     case togglePlayPause, play, pause, next, previous
+}
+
+/// A track coming up after the current one.
+public struct QueueTrack: Codable, Equatable, Sendable {
+    public var title: String
+    public var artist: String
+    public var duration: Double?
+
+    public init(title: String, artist: String, duration: Double?) {
+        self.title = title
+        self.artist = artist
+        self.duration = duration
+    }
+}
+
+/// What's coming up. Neither Music nor Spotify exposes their real "Up Next" to scripts, so for Music this is
+/// the rest of the playlist/album being played; `note` explains what the list is (or why it's empty).
+public struct MusicQueue: Codable, Equatable, Sendable {
+    public var tracks: [QueueTrack]
+    public var note: String?
+
+    public init(tracks: [QueueTrack], note: String?) {
+        self.tracks = tracks
+        self.note = note
+    }
+}
+
+public struct AirPlayDevice: Codable, Equatable, Sendable, Identifiable {
+    public var id: String { name }
+    public var name: String
+    /// "computer", "AirPort Express", "Apple TV", "HomePod", "Bluetooth device"…
+    public var kind: String
+    public var selected: Bool
+
+    public init(name: String, kind: String, selected: Bool) {
+        self.name = name
+        self.kind = kind
+        self.selected = selected
+    }
+}
+
+/// The Mac's sound: system output volume and, when Music is the player, its AirPlay speakers.
+public struct AudioState: Codable, Equatable, Sendable {
+    public var systemVolume: Double
+    public var muted: Bool
+    public var airPlay: [AirPlayDevice]
+
+    public init(systemVolume: Double, muted: Bool, airPlay: [AirPlayDevice]) {
+        self.systemVolume = systemVolume
+        self.muted = muted
+        self.airPlay = airPlay
+    }
+}
+
+/// Phone → Mac music controls beyond play/pause/skip.
+public enum MusicCommand: Codable, Equatable, Sendable {
+    case setPlayerVolume(Double)
+    case setSystemVolume(Double)
+    case toggleMute
+    case seek(Double)
+    case toggleShuffle
+    case cycleRepeat
+    case toggleLike
+    /// Play the n-th track of `MusicQueue.tracks`.
+    case playQueueItem(Int)
+    /// Play to exactly these AirPlay devices (by name).
+    case setAirPlay([String])
 }
 
 public struct SystemStats: Codable, Equatable, Sendable {
