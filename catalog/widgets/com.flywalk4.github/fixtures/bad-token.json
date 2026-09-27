@@ -1,0 +1,13 @@
+{
+ "secrets": {
+  "token": "x"
+ },
+ "fetch": [
+  {
+   "match": "api.github.com",
+   "status": 401,
+   "body": {}
+  }
+ ],
+ "error": "не принял токен"
+}

@@ -1,0 +1,39 @@
+{
+ "storage": {
+  "game": {
+   "grid": [
+    2,
+    2,
+    4,
+    4,
+    2,
+    0,
+    2,
+    0,
+    4,
+    4,
+    4,
+    4,
+    0,
+    0,
+    0,
+    2
+   ],
+   "score": 0,
+   "best": 0,
+   "over": false,
+   "won": false
+  }
+ },
+ "actions": [
+  "left"
+ ],
+ "expect": {
+  "score": "32",
+  "tiles.0.text": "4",
+  "tiles.1.text": "8",
+  "tiles.4.text": "4",
+  "tiles.8.text": "8",
+  "tiles.9.text": "8"
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "description": "Оба источника недоступны",
+ "now": "2026-09-27T14:40:00Z",
+ "fetch": [
+  {
+   "match": "coingecko",
+   "status": 429,
+   "body": {}
+  },
+  {
+   "match": "moex",
+   "status": 500,
+   "body": {}
+  }
+ ],
+ "error": "Мосбиржа ответил 500"
+}

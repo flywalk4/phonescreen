@@ -1,0 +1,83 @@
+{
+ "now": "2026-09-27T14:40:00Z",
+ "secrets": {
+  "token": "x"
+ },
+ "fetch": [
+  {
+   "match": "review-requested",
+   "body": {
+    "total_count": 3,
+    "items": [
+     {
+      "title": "Add theme marketplace previews",
+      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "number": 12,
+      "updated_at": "2026-09-27T13:10:00Z",
+      "draft": false,
+      "comments": 4
+     },
+     {
+      "title": "Fix BLE reconnect after sleep",
+      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "number": 11,
+      "updated_at": "2026-09-27T11:10:00Z",
+      "draft": false,
+      "comments": 1
+     },
+     {
+      "title": "Bump swift-tools-version",
+      "repository_url": "https://api.github.com/repos/acme/kit",
+      "number": 88,
+      "updated_at": "2026-09-27T-6:10:00Z",
+      "draft": false,
+      "comments": 0
+     }
+    ]
+   }
+  },
+  {
+   "match": "author:@me",
+   "body": {
+    "total_count": 2,
+    "items": [
+     {
+      "title": "Claude Code widget without the bridge",
+      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "number": 1,
+      "updated_at": "2026-09-27T12:10:00Z",
+      "draft": false,
+      "comments": 6
+     },
+     {
+      "title": "WIP: mini-games",
+      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "number": 14,
+      "updated_at": "2026-09-27T14:10:00Z",
+      "draft": true,
+      "comments": 0
+     }
+    ]
+   }
+  },
+  {
+   "match": "notifications",
+   "body": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+   ]
+  }
+ ],
+ "expect": {
+  "reviewCount": "3",
+  "mineCount": "2",
+  "unread": "7",
+  "review.0.repo": "flywalk4/phonescreen",
+  "mine.1.draft": true
+ }
+}

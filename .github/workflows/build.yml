@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  pull_request:
+    paths: ["Mac/**", "iOS/**", "Packages/**", "project.yml", ".github/workflows/build.yml"]
+  push:
+    branches: [main, "claude/**"]
+    paths: ["Mac/**", "iOS/**", "Packages/**", "project.yml", ".github/workflows/build.yml"]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          xcodebuild -version
+      - name: PhoneScreenKit tests
+        working-directory: Packages/PhoneScreenKit
+        run: swift test
+      - name: Generate the project
+        run: |
+          brew install xcodegen
+          xcodegen generate
+      - name: Build the Mac app
+        run: |
+          xcodebuild -project PhoneScreen.xcodeproj -scheme PhoneScreenMac -configuration Debug \
+            -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build > mac.log 2>&1 || true
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)" mac.log || true
+          grep -q "BUILD SUCCEEDED" mac.log
+      - name: Build the iPhone app
+        run: |
+          xcodebuild -project PhoneScreen.xcodeproj -scheme PhoneScreeniOS -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build > ios.log 2>&1 || true
+          grep -E "error:|BUILD (SUCCEEDED|FAILED)" ios.log || true
+          grep -q "BUILD SUCCEEDED" ios.log

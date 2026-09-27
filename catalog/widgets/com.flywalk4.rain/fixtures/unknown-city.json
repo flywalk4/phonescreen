@@ -1,0 +1,14 @@
+{
+ "settings": {
+  "place": "Абырвалг"
+ },
+ "fetch": [
+  {
+   "match": "geocoding-api",
+   "body": {
+    "generationtime_ms": 0.5
+   }
+  }
+ ],
+ "error": "Не нашёл «Абырвалг»"
+}

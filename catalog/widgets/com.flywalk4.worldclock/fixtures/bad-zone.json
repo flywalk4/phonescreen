@@ -1,0 +1,6 @@
+{
+ "settings": {
+  "zones": "Марс=Mars/Olympus"
+ },
+ "error": "Неизвестный часовой пояс"
+}

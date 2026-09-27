@@ -1,0 +1,25 @@
+name: Catalog
+
+on:
+  pull_request:
+    paths: ["catalog/**", "scripts/**"]
+  push:
+    branches: [main]
+    paths: ["catalog/**", "scripts/**"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate widgets and themes
+        run: |
+          for w in catalog/widgets/*/; do python3 scripts/validate-widget.py "$w"; done
+          for t in catalog/themes/*/; do python3 scripts/validate-theme.py "$t"; done
+      - name: catalog/index.json is up to date
+        run: python3 scripts/build-catalog.py --check
+      - name: Widget scenarios (fixtures/)
+        run: node scripts/widget-dev.mjs test

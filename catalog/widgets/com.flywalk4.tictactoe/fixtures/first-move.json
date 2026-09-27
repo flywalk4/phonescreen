@@ -1,0 +1,14 @@
+{
+ "description": "Ход в центр; hard отвечает в угол",
+ "settings": {
+  "level": "hard"
+ },
+ "actions": [
+  "tap:4"
+ ],
+ "expect": {
+  "cells.4.mark": "✕",
+  "status": "Твой ход",
+  "over": false
+ }
+}

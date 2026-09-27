@@ -1,0 +1,31 @@
+{
+ "storage": {
+  "game": {
+   "board": [
+    "o",
+    "",
+    "",
+    "",
+    "x",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "score": {
+    "x": 0,
+    "o": 0,
+    "d": 0
+   },
+   "macFirst": false,
+   "counted": false
+  }
+ },
+ "actions": [
+  "tap:0"
+ ],
+ "expect": {
+  "cells.0.mark": "◯",
+  "cells.4.mark": "✕"
+ }
+}

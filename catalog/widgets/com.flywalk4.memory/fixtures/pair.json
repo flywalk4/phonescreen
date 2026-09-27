@@ -1,0 +1,55 @@
+{
+ "storage": {
+  "game": {
+   "set": "animals",
+   "cards": [
+    "🦊",
+    "🐼",
+    "🦊",
+    "🐸",
+    "🦉",
+    "🐙",
+    "🦁",
+    "🐧",
+    "🦄",
+    "🐼",
+    "🐸",
+    "🦉",
+    "🐙",
+    "🦁",
+    "🐧",
+    "🦄"
+   ],
+   "open": [],
+   "matched": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+   ],
+   "moves": 0,
+   "best": null
+  }
+ },
+ "actions": [
+  "tap:0",
+  "tap:2"
+ ],
+ "expect": {
+  "pairs": "1 из 8",
+  "moves": "1",
+  "cards.0.bg": "green"
+ }
+}
