@@ -237,6 +237,54 @@
       }
     },
     {
+      "id": "com.flywalk4.dracula",
+      "name": "Dracula",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Тёмное стекло с неоновыми акцентами популярной темы редакторов.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.dracula",
+      "files": {
+        "theme.json": "881a204b5f1ac3de9ec89eaff8ddf0a78957b48276ce14582dadb03495429f76"
+      }
+    },
+    {
+      "id": "com.flywalk4.eink",
+      "name": "E-ink",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Как электронная бумага: чёрное на сером, без цвета, тонкие рамки.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.eink",
+      "files": {
+        "theme.json": "a944526762842108fff0e19f4b5111723c8504b495d19dbfa8763737277cc143"
+      }
+    },
+    {
+      "id": "com.flywalk4.nord",
+      "name": "Nord",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Холодная северная палитра: графит, лёд и полярное сияние.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.nord",
+      "files": {
+        "theme.json": "0fd7de62cf403f8766a01b9a2a7912179ecd5fdfe2c1af13ae72ded1a57a3bf4"
+      }
+    },
+    {
+      "id": "com.flywalk4.solarized",
+      "name": "Solarized",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Классическая светлая палитра Итана Шуновера — мягкая для глаз.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.solarized",
+      "files": {
+        "theme.json": "7393a1c83e0073d5ba152a764e3937fac79d4ffe42b6e02419b4859564c6226e"
+      }
+    },
+    {
       "id": "com.flywalk4.synthwave",
       "name": "Synthwave",
       "version": "1.0.0",

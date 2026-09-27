@@ -4,7 +4,7 @@
 //
 //   node scripts/widget-dev.mjs run <widget> [--fixture NAME] [--setting k=v] [--secret k=v] [--action NAME]…
 //                                            [--now 2026-09-27T14:40:00Z] [--home DIR] [--views]
-//   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii] [--fixture NAME]
+//   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|catalog/themes/<id>] [--fixture NAME]
 //   node scripts/widget-dev.mjs test [<widget>…]        # every fixtures/*.json of every widget (default: catalog/widgets/*)
 //
 // The real check is still `PhoneScreen --widget-test` on a Mac (JavaScriptCore, the real sandbox and SwiftUI);
@@ -313,11 +313,29 @@ const WEIGHTS = { ultraLight: 200, thin: 250, light: 300, regular: 400, medium: 
 // SF Symbols aren't available off Apple platforms: a few common ones as emoji, the rest as a dot.
 const SYMBOLS = { "sun.max.fill": "☀️", "cloud.rain.fill": "🌧️", "cloud.snow.fill": "🌨️", "location.fill": "📍", globe: "🌐", "briefcase.fill": "💼", "moon.zzz.fill": "🌙", "moon.fill": "🌙", "sunset.fill": "🌇", "cup.and.saucer.fill": "☕", "chart.line.uptrend.xyaxis": "📈", "arrow.clockwise": "↻", sparkles: "✨", "dollarsign.arrow.circlepath": "💱", timer: "⏱️", "play.fill": "▶", "pause.fill": "⏸", "forward.fill": "⏭", "arrow.uturn.backward": "↩", "flame.fill": "🔥", "leaf.fill": "🍃", "aqi.medium": "🌫️", "sun.horizon.fill": "🌅", "newspaper.fill": "📰", hourglass: "⏳", "arrow.triangle.pull": "🔀", "flag.fill": "🚩", "hand.tap.fill": "👆", "exclamationmark.triangle.fill": "⚠️" };
 
+/** A theme.json (folder or file) as the preview's colours. */
+function themeFromFile(p) {
+  const file = fs.statSync(p).isDirectory() ? path.join(p, "theme.json") : p;
+  const t = JSON.parse(fs.readFileSync(file, "utf8"));
+  const css = (hex) => { const m = /^#([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(hex || ""); if (!m) return null; const v = parseInt(m[1], 16);
+    return `rgba(${v >> 16},${(v >> 8) & 255},${v & 255},${m[2] ? (parseInt(m[2], 16) / 255).toFixed(3) : 1})`; };
+  const bg = t.background.colors.map(css);
+  const text = css(t.colors.text), light = t.appearance === "light";
+  return {
+    bg: bg.length > 1 ? `linear-gradient(${180 - (t.background.angle || 0)}deg,${bg.join(",")})` : bg[0],
+    text, sec: css(t.colors.secondary), accent: css(t.colors.accent),
+    card: css(t.colors.card) || "transparent", surface: text.replace(/[\d.]+\)$/, "0.07)"), border: css(t.colors.border),
+    style: t.style, radius: t.radius, light, font: t.font, palette: Object.fromEntries(Object.entries(t.colors.palette || {}).map(([k, v]) => [k.toLowerCase(), css(v)])),
+  };
+}
+
 function renderHTML(tree, themeName) {
-  const T = THEMES[themeName] || THEMES.dark;
+  const T = THEMES[themeName] || (themeName && fs.existsSync(themeName) ? themeFromFile(themeName) : THEMES.dark);
+  if (T.light === undefined) T.light = T.text === "#000";
   const color = (n) => {
     if (!n) return null;
     const l = String(n).toLowerCase();
+    if (T.palette?.[l]) return T.palette[l];
     if (l === "primary") return T.text;
     if (l === "secondary" || l === "tertiary") return T.sec;
     if (l === "accent") return T.accent;
@@ -367,7 +385,7 @@ function renderHTML(tree, themeName) {
   const pick = (s) => (tree[s] ? s : s === "small" ? (tree.medium ? "medium" : "full") : s === "medium" ? (tree.full ? "full" : "small") : tree.medium ? "medium" : "small");
   const [F, M, S] = [pick("full"), pick("medium"), pick("small")];
   return `<!doctype html><meta charset=utf-8><style>
-body{margin:0;background:#1c1c1e;font-family:'Liberation Sans',Helvetica,sans-serif;display:flex;gap:28px;padding:28px}
+body{margin:0;background:#1c1c1e;font-family:${({ monospaced: "'DejaVu Sans Mono',monospace", serif: "'Liberation Serif',serif", rounded: "'DejaVu Sans',sans-serif" })[T.font] || "'Liberation Sans',Helvetica,sans-serif"};display:flex;gap:28px;padding:28px}
 .phone{width:393px;height:852px;border-radius:54px;overflow:hidden;background:${T.bg};position:relative;box-shadow:0 0 0 10px #2c2c2e;flex-shrink:0}
 .page{position:absolute;inset:62px 18px 18px 18px;display:flex;flex-direction:column;gap:12px}
 .label{position:absolute;top:22px;width:100%;text-align:center;color:${T.sec};font-size:12px}
@@ -376,10 +394,10 @@ body{margin:0;background:#1c1c1e;font-family:'Liberation Sans',Helvetica,sans-se
 .h>.v{flex:0 1 auto}.v>.v{align-self:stretch}.h>.h{width:auto;flex:0 0 auto}.v>.box.fill{align-self:stretch}.h>.box.fill{flex:1 1 0}
 .box.fit{flex:0 0 auto}.v>.box.fit{align-self:flex-start}.box>*:not(.surface){position:relative}.surface{position:absolute;inset:0}
 .grid{display:grid;width:100%;align-items:start}.cell{align-items:stretch}
-.track{width:100%;height:4px;border-radius:2px;background:${T.text === "#000" ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.18)"}}
-.divider{height:1px;width:100%;background:${T.text === "#000" ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.15)"}}
-.button{padding:7px 12px;border-radius:9px;background:${T.text === "#000" ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.12)"};font-size:15px;font-weight:500;white-space:nowrap;align-self:flex-start}
-.card{border-radius:${T.radius}px;background:${T.card};${T.style === "glass" ? "border:1px solid rgba(255,255,255,.22);" : ""}${T.style === "ascii" ? `outline:1px dashed ${T.sec};` : ""}overflow:hidden;box-sizing:border-box;padding:14px;display:flex;${T.style === "ascii" ? "font-family:'DejaVu Sans Mono',monospace;" : ""}}
+.track{width:100%;height:4px;border-radius:2px;background:${T.light ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.18)"}}
+.divider{height:1px;width:100%;background:${T.light ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.15)"}}
+.button{padding:7px 12px;border-radius:9px;background:${T.light ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.12)"};font-size:15px;font-weight:500;white-space:nowrap;align-self:flex-start}
+.card{border-radius:${T.radius}px;background:${T.card};${T.style === "glass" ? `border:1px solid ${T.border || "rgba(255,255,255,.22)"};backdrop-filter:blur(30px);` : T.border && T.style === "flat" ? `border:1px solid ${T.border};` : ""}${T.style === "ascii" ? `outline:1px dashed ${T.sec};` : ""}overflow:hidden;box-sizing:border-box;padding:14px;display:flex;${T.style === "ascii" ? "font-family:'DejaVu Sans Mono',monospace;" : ""}}
 .card>.inner{display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden}.card>.inner>.v{flex:1}
 .card.full{background:none;border:none;outline:none;padding:18px 2px}
 </style>

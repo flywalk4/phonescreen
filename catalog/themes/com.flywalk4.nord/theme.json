@@ -1,0 +1,35 @@
+{
+  "id": "com.flywalk4.nord",
+  "name": "Nord",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Холодная северная палитра: графит, лёд и полярное сияние.",
+  "style": "flat",
+  "appearance": "dark",
+  "font": "rounded",
+  "radius": 20,
+  "background": {
+    "colors": [
+      "#2E3440",
+      "#3B4252"
+    ],
+    "angle": 0
+  },
+  "colors": {
+    "text": "#ECEFF4",
+    "secondary": "#A3ABBA",
+    "accent": "#88C0D0",
+    "card": "#434C5E",
+    "border": "#4C566A",
+    "palette": {
+      "green": "#A3BE8C",
+      "red": "#BF616A",
+      "orange": "#D08770",
+      "yellow": "#EBCB8B",
+      "blue": "#81A1C1",
+      "purple": "#B48EAD",
+      "cyan": "#88C0D0",
+      "teal": "#8FBCBB"
+    }
+  }
+}

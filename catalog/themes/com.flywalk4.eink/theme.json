@@ -1,0 +1,40 @@
+{
+  "id": "com.flywalk4.eink",
+  "name": "E-ink",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Как электронная бумага: чёрное на сером, без цвета, тонкие рамки.",
+  "style": "flat",
+  "appearance": "light",
+  "font": "serif",
+  "radius": 6,
+  "background": {
+    "colors": [
+      "#E8E6E1"
+    ]
+  },
+  "colors": {
+    "text": "#111111",
+    "secondary": "#555555",
+    "accent": "#111111",
+    "card": "#F4F3EF",
+    "border": "#11111133",
+    "palette": {
+      "green": "#111111",
+      "blue": "#111111",
+      "cyan": "#111111",
+      "teal": "#111111",
+      "mint": "#111111",
+      "indigo": "#111111",
+      "purple": "#111111",
+      "pink": "#111111",
+      "accent": "#111111",
+      "primary": "#111111",
+      "red": "#111111",
+      "orange": "#333333",
+      "yellow": "#555555",
+      "secondary": "#555555",
+      "gray": "#777777"
+    }
+  }
+}

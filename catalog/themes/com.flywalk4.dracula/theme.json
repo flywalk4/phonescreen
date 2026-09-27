@@ -1,0 +1,37 @@
+{
+  "id": "com.flywalk4.dracula",
+  "name": "Dracula",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Тёмное стекло с неоновыми акцентами популярной темы редакторов.",
+  "style": "glass",
+  "appearance": "dark",
+  "font": "monospaced",
+  "radius": 24,
+  "background": {
+    "colors": [
+      "#191A21",
+      "#282A36",
+      "#44475A"
+    ],
+    "angle": 20
+  },
+  "colors": {
+    "text": "#F8F8F2",
+    "secondary": "#BFC2D6",
+    "accent": "#BD93F9",
+    "card": "#44475A55",
+    "border": "#BD93F944",
+    "palette": {
+      "green": "#50FA7B",
+      "red": "#FF5555",
+      "orange": "#FFB86C",
+      "yellow": "#F1FA8C",
+      "pink": "#FF79C6",
+      "purple": "#BD93F9",
+      "cyan": "#8BE9FD",
+      "blue": "#8BE9FD",
+      "teal": "#8BE9FD"
+    }
+  }
+}
