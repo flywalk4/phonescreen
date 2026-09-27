@@ -17,6 +17,9 @@ public indirect enum WidgetNode: Codable, Equatable, Sendable {
     case chart(values: [Double], color: String?)
     /// Calls the widget's `action(name)` on the Mac.
     case button(title: String, symbol: String?, action: String)
+    /// Pixel-art animation: each frame is rows of characters, each character a palette colour
+    /// (`.` or space = transparent); the phone plays the frames at `fps`.
+    case sprite(frames: [[String]], palette: [String: String], fps: Double?)
     case spacer
     case divider
 }
@@ -109,6 +112,13 @@ public enum WidgetTemplate {
         case "button":
             guard let action = t["action"] as? String else { throw Error(description: "У кнопки нет action") }
             return .button(title: str("title") ?? "", symbol: str("symbol"), action: action)
+        case "sprite":
+            let rawFrames = t["frames"].map { value($0, scope) } as? [Any] ?? []
+            let frames = rawFrames.prefix(16).compactMap { ($0 as? [Any])?.prefix(48).map { String(text($0).prefix(48)) } }
+            guard !frames.isEmpty else { throw Error(description: "У sprite нет frames") }
+            let rawPalette = t["palette"].map { value($0, scope) } as? [String: Any] ?? [:]
+            let palette = rawPalette.reduce(into: [String: String]()) { $0[String($1.key.prefix(1))] = text($1.value) }
+            return .sprite(frames: frames, palette: palette, fps: num("fps"))
         case "spacer":
             return .spacer
         case "divider":

@@ -24,6 +24,7 @@ NODES = {
     "progress": {"value", "color"},
     "chart": {"values", "color"},
     "button": {"title", "symbol", "action"},
+    "sprite": {"frames", "palette", "fps"},
     "spacer": set(),
     "divider": set(),
     "list": {"items", "template", "spacing", "align"},
@@ -66,12 +67,16 @@ def validate(folder: Path) -> list[str]:
     for host in perms.get("network") or []:
         if not re.fullmatch(r"[a-z0-9-]+(\.[a-z0-9-]+)+", host):
             errors.append(f"permissions.network: «{host}» — только домен (api.example.com), без https://, пути и *")
+    for path in perms.get("files") or []:
+        if not path.startswith("~/") or len(path) <= 2 or ".." in path.split("/") or "*" in path:
+            errors.append(f"permissions.files: «{path}» — путь в домашней папке: ~/folder/ или ~/folder/file, без .. и *")
     secret_keys = [s.get("key") for s in perms.get("secrets") or []]
     setting_keys = [s.get("key") for s in m.get("settings") or []]
     if len(set(secret_keys)) != len(secret_keys) or len(set(setting_keys)) != len(setting_keys):
         errors.append("ключи secrets / settings повторяются")
-    if m.get("refresh") is not None and m["refresh"] < 30:
-        errors.append("refresh меньше 30 с будет поднят до 30")
+    floor = 30 if perms.get("network") else 5
+    if m.get("refresh") is not None and m["refresh"] < floor:
+        errors.append(f"refresh меньше {floor} с будет поднят до {floor}")
 
     try:
         view = json.loads(files["view.json"])
@@ -88,6 +93,8 @@ def validate(folder: Path) -> list[str]:
     source = files["provider.js"].decode("utf-8", errors="replace")
     if not re.search(r"function\s+refresh\s*\(", source):
         errors.append("provider.js: нет функции refresh(ctx)")
+    if re.search(r"files\.(read|modified)\(", source) and not perms.get("files"):
+        errors.append("provider.js читает файлы, но permissions.files пуст")
     if re.search(r"\b(require|import\s|XMLHttpRequest|WebSocket|process\.)", source):
         errors.append("provider.js: require/import/XMLHttpRequest/WebSocket/process в песочнице нет — используйте fetch")
     urls = re.findall(r"https?://([a-z0-9.-]+)", source)

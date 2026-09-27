@@ -30,7 +30,7 @@ struct WidgetsSettings: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                Label("Виджеты выполняются на Mac в песочнице: только разрешённые сайты, без доступа к файлам. Канал до iPhone пока не зашифрован — ставьте виджеты, которым доверяете.",
+                Label("Виджеты выполняются на Mac в песочнице: только объявленные сайты и (для чтения) файлы — их видно перед установкой. Канал до iPhone пока не зашифрован — ставьте виджеты, которым доверяете.",
                       systemImage: "exclamationmark.shield")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -241,6 +241,7 @@ private struct InstalledRow: View {
         let secrets = m.permissions?.secrets?.map(\.title) ?? []
         var parts = [hosts.isEmpty ? "без сети" : "сеть: " + hosts.joined(separator: ", ")]
         if !secrets.isEmpty { parts.append("секреты: " + secrets.joined(separator: ", ")) }
+        if let files = m.permissions?.files, !files.isEmpty { parts.append("файлы: " + files.joined(separator: ", ")) }
         return parts.joined(separator: " · ")
     }
 }
@@ -267,7 +268,11 @@ private struct PermissionsSheet: View {
             ForEach(m.permissions?.secrets ?? [], id: \.key) { s in
                 Label("Читать секрет «\(s.title)», который вы введёте в настройках", systemImage: "key")
             }
-            Label("Файлы, программы и другие сайты — недоступны", systemImage: "lock")
+            if let files = m.permissions?.files, !files.isEmpty {
+                Label("Читать файлы: \(files.joined(separator: ", "))", systemImage: "doc.text.magnifyingglass")
+            }
+            Label(m.permissions?.files?.isEmpty == false ? "Остальные файлы, программы и сайты — недоступны"
+                                                          : "Файлы, программы и другие сайты — недоступны", systemImage: "lock")
                 .foregroundStyle(.secondary)
             HStack {
                 Spacer()

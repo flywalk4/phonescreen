@@ -108,6 +108,20 @@ final class PhoneModel: ObservableObject {
                 error: nil, updated: Date())
             pages.insert(PageInfo(id: "custom", layout: .grid, widgets: [.custom("com.flywalk4.rates"), .builtin(.weather), .builtin(.music), .builtin(.monitor)]), at: 0)
             pages.insert(PageInfo(id: "custom-full", layout: .single, widgets: [.custom("com.flywalk4.rates")]), at: 0)
+            // `--demo-widget <file>`: output of `PhoneScreen --widget-test` (Mac), shown as a real widget.
+            if let i = args.firstIndex(of: "--demo-widget"), i + 1 < args.count,
+               let data = FileManager.default.contents(atPath: args[i + 1]),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let id = json["id"] as? String, let rawViews = json["views"] as? [String: Any] {
+                var views: [WidgetSize: WidgetNode] = [:]
+                for (key, value) in rawViews {
+                    if let size = WidgetSize(rawValue: key), let d = try? JSONSerialization.data(withJSONObject: value),
+                       let node = try? JSONDecoder().decode(WidgetNode.self, from: d) { views[size] = node }
+                }
+                customWidgets[id] = CustomWidgetState(id: id, name: id, symbol: "sparkles", views: views, error: nil, updated: Date())
+                pages.insert(PageInfo(id: "dw-trio", layout: .trio, widgets: [.custom(id), .custom(id), .builtin(.weather)]), at: 0)
+                pages.insert(PageInfo(id: "dw-full", layout: .single, widgets: [.custom(id)]), at: 0)
+            }
             musicQueue = MusicQueue(tracks: [QueueTrack(title: "Звезда по имени Солнце", artist: "Кино", duration: 225),
                                              QueueTrack(title: "Пачка сигарет", artist: "Кино", duration: 268)], note: "Далее в плейлисте")
             audio = AudioState(systemVolume: 0.45, muted: false,

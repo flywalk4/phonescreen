@@ -1,6 +1,20 @@
 {
   "widgets": [
     {
+      "id": "com.flywalk4.claude-code",
+      "name": "Claude Code",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Лимиты Claude Code — 5-часовой и недельный, со временем сброса — и пиксельный краб, который бегает, когда Claude работает, машет, когда ждёт тебя, и спит в простое. Нужен мост: python3 scripts/claude-code-bridge.py install.",
+      "symbol": "sparkles",
+      "path": "widgets/com.flywalk4.claude-code",
+      "files": {
+        "manifest.json": "d24a5d31cf5738054ccfe00dcfa292479c5270d5151c6ef0d2525c877c5b6a59",
+        "view.json": "26986e8c43e03bfd656f759ce87d3a548e1375fa22ff320e478be30d7b6d2d36",
+        "provider.js": "ed9be498d6a6a7be634401b0aadbbee5d5ff46601dd65dd7e9a0fd8716c7132d"
+      }
+    },
+    {
       "id": "com.flywalk4.rates",
       "name": "Курсы валют",
       "version": "1.0.0",

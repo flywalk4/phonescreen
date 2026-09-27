@@ -31,10 +31,13 @@ public struct WidgetManifest: Codable, Equatable, Sendable {
         public var network: [String]?
         /// Secrets the user stores in the Mac's Keychain for this widget.
         public var secrets: [Secret]?
+        /// Read-only access to these paths in the user's home: `~/dir/` (a folder and everything in it) or `~/file`.
+        public var files: [String]?
 
-        public init(network: [String]? = nil, secrets: [Secret]? = nil) {
+        public init(network: [String]? = nil, secrets: [Secret]? = nil, files: [String]? = nil) {
             self.network = network
             self.secrets = secrets
+            self.files = files
         }
     }
 
@@ -64,7 +67,11 @@ public struct WidgetManifest: Codable, Equatable, Sendable {
         self.settings = settings
     }
 
-    public var refreshInterval: Double { max(30, refresh ?? 300) }
+    /// At least 30 s for widgets that use the network (be kind to APIs); local-only widgets may poll every 5 s.
+    public var refreshInterval: Double {
+        let floor: Double = (permissions?.network ?? []).isEmpty ? 5 : 30
+        return max(floor, refresh ?? 300)
+    }
 
     public struct Invalid: Error, Equatable, CustomStringConvertible {
         public var description: String
@@ -87,10 +94,34 @@ public struct WidgetManifest: Codable, Equatable, Sendable {
                 throw Invalid(description: "permissions.network: «\(host)» — нужен домен (api.example.com), без схемы, пути и масок")
             }
         }
+        for path in permissions?.files ?? [] {
+            guard path.hasPrefix("~/"), path.count > 2, !path.split(separator: "/").contains(".."),
+                  !path.contains("*") else {
+                throw Invalid(description: "permissions.files: «\(path)» — путь внутри домашней папки вида ~/folder/ или ~/folder/file, без .. и *")
+            }
+        }
         let secretKeys = (permissions?.secrets ?? []).map(\.key)
         let settingKeys = (settings ?? []).map(\.key)
         guard Set(secretKeys).count == secretKeys.count, Set(settingKeys).count == settingKeys.count else {
             throw Invalid(description: "ключи secrets и settings не должны повторяться")
+        }
+    }
+
+    /// Whether a path (as the script wrote it, `~/…`) is inside a declared `files` entry.
+    /// `home` is the real home folder; callers must also check the resolved path (symlinks) with `allowsResolved`.
+    public func allowsFile(_ path: String) -> Bool {
+        guard path.hasPrefix("~/"), !path.split(separator: "/").contains("..") else { return false }
+        return (permissions?.files ?? []).contains { entry in
+            entry.hasSuffix("/") ? path.hasPrefix(entry) : path == entry
+        }
+    }
+
+    /// The same check on an absolute, symlink-resolved path.
+    public func allowsResolved(_ absolute: String, home: String) -> Bool {
+        let h = home.hasSuffix("/") ? String(home.dropLast()) : home
+        return (permissions?.files ?? []).contains { entry in
+            let full = h + "/" + entry.dropFirst(2)
+            return entry.hasSuffix("/") ? absolute.hasPrefix(full) : absolute == full
         }
     }
 

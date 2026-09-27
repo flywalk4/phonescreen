@@ -1,0 +1,12 @@
+{
+  "id": "com.flywalk4.claude-code",
+  "name": "Claude Code",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Лимиты Claude Code — 5-часовой и недельный, со временем сброса — и пиксельный краб, который бегает, когда Claude работает, машет, когда ждёт тебя, и спит в простое. Нужен мост: python3 scripts/claude-code-bridge.py install.",
+  "symbol": "sparkles",
+  "refresh": 5,
+  "permissions": {
+    "files": ["~/.claude/phonescreen/"]
+  }
+}

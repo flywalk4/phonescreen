@@ -115,6 +115,8 @@ struct NodeView: View {
             }
             .buttonStyle(.bordered)
             .pointerTarget { model.customAction(widgetID, action) }
+        case .sprite(let frames, let palette, let fps):
+            SpriteView(frames: frames, palette: palette, fps: fps ?? 4)
         case .spacer:
             Spacer(minLength: 0)
         case .divider:
@@ -178,5 +180,39 @@ enum WidgetColor {
     static func style(_ name: String?) -> AnyShapeStyle {
         if name?.lowercased() == "tertiary" { return AnyShapeStyle(.tertiary) }
         return AnyShapeStyle(color(name) ?? .primary)
+    }
+}
+
+/// Pixel-art animation: frames of character rows, one palette colour per character (`.`/space transparent).
+/// Scales to the space it gets with square pixels; plays at `fps`.
+struct SpriteView: View {
+    let frames: [[String]]
+    let palette: [String: String]
+    let fps: Double
+
+    var body: some View {
+        let rows = frames.map(\.count).max() ?? 1
+        let cols = frames.flatMap { $0 }.map(\.count).max() ?? 1
+        let colors = palette.reduce(into: [Character: Color]()) { result, entry in
+            if let ch = entry.key.first, let color = WidgetColor.color(entry.value) { result[ch] = color }
+        }
+        TimelineView(.periodic(from: .now, by: 1 / max(0.5, min(fps, 30)))) { context in
+            let index = frames.count > 1 ? Int(context.date.timeIntervalSinceReferenceDate * fps) % frames.count : 0
+            Canvas { ctx, size in
+                let cell = floor(min(size.width / CGFloat(cols), size.height / CGFloat(rows)))
+                guard cell > 0 else { return }
+                let origin = CGPoint(x: (size.width - cell * CGFloat(cols)) / 2, y: (size.height - cell * CGFloat(rows)) / 2)
+                for (y, line) in frames[index].enumerated() {
+                    for (x, ch) in line.enumerated() {
+                        guard let color = colors[ch] else { continue }
+                        // +0.5 overlap hides anti-aliasing seams between neighbouring cells.
+                        ctx.fill(Path(CGRect(x: origin.x + CGFloat(x) * cell, y: origin.y + CGFloat(y) * cell,
+                                             width: cell + 0.5, height: cell + 0.5)), with: .color(color))
+                    }
+                }
+            }
+        }
+        .aspectRatio(CGFloat(cols) / CGFloat(rows), contentMode: .fit)
+        .frame(minWidth: 24, minHeight: 24)
     }
 }

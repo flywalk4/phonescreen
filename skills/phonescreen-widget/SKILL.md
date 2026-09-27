@@ -14,13 +14,13 @@ catalog/widgets/<id>/
   provider.js     async function refresh(ctx) → data;  optional async function action(name, ctx)
 ```
 
-The full reference (every field, node type and sandbox API) is `catalog/README.md` in the repository — read it before writing anything non-trivial. A working example is `catalog/widgets/com.flywalk4.rates/`. A starting point is `template/` next to this file.
+The full reference (every field, node type and sandbox API) is `catalog/README.md` in the repository — read it before writing anything non-trivial. Working examples: `catalog/widgets/com.flywalk4.rates/` (network, settings, history, chart) and `catalog/widgets/com.flywalk4.claude-code/` (local files, animated sprite). A starting point is `template/` next to this file.
 
 ## Workflow
 
 1. **Pin down the data source.** Find an HTTPS API that serves what the widget shows. Prefer endpoints without auth; if a key is needed, declare it as a secret (never hard-code it, never ask the user to paste it into the code). Check the API's terms allow this use.
 2. **Copy the template** to `catalog/widgets/<id>/`. The folder name must equal `manifest.id` (`com.author.name`, lowercase).
-3. **Write `manifest.json`.** List every host `fetch` touches in `permissions.network` — bare domain only (`api.example.com`), subdomains are included automatically. Keep permissions minimal: users approve them before installing. Pick `refresh` for how often the data really changes (≥ 30 s; daily data → hours).
+3. **Write `manifest.json`.** List every host `fetch` touches in `permissions.network` — bare domain only (`api.example.com`), subdomains are included automatically. Keep permissions minimal: users approve them before installing. Pick `refresh` for how often the data really changes (≥ 30 s with network, ≥ 5 s for local-only widgets; daily data → hours).
 4. **Write `provider.js`.** `refresh(ctx)` fetches, then returns a small JSON object shaped for the view: format numbers (`toFixed`) and dates as strings in JS, pre-compute colours and flags (`"changeColor": "red"`, `"hasItems": true`), trim lists. Throw `new Error("понятный текст")` on failure — the user sees the message.
 5. **Write `view.json`** for all three sizes. `full` is a whole phone page; `medium` half a page; `small` a quarter (≈ 170×170 pt): one number and a label. Bind data with `{{path}}`; repeat rows with `list` + `{{item.…}}`; hide optional parts with `"if": "{{flag}}"`.
 6. **Validate:** `python3 scripts/validate-widget.py catalog/widgets/<id>` — fix every ✗.
@@ -30,14 +30,15 @@ The full reference (every field, node type and sandbox API) is `catalog/README.m
 ## Sandbox rules (the runtime enforces them — code that ignores them fails)
 
 - Only `fetch` over **HTTPS** to hosts in `permissions.network`; redirects elsewhere are refused. Responses ≤ 2 MB, 15 s timeout.
-- No `require`, `import`, `XMLHttpRequest`, `WebSocket`, `process`, files or shell. Plain modern JavaScript (async/await, `Intl`, `JSON`, `Date` work).
+- No `require`, `import`, `XMLHttpRequest`, `WebSocket`, `process`, shell, and no files beyond `permissions.files`. Plain modern JavaScript (async/await, `Intl`, `JSON`, `Date` work).
 - `secrets.get(key)` returns `null` for keys not declared in the manifest.
 - `storage.get/set` — JSON, ≤ 64 KB per widget (history for charts, caches).
+- `files.read("~/…")` / `files.modified("~/…")` — read-only, only paths declared in `permissions.files` (`~/folder/` or `~/file`); symlinks out of them are refused. Use for local data other apps write (e.g. the Claude Code bridge files). Local-only widgets may set `refresh` as low as 5 s.
 - A synchronous stretch of code may run ≤ 2 s; a whole `refresh()` ≤ 20 s.
 
 ## View cheatsheet
 
-Nodes: `vstack` / `hstack` (`children`, `spacing`, `align`), `text` (`text`, `style`, `color`, `lines`, `align`), `symbol` (SF Symbol `name`, `color`, `size`), `gauge` / `progress` (`value` 0…1), `chart` (`values` array), `button` (`title`, `symbol`, `action`), `list` (`items`, `template`), `spacer`, `divider`. Any node may have `"if"`.
+Nodes: `vstack` / `hstack` (`children`, `spacing`, `align`), `text` (`text`, `style`, `color`, `lines`, `align`), `symbol` (SF Symbol `name`, `color`, `size`), `gauge` / `progress` (`value` 0…1), `chart` (`values` array), `button` (`title`, `symbol`, `action`), `list` (`items`, `template`), `sprite` (pixel animation: `frames` = arrays of equal-length strings, `palette` char → colour, `fps`; draw frames in code, see `com.flywalk4.claude-code`), `spacer`, `divider`. Any node may have `"if"`.
 Text styles: `largeTitle title title2 title3 headline body callout subheadline footnote caption caption2`. Colours: system names (`green`, `secondary`, `accent`, …) or `#RRGGBB`.
 
 ## Quality bar

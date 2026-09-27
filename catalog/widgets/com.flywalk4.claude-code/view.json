@@ -1,0 +1,332 @@
+{
+  "full": {
+    "type": "vstack",
+    "spacing": 16,
+    "align": "leading",
+    "children": [
+      {
+        "type": "hstack",
+        "children": [
+          {
+            "type": "text",
+            "text": "Claude Code",
+            "style": "title2"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{model}}",
+            "style": "caption",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "hstack",
+        "spacing": 16,
+        "children": [
+          {
+            "type": "vstack",
+            "children": [
+              {
+                "type": "sprite",
+                "frames": "{{mascot.frames}}",
+                "fps": "{{mascot.fps}}",
+                "palette": {
+                  "o": "#D97757",
+                  "d": "#A85A40",
+                  "k": "#2B1B14",
+                  "y": "#F5C542",
+                  "w": "#FFFFFF"
+                }
+              }
+            ]
+          },
+          {
+            "type": "vstack",
+            "spacing": 4,
+            "align": "leading",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{moodText}}",
+                "style": "title3",
+                "color": "{{moodColor}}"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "vstack",
+        "spacing": 4,
+        "align": "leading",
+        "if": "{{five.has}}",
+        "children": [
+          {
+            "type": "hstack",
+            "children": [
+              {
+                "type": "text",
+                "text": "5 часов",
+                "style": "subheadline"
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "text",
+                "text": "{{five.pct}}",
+                "style": "headline",
+                "color": "{{five.color}}"
+              }
+            ]
+          },
+          {
+            "type": "progress",
+            "value": "{{five.value}}",
+            "color": "{{five.color}}"
+          },
+          {
+            "type": "text",
+            "text": "{{five.reset}}",
+            "style": "caption",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "vstack",
+        "spacing": 4,
+        "align": "leading",
+        "if": "{{week.has}}",
+        "children": [
+          {
+            "type": "hstack",
+            "children": [
+              {
+                "type": "text",
+                "text": "Неделя",
+                "style": "subheadline"
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "text",
+                "text": "{{week.pct}}",
+                "style": "headline",
+                "color": "{{week.color}}"
+              }
+            ]
+          },
+          {
+            "type": "progress",
+            "value": "{{week.value}}",
+            "color": "{{week.color}}"
+          },
+          {
+            "type": "text",
+            "text": "{{week.reset}}",
+            "style": "caption",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "if": "{{noLimits}}",
+        "style": "footnote",
+        "color": "secondary",
+        "text": "Лимиты появятся после первого ответа Claude в сессии (подписка Pro или Max)."
+      },
+      {
+        "type": "spacer"
+      }
+    ]
+  },
+  "medium": {
+    "type": "hstack",
+    "spacing": 12,
+    "align": "center",
+    "children": [
+      {
+        "type": "vstack",
+        "spacing": 4,
+        "align": "center",
+        "children": [
+          {
+            "type": "sprite",
+            "frames": "{{mascot.frames}}",
+            "fps": "{{mascot.fps}}",
+            "palette": {
+              "o": "#D97757",
+              "d": "#A85A40",
+              "k": "#2B1B14",
+              "y": "#F5C542",
+              "w": "#FFFFFF"
+            }
+          },
+          {
+            "type": "text",
+            "text": "{{moodText}}",
+            "style": "caption",
+            "color": "{{moodColor}}",
+            "lines": 1
+          }
+        ]
+      },
+      {
+        "type": "vstack",
+        "spacing": 10,
+        "align": "leading",
+        "children": [
+          {
+            "type": "vstack",
+            "spacing": 4,
+            "align": "leading",
+            "if": "{{five.has}}",
+            "children": [
+              {
+                "type": "hstack",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "5 ч",
+                    "style": "subheadline"
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "text": "{{five.pct}}",
+                    "style": "headline",
+                    "color": "{{five.color}}"
+                  }
+                ]
+              },
+              {
+                "type": "progress",
+                "value": "{{five.value}}",
+                "color": "{{five.color}}"
+              },
+              {
+                "type": "text",
+                "text": "{{five.reset}}",
+                "style": "caption",
+                "color": "secondary"
+              }
+            ]
+          },
+          {
+            "type": "vstack",
+            "spacing": 4,
+            "align": "leading",
+            "if": "{{week.has}}",
+            "children": [
+              {
+                "type": "hstack",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "Неделя",
+                    "style": "subheadline"
+                  },
+                  {
+                    "type": "spacer"
+                  },
+                  {
+                    "type": "text",
+                    "text": "{{week.pct}}",
+                    "style": "headline",
+                    "color": "{{week.color}}"
+                  }
+                ]
+              },
+              {
+                "type": "progress",
+                "value": "{{week.value}}",
+                "color": "{{week.color}}"
+              },
+              {
+                "type": "text",
+                "text": "{{week.reset}}",
+                "style": "caption",
+                "color": "secondary"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "if": "{{noLimits}}",
+            "style": "caption",
+            "color": "secondary",
+            "text": "Лимиты — после первого ответа"
+          }
+        ]
+      }
+    ]
+  },
+  "small": {
+    "type": "vstack",
+    "spacing": 6,
+    "align": "leading",
+    "children": [
+      {
+        "type": "sprite",
+        "frames": "{{mascot.frames}}",
+        "fps": "{{mascot.fps}}",
+        "palette": {
+          "o": "#D97757",
+          "d": "#A85A40",
+          "k": "#2B1B14",
+          "y": "#F5C542",
+          "w": "#FFFFFF"
+        }
+      },
+      {
+        "type": "hstack",
+        "children": [
+          {
+            "type": "text",
+            "text": "5ч",
+            "style": "caption",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{five.pct}}",
+            "style": "headline",
+            "color": "{{five.color}}"
+          }
+        ]
+      },
+      {
+        "type": "hstack",
+        "children": [
+          {
+            "type": "text",
+            "text": "нед",
+            "style": "caption",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{week.pct}}",
+            "style": "headline",
+            "color": "{{week.color}}"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -44,9 +44,10 @@ catalog/widgets/com.author.mywidget/
 | `name` | до 40 символов |
 | `version` | `1.2.3`; для обновления в каталоге — поднимайте |
 | `symbol` | имя SF Symbol |
-| `refresh` | секунды между вызовами `refresh()`, минимум 30, по умолчанию 300 |
+| `refresh` | секунды между вызовами `refresh()`, по умолчанию 300; минимум 30 с сетью и 5 без неё |
 | `permissions.network` | домены, куда можно `fetch` (поддомены включены). Только HTTPS, редиректы тоже проверяются. Без схемы, пути и `*` |
 | `permissions.secrets` | секреты (ключи API): пользователь вводит их в настройках, хранятся в Связке ключей Mac |
+| `permissions.files` | чтение (только чтение) файлов в домашней папке: `~/folder/` (папка целиком) или `~/folder/file`. Символические ссылки наружу не пройдут |
 | `settings` | обычные текстовые настройки со значениями по умолчанию |
 
 Пользователь видит все разрешения до установки.
@@ -70,13 +71,14 @@ async function action(name, ctx) {
 }
 ```
 
-Доступно в песочнице — и больше ничего (нет `require`, `import`, файлов, процессов, `XMLHttpRequest`, `WebSocket`):
+Доступно в песочнице — и больше ничего (нет `require`, `import`, процессов, `XMLHttpRequest`, `WebSocket`, файлов вне `permissions.files`):
 
 | API | |
 | --- | --- |
 | `fetch(url, {method, headers, body})` | как в браузере, упрощённо: `res.ok`, `res.status`, `res.headers.get(k)`, `await res.text()`, `await res.json()`. Только хосты из `permissions.network`, ответ до 2 МБ, таймаут 15 с |
 | `secrets.get(key)` | строка или `null` (если не задан или не объявлен в манифесте) |
 | `ctx.settings.<key>` | значения из `settings` (строки) |
+| `files.read("~/…")` / `files.modified("~/…")` | текст файла (до 1 МБ) или `null`; время изменения (секунды Unix) или `null`. Только пути из `permissions.files` |
 | `storage.get(key)` / `storage.set(key, value)` | маленькое постоянное хранилище (JSON, до 64 КБ на виджет) — история, кэш |
 | `setTimeout(fn, ms)`, `sleep(ms)` | задержки (до 60 с) |
 | `console.log/warn/error` | в журнал виджета в настройках |
@@ -112,8 +114,9 @@ async function action(name, ctx) {
 | `chart` | `values` (массив чисел, до 200), `color` — линия |
 | `button` | `title`, `symbol`, `action` → `action(name)` в provider.js; нажимается пальцем и курсором Mac |
 | `list` | `items` (массив), `template` (узел), `spacing`, `align` |
+| `sprite` | пиксельная анимация: `frames` — массив кадров, кадр — массив строк одинаковой длины (до 48×48, до 16 кадров); `palette` — символ → цвет (`.` и пробел прозрачные); `fps`. Масштабируется под место. Кадры удобно рисовать кодом в provider.js |
 | `spacer`, `divider` | — |
 
 Цвета: `primary` `secondary` `tertiary` `accent` `red` `orange` `yellow` `green` `mint` `teal` `cyan` `blue` `indigo` `purple` `pink` `brown` `gray` `white` или `#RRGGBB`. Неизвестный `type` пропускается. Максимум 500 элементов и 2000 символов в тексте.
 
-Пример целиком — [`widgets/com.flywalk4.rates`](widgets/com.flywalk4.rates).
+Примеры целиком: [`widgets/com.flywalk4.rates`](widgets/com.flywalk4.rates) (сеть, настройки, история, график) и [`widgets/com.flywalk4.claude-code`](widgets/com.flywalk4.claude-code) (локальные файлы, анимированный спрайт).

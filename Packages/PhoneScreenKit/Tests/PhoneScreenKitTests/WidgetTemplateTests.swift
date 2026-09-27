@@ -103,5 +103,32 @@ import Testing
         #expect(m.refreshInterval == 30)
         m.refresh = nil
         #expect(m.refreshInterval == 300)
+        m.permissions = .init(files: ["~/.claude/phonescreen/"]); m.refresh = 1
+        #expect(m.refreshInterval == 5) // local-only widgets may poll faster
+    }
+
+    @Test func fileAccessIsLimitedToDeclaredPaths() throws {
+        var m = base
+        m.permissions = .init(files: ["~/.claude/phonescreen/", "~/notes.txt"])
+        try m.validate()
+        #expect(m.allowsFile("~/.claude/phonescreen/status.json"))
+        #expect(m.allowsFile("~/notes.txt"))
+        #expect(!m.allowsFile("~/.claude/settings.json"))
+        #expect(!m.allowsFile("~/.claude/phonescreen/../settings.json"))
+        #expect(!m.allowsFile("/etc/passwd"))
+        #expect(!m.allowsFile("~/notes.txt.bak"))
+        #expect(m.allowsResolved("/Users/v/.claude/phonescreen/state.json", home: "/Users/v"))
+        #expect(!m.allowsResolved("/Users/v/.ssh/id_ed25519", home: "/Users/v")) // a symlink pointing out is refused
+        m.permissions = .init(files: ["/etc/"])
+        #expect(throws: WidgetManifest.Invalid.self) { try m.validate() }
+        m.permissions = .init(files: ["~/../x/"])
+        #expect(throws: WidgetManifest.Invalid.self) { try m.validate() }
+    }
+
+    @Test func spriteFramesAndPalette() throws {
+        let node = try WidgetTemplate.resolve(
+            try JSONSerialization.jsonObject(with: Data(##"{"type": "sprite", "frames": "{{f}}", "palette": {"x": "#DA7756"}, "fps": 4}"##.utf8)),
+            data: try JSONSerialization.jsonObject(with: Data(#"{"f": [[".x.", "xxx"], ["x.x", "xxx"]]}"#.utf8)))
+        #expect(node == .sprite(frames: [[".x.", "xxx"], ["x.x", "xxx"]], palette: ["x": "#DA7756"], fps: 4))
     }
 }

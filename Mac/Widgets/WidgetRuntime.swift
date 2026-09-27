@@ -22,6 +22,8 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         var loadStorage: @Sendable () -> [String: Any]
         var saveStorage: @Sendable ([String: Any]) -> Void
         var log: @Sendable (String) -> Void
+        /// Home folder `~/` resolves to (the real one; overridable in `--widget-test`).
+        var home: String = NSHomeDirectory()
     }
 
     enum Failure: Error, CustomStringConvertible {
@@ -50,6 +52,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
     }(), delegate: self, delegateQueue: nil)
 
     static let maxResponseBytes = 2 * 1024 * 1024
+    static let maxFileBytes = 1024 * 1024
     static let maxStorageBytes = 64 * 1024
 
     init(manifest: WidgetManifest, source: String, hooks: Hooks) {
@@ -156,6 +159,26 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         context.setObject(storageGet, forKeyedSubscript: "__storageGet" as NSString)
         context.setObject(storageSet, forKeyedSubscript: "__storageSet" as NSString)
 
+        // Read-only files, only inside `permissions.files` (checked on the path as written and after
+        // resolving symlinks, so a link can't lead outside).
+        let readFile: @convention(block) (String) -> Any = { [weak self] path in
+            guard let self, let url = self.fileURL(path) else { return NSNull() }
+            guard let data = try? Data(contentsOf: url) else { return NSNull() }
+            guard data.count <= Self.maxFileBytes else {
+                self.hooks.log("files.read: \(path) больше 1 МБ")
+                return NSNull()
+            }
+            return String(data: data, encoding: .utf8) ?? NSNull()
+        }
+        let fileModified: @convention(block) (String) -> Any = { [weak self] path in
+            guard let url = self?.fileURL(path),
+                  let date = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+            else { return NSNull() }
+            return date.timeIntervalSince1970
+        }
+        context.setObject(readFile, forKeyedSubscript: "__readFile" as NSString)
+        context.setObject(fileModified, forKeyedSubscript: "__fileModified" as NSString)
+
         let timeout: @convention(block) (JSValue, Double) -> Void = { [weak self] fn, ms in
             self?.queue.asyncAfter(deadline: .now() + max(0, min(ms, 60_000)) / 1000) { fn.call(withArguments: []) }
         }
@@ -176,6 +199,10 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
               error: (...a) => __log("error: " + a.map(String).join(" ")),
             };
             globalThis.secrets = Object.freeze({ get: (key) => __secret(String(key)) });
+            globalThis.files = Object.freeze({
+              read: (path) => __readFile(String(path)),
+              modified: (path) => __fileModified(String(path)),
+            });
             globalThis.storage = Object.freeze({
               get: (key) => __storageGet(String(key)),
               set: (key, value) => __storageSet(String(key), value),
@@ -197,6 +224,21 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
                 (message) => reject(new Error(message)));
             });
             """#)
+    }
+
+    private func fileURL(_ path: String) -> URL? {
+        guard manifest.allowsFile(path) else {
+            hooks.log("files: \(path) не разрешён — добавьте путь в permissions.files")
+            return nil
+        }
+        let absolute = URL(fileURLWithPath: hooks.home).appendingPathComponent(String(path.dropFirst(2)))
+        let resolved = absolute.resolvingSymlinksInPath()
+        let home = URL(fileURLWithPath: hooks.home).resolvingSymlinksInPath().path
+        guard manifest.allowsResolved(resolved.path, home: home) else {
+            hooks.log("files: \(path) ведёт за пределы разрешённых путей")
+            return nil
+        }
+        return resolved
     }
 
     private func fetch(url: String, method: String, headersJSON: String, body: String?, resolve: JSValue, reject: JSValue) {

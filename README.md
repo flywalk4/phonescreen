@@ -35,6 +35,7 @@ iPhone как пристыкованный вспомогательный экр
 python3 scripts/validate-widget.py catalog/widgets/<id>   # статическая проверка
 PhoneScreen --widget-test catalog/widgets/<id>            # запуск в настоящей песочнице
 python3 scripts/build-catalog.py                          # пересобрать catalog/index.json
+python3 scripts/claude-code-bridge.py install             # мост для виджета «Claude Code» (лимиты и статус)
 ```
 
 ## Структура

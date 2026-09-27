@@ -23,7 +23,8 @@ enum WidgetTestRunner {
                 return s
             },
             loadStorage: { [:] }, saveStorage: { _ in },
-            log: { line in FileHandle.standardError.write(Data("log: \(line)\n".utf8)) })
+            log: { line in FileHandle.standardError.write(Data("log: \(line)\n".utf8)) },
+            home: ProcessInfo.processInfo.environment["WIDGET_HOME"] ?? NSHomeDirectory())
         let runtime = WidgetRuntime(manifest: manifest, source: widget.source, hooks: hooks)
         runtime.refresh { result in
             switch result {
