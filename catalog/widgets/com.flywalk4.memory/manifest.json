@@ -1,0 +1,12 @@
+{
+  "id": "com.flywalk4.memory",
+  "name": "Память",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Найди пары: 16 карточек, открывай по две. Считаются ходы, лучший результат сохраняется. Наборы картинок — животные, еда, космос.",
+  "symbol": "square.grid.3x3.fill",
+  "refresh": 3600,
+  "settings": [
+    { "key": "set", "title": "Набор: animals, food, space", "default": "animals" }
+  ]
+}

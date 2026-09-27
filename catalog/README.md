@@ -109,19 +109,35 @@ async function action(name, ctx) {
 | type | поля |
 | --- | --- |
 | `vstack`, `hstack` | `children`, `spacing`, `align` (vstack: `leading`/`center`/`trailing`; hstack: `top`/`center`/`bottom`/`baseline`) |
-| `text` | `text`, `style` (`largeTitle` `title` `title2` `title3` `headline` `body` `callout` `subheadline` `footnote` `caption` `caption2`), `color`, `lines`, `align` |
+| `text` | `text`, `style` (`largeTitle` `title` `title2` `title3` `headline` `body` `callout` `subheadline` `footnote` `caption` `caption2`), `color`, `lines`, `align`; свой шрифт: `size` (пт), `weight` (`light` `regular` `medium` `semibold` `bold` `heavy` `black`…), `design` (`rounded` `monospaced` `serif`; по умолчанию — шрифт темы) |
 | `symbol` | `name` (SF Symbol), `color`, `size` |
 | `gauge` | `value` (0…1), `label`, `color` — кольцо |
 | `progress` | `value` (0…1), `color` — полоса |
-| `chart` | `values` (массив чисел, до 200), `color` — линия |
-| `button` | `title`, `symbol`, `action` → `action(name)` в provider.js; нажимается пальцем и курсором Mac |
-| `list` | `items` (массив), `template` (узел), `spacing`, `align` |
+| `chart` | `values` (массив чисел, до 200), `color`, `style` (`line` — линия, `area` — линия с заливкой-градиентом, `bar` — столбики), `height` |
+| `button` | `title`, `symbol`, `action` → `action(name)` в provider.js; нажимается пальцем и курсором Mac. В `action` можно привязку: `"tap:{{index}}"` |
+| `box` | плашка: `children` столбиком на скруглённой подложке. `padding` (12), `spacing`, `align`, `radius`; `background` + `opacity` — свой цвет, без них — подложка в стиле темы (стекло в Liquid Glass, рамка в ASCII). `fit: true` — по размеру содержимого («таблетки»), иначе на всю ширину. `action` — вся плашка кнопка (клетки игр, плитки). `aspect` — пропорции (1 — квадрат) |
+| `grid` | `children` в `columns` колонок (1–6), `spacing` |
+| `list` | `items` (массив), `template` (узел), `spacing`, `align`; `columns` — сеткой в N колонок |
 | `sprite` | пиксельная анимация: `frames` — массив кадров, кадр — массив строк одинаковой длины (до 48×48, до 16 кадров); `palette` — символ → цвет (`.` и пробел прозрачные); `fps`. Масштабируется под место. Кадры удобно рисовать кодом в provider.js |
 | `spacer`, `divider` | — |
 
 Цвета: `primary` `secondary` `tertiary` `accent` `red` `orange` `yellow` `green` `mint` `teal` `cyan` `blue` `indigo` `purple` `pink` `brown` `gray` `white` или `#RRGGBB`. Неизвестный `type` пропускается. Максимум 500 элементов и 2000 символов в тексте.
 
-Примеры целиком: [`widgets/com.flywalk4.rates`](widgets/com.flywalk4.rates) (сеть, настройки, история, график) и [`widgets/com.flywalk4.claude-code`](widgets/com.flywalk4.claude-code) (локальные файлы, анимированный спрайт).
+### Как сделать красиво
+
+Все виджеты каталога следуют одним правилам — так страницы смотрятся цельно:
+
+- **Шапка** — маленькая: цветной символ + подпись `caption`, `weight: semibold`, `color: secondary`, заглавными (`"РЫНКИ"`). Справа — второстепенное (город, время обновления) или кнопка.
+- **Главное число** — крупно: `size` 40–84, `weight: bold`, `design: rounded`. Одно на виджет.
+- **Изменения и статусы** — «таблеткой»: `box` с `fit: true`, `padding` 5–7, `radius` 8, `background` цвета статуса, `opacity: 0.18`, внутри текст того же цвета.
+- **Группы данных** — в `box` (подложка возьмёт стиль темы), мелкие показатели — плитками: `list` с `columns: 2` и `box` в шаблоне.
+- **Графики** — `style: area` для курсов и трендов, `bar` для прогнозов по часам.
+- **Цвета** — имена (`green`, `orange`, `secondary`, `accent`), а не `#RRGGBB`: темы их перекрашивают. Hex — только для «своих» цветов (логотип, пиксельный персонаж).
+- **Три размера по-разному**: `full` — всё с подробностями; `medium` — главное число, график, 3–4 показателя; `small` — одно число и подпись крупно, остальное мелко внизу.
+
+Примеры целиком: [`widgets/com.flywalk4.markets`](widgets/com.flywalk4.markets) (сеть, плитки, график-область), [`widgets/com.flywalk4.claude-code`](widgets/com.flywalk4.claude-code) (локальные файлы, анимированный спрайт), [`widgets/com.flywalk4.focus`](widgets/com.flywalk4.focus) (кнопки и состояние), [`widgets/com.flywalk4.game2048`](widgets/com.flywalk4.game2048) и [`widgets/com.flywalk4.minesweeper`](widgets/com.flywalk4.minesweeper) (игры: поле из нажимаемых плашек).
+
+**Игры и всё интерактивное.** Каждое нажатие — `action(name)` на Mac, затем `refresh()` сам, так что подходят пошаговые игры. Состояние храните в `storage`, новую партию сохраняйте сразу при создании (иначе поле будет меняться между обновлениями). Клетки поля — `list` с `columns` и шаблоном `{"type": "box", "aspect": 1, "action": "tap:{{index}}", …}`.
 
 ## Темы
 

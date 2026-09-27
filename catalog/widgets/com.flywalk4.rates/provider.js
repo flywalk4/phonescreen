@@ -31,7 +31,7 @@ async function refresh(ctx) {
   return {
     target,
     main: { code: rows[0].code, value: format(rows[0].raw) },
-    change: prev ? `${change >= 0 ? "▲" : "▼"} ${format(Math.abs(change))}` : "",
+    change: prev ? `${change >= 0 ? "▲" : "▼"} ${Math.abs(change) >= 0.01 ? Math.abs(change).toFixed(2) : format(Math.abs(change))}` : "",
     changeColor: change >= 0 ? "green" : "red",
     rows: rows.map((r) => ({ code: r.code, value: format(r.raw) })),
     history: history.map((h) => h.value),

@@ -1,0 +1,13 @@
+{
+  "id": "com.flywalk4.github",
+  "name": "GitHub",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Пул-реквесты, которые ждут твоего ревью, твои открытые PR и непрочитанные уведомления GitHub. Нужен токен (Settings → Developer settings → Personal access tokens; для публичных репозиториев хватит прав только на чтение).",
+  "symbol": "arrow.triangle.pull",
+  "refresh": 300,
+  "permissions": {
+    "network": ["api.github.com"],
+    "secrets": [{ "key": "token", "title": "GitHub токен" }]
+  }
+}

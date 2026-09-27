@@ -18,17 +18,22 @@ SIZES = {"full", "medium", "small"}
 NODES = {
     "vstack": {"spacing", "align", "children"},
     "hstack": {"spacing", "align", "children"},
-    "text": {"text", "style", "color", "lines", "align"},
+    "text": {"text", "style", "color", "lines", "align", "size", "weight", "design"},
     "symbol": {"name", "color", "size"},
     "gauge": {"value", "label", "color"},
     "progress": {"value", "color"},
-    "chart": {"values", "color"},
+    "chart": {"values", "color", "style", "height"},
     "button": {"title", "symbol", "action"},
     "sprite": {"frames", "palette", "fps"},
     "spacer": set(),
     "divider": set(),
-    "list": {"items", "template", "spacing", "align"},
+    "list": {"items", "template", "spacing", "align", "columns"},
+    "box": {"children", "spacing", "align", "padding", "background", "opacity", "radius", "fit", "action", "aspect"},
+    "grid": {"children", "columns", "spacing"},
 }
+WEIGHTS = {"ultraLight", "thin", "light", "regular", "medium", "semibold", "bold", "heavy", "black"}
+DESIGNS = {"default", "rounded", "monospaced", "serif"}
+CHART_STYLES = {"line", "area", "bar"}
 COMMON = {"type", "if"}
 STYLES = {"largeTitle", "title", "title2", "title3", "headline", "body", "callout", "subheadline", "footnote", "caption", "caption2"}
 BINDING = re.compile(r"\{\{\s*([^}]+?)\s*\}\}")
@@ -119,6 +124,11 @@ def check_node(node, path: str, errors: list[str]) -> None:
         errors.append(f"{path}: у {t} нет поля «{key}»")
     if t == "text" and "style" in node and not BINDING.search(str(node["style"])) and node["style"] not in STYLES:
         errors.append(f"{path}: style «{node['style']}» — есть: {', '.join(sorted(STYLES))}")
+    for key, allowed in (("weight", WEIGHTS), ("design", DESIGNS)):
+        if t == "text" and key in node and not BINDING.search(str(node[key])) and node[key] not in allowed:
+            errors.append(f"{path}: {key} «{node[key]}» — есть: {', '.join(sorted(allowed))}")
+    if t == "chart" and "style" in node and not BINDING.search(str(node["style"])) and node["style"] not in CHART_STYLES:
+        errors.append(f"{path}: style графика «{node['style']}» — есть: {', '.join(sorted(CHART_STYLES))}")
     if t == "button" and not node.get("action"):
         errors.append(f"{path}: у button нужен action")
     if t == "list":

@@ -23,8 +23,11 @@ async function refresh(ctx) {
   const main = rows.find((r) => r.ticker === wanted) || rows[0];
   const chart = await (main.kind === "crypto" ? cryptoChart(main.id, vs) : stockChart(main.ticker)).catch(() => []);
 
+  const plain = rows.map(({ id, kind, ...r }) => r);
   return {
-    rows: rows.map(({ id, kind, ...r }) => r),
+    rows: plain,
+    rest: plain.filter((r) => r.ticker !== main.ticker),
+    others: plain.filter((r) => r.ticker !== main.ticker).slice(0, 4),
     main,
     chart,
     hasChart: chart.length > 1,
@@ -50,7 +53,7 @@ async function cryptoRows(coins, vs) {
     + `&vs_currencies=${encodeURIComponent(vs)}&include_24hr_change=true`, "CoinGecko");
   return items.filter((i) => data[i.id] && data[i.id][vs] != null).map((i) => {
     const change = data[i.id][`${vs}_24h_change`];
-    return row("crypto", i.ticker, i.id, data[i.id][vs], vs, change, "за сутки");
+    return row("crypto", i.ticker, i.id, data[i.id][vs], vs, change, "изменение за сутки");
   });
 }
 
@@ -74,7 +77,7 @@ async function stockRows(tickers) {
     const price = live ?? a.PREVPRICE;
     if (price == null) return null;
     const change = live != null && a.PREVPRICE ? (live / a.PREVPRICE - 1) * 100 : null;
-    return { ...row("stock", t, t, price, "rub", change, "к закрытию"), name: a.SHORTNAME || t };
+    return { ...row("stock", t, t, price, "rub", change, "к вчерашнему закрытию"), name: a.SHORTNAME || t, noTrades: live == null };
   }).filter(Boolean);
 }
 

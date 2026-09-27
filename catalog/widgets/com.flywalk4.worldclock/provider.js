@@ -20,6 +20,7 @@ async function refresh(ctx) {
       time: `${pad(t.hour)}:${pad(t.minute)}`,
       diff: diffText(diff),
       day,
+      dayLabel: day ? ` · ${day}` : "",
       detail: [diffText(diff), day, t.weekdayName].filter(Boolean).join(" · "),
       status: status.text, icon: status.icon, color: status.color,
     };
@@ -29,6 +30,7 @@ async function refresh(ctx) {
     local: `${pad(here.hour)}:${pad(here.minute)}`,
     rows,
     first: rows[0],
+    rest: rows.slice(1, 4),
     working: rows.filter((r) => r.status === STATUS.work.text).length,
     total: rows.length,
   };

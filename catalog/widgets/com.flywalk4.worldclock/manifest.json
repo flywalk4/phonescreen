@@ -1,13 +1,21 @@
 {
   "id": "com.flywalk4.worldclock",
   "name": "Мировое время",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
   "description": "Время в других городах и часовых поясах: разница с твоим, «завтра» или «вчера» и кто сейчас на работе, а кто спит. Без сети.",
   "symbol": "globe",
   "refresh": 15,
   "settings": [
-    { "key": "zones", "title": "Города: Название=Часовой/Пояс через запятую", "default": "Лондон=Europe/London, Нью-Йорк=America/New_York, Сан-Франциско=America/Los_Angeles, Токио=Asia/Tokyo" },
-    { "key": "work", "title": "Рабочие часы (например 9-18)", "default": "9-18" }
+    {
+      "key": "zones",
+      "title": "Города: Название=Часовой/Пояс через запятую",
+      "default": "Лондон=Europe/London, Нью-Йорк=America/New_York, Сан-Франциско=America/Los_Angeles, Токио=Asia/Tokyo"
+    },
+    {
+      "key": "work",
+      "title": "Рабочие часы (например 9-18)",
+      "default": "9-18"
+    }
   ]
 }

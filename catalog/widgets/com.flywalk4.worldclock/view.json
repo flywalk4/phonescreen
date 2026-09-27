@@ -1,50 +1,235 @@
 {
-  "full": {
-    "type": "vstack", "spacing": 14, "align": "leading",
+ "full": {
+  "type": "vstack",
+  "spacing": 12,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "spacing": 8,
     "children": [
-      { "type": "hstack", "spacing": 8, "children": [
-        { "type": "symbol", "name": "globe", "color": "accent" },
-        { "type": "text", "text": "Мировое время", "style": "title2" },
-        { "type": "spacer" },
-        { "type": "text", "text": "у тебя {{local}}", "style": "subheadline", "color": "secondary" }
-      ]},
-      { "type": "list", "items": "{{rows}}", "spacing": 14, "template": {
-        "type": "hstack", "spacing": 12, "children": [
-          { "type": "symbol", "name": "{{item.icon}}", "color": "{{item.color}}", "size": 22 },
-          { "type": "vstack", "spacing": 2, "align": "leading", "children": [
-            { "type": "text", "text": "{{item.name}}", "style": "headline", "lines": 1 },
-            { "type": "text", "text": "{{item.detail}} · {{item.status}}", "style": "caption", "color": "secondary", "lines": 1 }
-          ]},
-          { "type": "spacer" },
-          { "type": "text", "text": "{{item.time}}", "style": "title" }
-        ]
-      }},
-      { "type": "spacer" }
+     {
+      "type": "symbol",
+      "name": "globe",
+      "color": "accent",
+      "size": 15
+     },
+     {
+      "type": "text",
+      "text": "МИРОВОЕ ВРЕМЯ",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "secondary"
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "text",
+      "text": "у тебя {{local}}",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "secondary"
+     }
     ]
-  },
-  "medium": {
-    "type": "list", "items": "{{rows}}", "spacing": 8, "template": {
-      "type": "hstack", "spacing": 8, "children": [
-        { "type": "symbol", "name": "{{item.icon}}", "color": "{{item.color}}", "size": 14 },
-        { "type": "vstack", "spacing": 0, "align": "leading", "children": [
-          { "type": "text", "text": "{{item.name}}", "style": "subheadline", "lines": 1 },
-          { "type": "text", "text": "{{item.diff}}", "style": "caption2", "color": "secondary", "lines": 1 }
-        ]},
-        { "type": "spacer" },
-        { "type": "text", "text": "{{item.time}}", "style": "title3" },
-        { "type": "text", "text": "{{item.day}}", "style": "caption2", "color": "secondary", "if": "{{item.day}}" }
-      ]
+   },
+   {
+    "type": "list",
+    "items": "{{rows}}",
+    "spacing": 10,
+    "template": {
+     "type": "box",
+     "padding": 14,
+     "children": [
+      {
+       "type": "hstack",
+       "spacing": 12,
+       "children": [
+        {
+         "type": "vstack",
+         "spacing": 4,
+         "align": "leading",
+         "children": [
+          {
+           "type": "text",
+           "text": "{{item.name}}",
+           "style": "headline",
+           "lines": 1
+          },
+          {
+           "type": "text",
+           "text": "{{item.diff}}{{item.dayLabel}}",
+           "style": "caption",
+           "color": "secondary",
+           "lines": 1
+          },
+          {
+           "type": "box",
+           "fit": true,
+           "padding": 4,
+           "radius": 6,
+           "background": "{{item.color}}",
+           "opacity": 0.18,
+           "children": [
+            {
+             "type": "hstack",
+             "spacing": 4,
+             "children": [
+              {
+               "type": "symbol",
+               "name": "{{item.icon}}",
+               "color": "{{item.color}}",
+               "size": 11
+              },
+              {
+               "type": "text",
+               "text": "{{item.status}}",
+               "style": "caption2",
+               "weight": "semibold",
+               "color": "{{item.color}}"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "spacer"
+        },
+        {
+         "type": "text",
+         "text": "{{item.time}}",
+         "size": 40,
+         "weight": "semibold",
+         "design": "rounded"
+        }
+       ]
+      }
+     ]
     }
-  },
-  "small": {
-    "type": "vstack", "spacing": 4, "align": "leading",
-    "children": [
-      { "type": "hstack", "spacing": 6, "children": [
-        { "type": "symbol", "name": "{{first.icon}}", "color": "{{first.color}}", "size": 14 },
-        { "type": "text", "text": "{{first.name}}", "style": "caption", "color": "secondary", "lines": 1 }
-      ]},
-      { "type": "text", "text": "{{first.time}}", "style": "largeTitle" },
-      { "type": "text", "text": "{{first.diff}} {{first.day}}", "style": "caption2", "color": "secondary" }
-    ]
+   },
+   {
+    "type": "spacer"
+   }
+  ]
+ },
+ "medium": {
+  "type": "list",
+  "items": "{{rows}}",
+  "spacing": 9,
+  "template": {
+   "type": "hstack",
+   "spacing": 8,
+   "children": [
+    {
+     "type": "symbol",
+     "name": "{{item.icon}}",
+     "color": "{{item.color}}",
+     "size": 14
+    },
+    {
+     "type": "vstack",
+     "spacing": 0,
+     "align": "leading",
+     "children": [
+      {
+       "type": "text",
+       "text": "{{item.name}}",
+       "style": "subheadline",
+       "weight": "semibold",
+       "lines": 1
+      },
+      {
+       "type": "text",
+       "text": "{{item.diff}}{{item.dayLabel}}",
+       "style": "caption2",
+       "color": "secondary",
+       "lines": 1
+      }
+     ]
+    },
+    {
+     "type": "spacer"
+    },
+    {
+     "type": "text",
+     "text": "{{item.time}}",
+     "size": 24,
+     "weight": "semibold",
+     "design": "rounded"
+    }
+   ]
   }
+ },
+ "small": {
+  "type": "vstack",
+  "spacing": 4,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "spacing": 5,
+    "children": [
+     {
+      "type": "symbol",
+      "name": "{{first.icon}}",
+      "color": "{{first.color}}",
+      "size": 13
+     },
+     {
+      "type": "text",
+      "text": "{{first.name}}",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "secondary",
+      "lines": 1
+     }
+    ]
+   },
+   {
+    "type": "text",
+    "text": "{{first.time}}",
+    "size": 40,
+    "weight": "semibold",
+    "design": "rounded"
+   },
+   {
+    "type": "text",
+    "text": "{{first.diff}}{{first.dayLabel}}",
+    "style": "caption2",
+    "color": "secondary"
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "list",
+    "items": "{{rest}}",
+    "spacing": 5,
+    "template": {
+     "type": "hstack",
+     "spacing": 4,
+     "children": [
+      {
+       "type": "text",
+       "text": "{{item.name}}",
+       "style": "caption",
+       "lines": 1
+      },
+      {
+       "type": "spacer"
+      },
+      {
+       "type": "text",
+       "text": "{{item.time}}",
+       "style": "caption",
+       "weight": "semibold",
+       "design": "rounded"
+      }
+     ]
+    }
+   }
+  ]
+ }
 }

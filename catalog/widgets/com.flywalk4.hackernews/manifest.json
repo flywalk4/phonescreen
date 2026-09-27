@@ -1,0 +1,14 @@
+{
+  "id": "com.flywalk4.hackernews",
+  "name": "Hacker News",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Главные истории Hacker News: заголовок, сайт, очки и комментарии, свежие отмечены. Без ключа.",
+  "symbol": "newspaper.fill",
+  "refresh": 900,
+  "permissions": { "network": ["hacker-news.firebaseio.com"] },
+  "settings": [
+    { "key": "list", "title": "Лента: top, best, new, ask, show", "default": "top" },
+    { "key": "count", "title": "Сколько историй (до 12)", "default": "8" }
+  ]
+}

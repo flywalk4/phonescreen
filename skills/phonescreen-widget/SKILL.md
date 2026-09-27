@@ -38,8 +38,14 @@ The full reference (every field, node type and sandbox API) is `catalog/README.m
 
 ## View cheatsheet
 
-Nodes: `vstack` / `hstack` (`children`, `spacing`, `align`), `text` (`text`, `style`, `color`, `lines`, `align`), `symbol` (SF Symbol `name`, `color`, `size`), `gauge` / `progress` (`value` 0…1), `chart` (`values` array), `button` (`title`, `symbol`, `action`), `list` (`items`, `template`), `sprite` (pixel animation: `frames` = arrays of equal-length strings, `palette` char → colour, `fps`; draw frames in code, see `com.flywalk4.claude-code`), `spacer`, `divider`. Any node may have `"if"`.
+Nodes: `vstack` / `hstack` (`children`, `spacing`, `align`), `text` (`text`, `style`, `color`, `lines`, `align`, plus `size` / `weight` / `design` for big rounded numbers), `symbol` (SF Symbol `name`, `color`, `size`), `gauge` / `progress` (`value` 0…1), `chart` (`values` array, `style`: `line` | `area` | `bar`, `height`), `button` (`title`, `symbol`, `action` — may contain bindings like `"tap:{{index}}"`), `box` (a rounded panel: `children`, `padding`, `radius`, `background` + `opacity` or the theme's surface; `fit` to hug content; `action` makes it tappable; `aspect` keeps proportions), `grid` (`children`, `columns`), `list` (`items`, `template`, `columns` for a grid), `sprite` (pixel animation: `frames` = arrays of equal-length strings, `palette` char → colour, `fps`; draw frames in code, see `com.flywalk4.claude-code`), `spacer`, `divider`. Any node may have `"if"`.
 Text styles: `largeTitle title title2 title3 headline body callout subheadline footnote caption caption2`. Colours: system names (`green`, `secondary`, `accent`, …) or `#RRGGBB`. Prefer names: themes restyle them (`primary`/`secondary` are the theme's text colours; a theme's `palette` can remap any name), while `#RRGGBB` stays fixed in every theme — keep hex for things like a mascot's own colours.
+
+## Design (make it look like the rest of the catalog)
+
+Read "Как сделать красиво" in `catalog/README.md` and copy the patterns from `com.flywalk4.markets`: a small uppercase caption header with a coloured symbol; one hero number (`size` 40–84, `weight: bold`, `design: rounded`); changes and statuses as pills (`box` with `fit: true`, `background` = status colour, `opacity: 0.18`); groups in `box`, secondary figures as tiles (`list` with `columns: 2`); `area` charts for trends, `bar` for hourly forecasts; colour names rather than hex so themes can restyle them. Design all three sizes separately — don't just shrink `full`.
+
+Games and other interactive widgets: every tap is `action(name)` on the Mac, then `refresh()` — good for turn-based games. Board cells: `list` with `columns` and a `box` template with `"aspect": 1, "action": "tap:{{index}}"`. Keep state in `storage` and save a freshly created game immediately (otherwise a random board changes between refreshes). Keep each synchronous step well under 2 s (prune searches — see the alpha-beta in `com.flywalk4.tictactoe`).
 
 ## Quality bar
 

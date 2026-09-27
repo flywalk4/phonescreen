@@ -1,0 +1,82 @@
+{
+  "full": {
+    "type": "vstack", "spacing": 14, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 8, "children": [
+        { "type": "symbol", "name": "aqi.medium", "color": "{{color}}", "size": 15 },
+        { "type": "text", "text": "ВОЗДУХ", "style": "caption", "weight": "semibold", "color": "secondary" },
+        { "type": "spacer" },
+        { "type": "text", "text": "{{place}}", "style": "caption", "color": "secondary" }
+      ]},
+      { "type": "box", "padding": 18, "spacing": 10, "children": [
+        { "type": "hstack", "align": "top", "children": [
+          { "type": "vstack", "spacing": 0, "align": "leading", "children": [
+            { "type": "text", "text": "{{aqi}}", "size": 72, "weight": "bold", "design": "rounded", "color": "{{color}}" },
+            { "type": "text", "text": "индекс AQI", "style": "caption", "color": "secondary" }
+          ]},
+          { "type": "spacer" },
+          { "type": "box", "fit": true, "padding": 7, "radius": 10, "background": "{{color}}", "opacity": 0.18, "children": [
+            { "type": "text", "text": "{{level}}", "style": "headline", "color": "{{color}}" }
+          ]}
+        ]},
+        { "type": "progress", "value": "{{scale}}", "color": "{{color}}" },
+        { "type": "text", "text": "{{tip}}", "style": "subheadline", "weight": "medium" }
+      ]},
+      { "type": "list", "items": "{{pollutants}}", "columns": 2, "spacing": 10, "template":
+        { "type": "box", "padding": 12, "spacing": 5, "children": [
+          { "type": "text", "text": "{{item.name}}", "style": "caption", "weight": "semibold", "color": "secondary" },
+          { "type": "hstack", "align": "baseline", "spacing": 4, "children": [
+            { "type": "text", "text": "{{item.value}}", "size": 22, "weight": "bold", "design": "rounded" },
+            { "type": "text", "text": "{{item.unit}}", "style": "caption2", "color": "secondary" }
+          ]},
+          { "type": "progress", "value": "{{item.bar}}", "color": "{{item.color}}" }
+        ]}
+      },
+      { "type": "box", "padding": 14, "spacing": 8, "children": [
+        { "type": "hstack", "children": [
+          { "type": "text", "text": "Прогноз на сутки", "style": "subheadline", "weight": "semibold" },
+          { "type": "spacer" },
+          { "type": "text", "text": "УФ {{uv}} · {{uvText}}", "style": "caption", "weight": "semibold", "color": "{{uvColor}}" }
+        ]},
+        { "type": "chart", "values": "{{hourly}}", "color": "{{color}}", "style": "bar", "height": 70, "if": "{{hasHourly}}" },
+        { "type": "text", "text": "{{outlook}}", "style": "caption", "color": "secondary" }
+      ]},
+      { "type": "spacer" }
+    ]
+  },
+  "medium": {
+    "type": "vstack", "spacing": 10, "align": "leading",
+    "children": [
+      { "type": "hstack", "align": "top", "children": [
+        { "type": "vstack", "spacing": 0, "align": "leading", "children": [
+          { "type": "text", "text": "{{aqi}}", "size": 48, "weight": "bold", "design": "rounded", "color": "{{color}}" },
+          { "type": "text", "text": "{{level}} воздух", "style": "subheadline", "weight": "semibold" }
+        ]},
+        { "type": "spacer" },
+        { "type": "text", "text": "УФ {{uv}}", "style": "caption", "weight": "semibold", "color": "{{uvColor}}" }
+      ]},
+      { "type": "progress", "value": "{{scale}}", "color": "{{color}}" },
+      { "type": "list", "items": "{{pollutants}}", "columns": 2, "spacing": 6, "template":
+        { "type": "hstack", "spacing": 4, "children": [
+          { "type": "text", "text": "{{item.name}}", "style": "caption", "color": "secondary" },
+          { "type": "spacer" },
+          { "type": "text", "text": "{{item.value}}", "style": "caption", "weight": "semibold", "design": "rounded", "color": "{{item.color}}" }
+        ]}
+      },
+      { "type": "spacer" },
+      { "type": "chart", "values": "{{hourly}}", "color": "{{color}}", "style": "bar", "height": 60, "if": "{{hasHourly}}" }
+    ]
+  },
+  "small": {
+    "type": "vstack", "spacing": 4, "align": "leading",
+    "children": [
+      { "type": "text", "text": "Воздух", "style": "caption", "weight": "semibold", "color": "secondary" },
+      { "type": "text", "text": "{{aqi}}", "size": 44, "weight": "bold", "design": "rounded", "color": "{{color}}" },
+      { "type": "text", "text": "{{level}}", "style": "subheadline", "weight": "semibold" },
+      { "type": "progress", "value": "{{scale}}", "color": "{{color}}" },
+      { "type": "spacer" },
+      { "type": "chart", "values": "{{hourly}}", "color": "{{color}}", "style": "bar", "height": 50, "if": "{{hasHourly}}" },
+      { "type": "text", "text": "УФ {{uv}} · {{uvText}}", "style": "caption2", "color": "{{uvColor}}" }
+    ]
+  }
+}

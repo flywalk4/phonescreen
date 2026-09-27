@@ -1,0 +1,89 @@
+{
+  "full": {
+    "type": "vstack", "spacing": 14, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 8, "children": [
+        { "type": "symbol", "name": "arrow.triangle.pull", "color": "purple", "size": 15 },
+        { "type": "text", "text": "GITHUB", "style": "caption", "weight": "semibold", "color": "secondary" }
+      ]},
+      { "type": "hstack", "spacing": 10, "children": [
+        { "type": "box", "padding": 14, "spacing": 2, "children": [
+          { "type": "text", "text": "{{reviewCount}}", "size": 36, "weight": "bold", "design": "rounded", "color": "{{reviewColor}}" },
+          { "type": "text", "text": "ждут ревью", "style": "caption", "color": "secondary" }
+        ]},
+        { "type": "box", "padding": 14, "spacing": 2, "children": [
+          { "type": "text", "text": "{{mineCount}}", "size": 36, "weight": "bold", "design": "rounded" },
+          { "type": "text", "text": "моих PR", "style": "caption", "color": "secondary" }
+        ]},
+        { "type": "box", "padding": 14, "spacing": 2, "children": [
+          { "type": "text", "text": "{{unread}}", "size": 36, "weight": "bold", "design": "rounded", "color": "blue" },
+          { "type": "text", "text": "уведомлений", "style": "caption", "color": "secondary" }
+        ]}
+      ]},
+      { "type": "text", "text": "Ждут твоего ревью", "style": "headline", "if": "{{hasReview}}" },
+      { "type": "text", "text": "🎉 Ревью никто не ждёт", "style": "headline", "color": "green", "if": "{{allClear}}" },
+      { "type": "list", "items": "{{review}}", "spacing": 8, "template":
+        { "type": "box", "padding": 12, "spacing": 4, "children": [
+          { "type": "text", "text": "{{item.title}}", "style": "subheadline", "weight": "semibold", "lines": 2 },
+          { "type": "hstack", "spacing": 8, "children": [
+            { "type": "text", "text": "{{item.repo}} {{item.number}}", "style": "caption", "color": "secondary", "lines": 1 },
+            { "type": "spacer" },
+            { "type": "text", "text": "{{item.age}}", "style": "caption", "color": "secondary" }
+          ]}
+        ]}
+      },
+      { "type": "text", "text": "Мои открытые", "style": "headline", "if": "{{hasMine}}" },
+      { "type": "list", "items": "{{mine}}", "spacing": 10, "template":
+        { "type": "hstack", "spacing": 10, "children": [
+          { "type": "symbol", "name": "arrow.triangle.pull", "color": "{{item.color}}", "size": 14 },
+          { "type": "vstack", "spacing": 1, "align": "leading", "children": [
+            { "type": "text", "text": "{{item.title}}", "style": "subheadline", "lines": 1 },
+            { "type": "text", "text": "{{item.repo}} {{item.number}} · {{item.age}}", "style": "caption2", "color": "secondary", "lines": 1 }
+          ]},
+          { "type": "spacer" },
+          { "type": "text", "text": "💬 {{item.comments}}", "style": "caption", "color": "secondary" }
+        ]}
+      },
+      { "type": "spacer" }
+    ]
+  },
+  "medium": {
+    "type": "vstack", "spacing": 10, "align": "leading",
+    "children": [
+      { "type": "hstack", "spacing": 14, "children": [
+        { "type": "vstack", "spacing": 0, "align": "leading", "children": [
+          { "type": "text", "text": "{{reviewCount}}", "size": 34, "weight": "bold", "design": "rounded", "color": "{{reviewColor}}" },
+          { "type": "text", "text": "на ревью", "style": "caption2", "color": "secondary" }
+        ]},
+        { "type": "vstack", "spacing": 0, "align": "leading", "children": [
+          { "type": "text", "text": "{{mineCount}}", "size": 34, "weight": "bold", "design": "rounded" },
+          { "type": "text", "text": "моих", "style": "caption2", "color": "secondary" }
+        ]},
+        { "type": "spacer" },
+        { "type": "vstack", "spacing": 0, "align": "trailing", "children": [
+          { "type": "text", "text": "{{unread}}", "size": 34, "weight": "bold", "design": "rounded", "color": "blue" },
+          { "type": "text", "text": "уведомл.", "style": "caption2", "color": "secondary" }
+        ]}
+      ]},
+      { "type": "divider" },
+      { "type": "text", "text": "🎉 Ревью никто не ждёт", "style": "subheadline", "color": "green", "if": "{{allClear}}" },
+      { "type": "list", "items": "{{review}}", "spacing": 8, "template":
+        { "type": "vstack", "spacing": 1, "align": "leading", "children": [
+          { "type": "text", "text": "{{item.title}}", "style": "footnote", "weight": "semibold", "lines": 1 },
+          { "type": "text", "text": "{{item.repo}} {{item.number}} · {{item.age}}", "style": "caption2", "color": "secondary", "lines": 1 }
+        ]}
+      }
+    ]
+  },
+  "small": {
+    "type": "vstack", "spacing": 4, "align": "leading",
+    "children": [
+      { "type": "symbol", "name": "arrow.triangle.pull", "color": "purple", "size": 18 },
+      { "type": "text", "text": "{{reviewCount}}", "size": 48, "weight": "bold", "design": "rounded", "color": "{{reviewColor}}" },
+      { "type": "text", "text": "ждут ревью", "style": "caption", "weight": "semibold" },
+      { "type": "spacer" },
+      { "type": "text", "text": "{{mineCount}} моих PR", "style": "caption", "color": "secondary" },
+      { "type": "text", "text": "{{unread}} уведомлений", "style": "caption", "color": "blue" }
+    ]
+  }
+}

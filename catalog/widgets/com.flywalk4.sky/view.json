@@ -1,0 +1,404 @@
+{
+ "full": {
+  "type": "vstack",
+  "spacing": 14,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "spacing": 8,
+    "children": [
+     {
+      "type": "symbol",
+      "name": "location.fill",
+      "color": "secondary",
+      "size": 13
+     },
+     {
+      "type": "text",
+      "text": "{{place}}",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "secondary"
+     }
+    ]
+   },
+   {
+    "type": "box",
+    "padding": 18,
+    "spacing": 12,
+    "children": [
+     {
+      "type": "hstack",
+      "children": [
+       {
+        "type": "symbol",
+        "name": "{{icon}}",
+        "color": "{{iconColor}}",
+        "size": 30
+       },
+       {
+        "type": "spacer"
+       },
+       {
+        "type": "text",
+        "text": "{{status}}",
+        "style": "subheadline",
+        "weight": "medium",
+        "color": "secondary"
+       }
+      ]
+     },
+     {
+      "type": "hstack",
+      "children": [
+       {
+        "type": "vstack",
+        "spacing": 2,
+        "align": "leading",
+        "children": [
+         {
+          "type": "text",
+          "text": "Восход",
+          "style": "caption",
+          "color": "secondary"
+         },
+         {
+          "type": "text",
+          "text": "{{sunrise}}",
+          "size": 40,
+          "weight": "bold",
+          "design": "rounded"
+         }
+        ]
+       },
+       {
+        "type": "spacer"
+       },
+       {
+        "type": "vstack",
+        "spacing": 2,
+        "align": "trailing",
+        "children": [
+         {
+          "type": "text",
+          "text": "Закат",
+          "style": "caption",
+          "color": "secondary"
+         },
+         {
+          "type": "text",
+          "text": "{{sunset}}",
+          "size": 40,
+          "weight": "bold",
+          "design": "rounded"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "progress",
+      "value": "{{dayShare}}",
+      "color": "yellow"
+     },
+     {
+      "type": "hstack",
+      "children": [
+       {
+        "type": "text",
+        "text": "День {{length}}",
+        "style": "subheadline",
+        "weight": "semibold"
+       },
+       {
+        "type": "spacer"
+       },
+       {
+        "type": "text",
+        "text": "{{diff}}",
+        "style": "footnote",
+        "color": "{{diffColor}}"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "box",
+    "padding": 18,
+    "children": [
+     {
+      "type": "hstack",
+      "spacing": 18,
+      "children": [
+       {
+        "type": "sprite",
+        "frames": "{{moon.frames}}",
+        "fps": 1,
+        "palette": {
+         "l": "#F2EFE4",
+         "c": "#D6D1C0",
+         "d": "#2B2F3A",
+         "e": "#23262F"
+        }
+       },
+       {
+        "type": "vstack",
+        "spacing": 4,
+        "align": "leading",
+        "children": [
+         {
+          "type": "text",
+          "text": "{{moon.phase}}",
+          "style": "title3",
+          "weight": "semibold"
+         },
+         {
+          "type": "text",
+          "text": "освещено {{moon.lit}}",
+          "style": "subheadline",
+          "color": "secondary"
+         },
+         {
+          "type": "text",
+          "text": "{{moon.nextFull}}",
+          "style": "footnote",
+          "color": "secondary"
+         },
+         {
+          "type": "text",
+          "text": "{{moon.nextNew}}",
+          "style": "footnote",
+          "color": "secondary"
+         }
+        ]
+       },
+       {
+        "type": "spacer"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "box",
+    "padding": 14,
+    "spacing": 8,
+    "if": "{{week}}",
+    "children": [
+     {
+      "type": "text",
+      "text": "Неделя вперёд",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "secondary"
+     },
+     {
+      "type": "list",
+      "items": "{{week}}",
+      "spacing": 6,
+      "template": {
+       "type": "hstack",
+       "spacing": 10,
+       "children": [
+        {
+         "type": "text",
+         "text": "{{item.day}}",
+         "style": "subheadline",
+         "weight": "semibold",
+         "color": "secondary"
+        },
+        {
+         "type": "text",
+         "text": "↑ {{item.sunrise}}",
+         "style": "subheadline",
+         "design": "rounded"
+        },
+        {
+         "type": "text",
+         "text": "↓ {{item.sunset}}",
+         "style": "subheadline",
+         "design": "rounded"
+        },
+        {
+         "type": "spacer"
+        },
+        {
+         "type": "text",
+         "text": "{{item.length}}",
+         "style": "caption",
+         "color": "secondary"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "text",
+    "text": "Open-Meteo · фаза Луны рассчитана",
+    "style": "caption2",
+    "color": "secondary"
+   }
+  ]
+ },
+ "medium": {
+  "type": "vstack",
+  "spacing": 12,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "children": [
+     {
+      "type": "vstack",
+      "spacing": 1,
+      "align": "leading",
+      "children": [
+       {
+        "type": "text",
+        "text": "Восход",
+        "style": "caption",
+        "color": "secondary"
+       },
+       {
+        "type": "text",
+        "text": "{{sunrise}}",
+        "size": 30,
+        "weight": "bold",
+        "design": "rounded"
+       }
+      ]
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "vstack",
+      "spacing": 1,
+      "align": "trailing",
+      "children": [
+       {
+        "type": "text",
+        "text": "Закат",
+        "style": "caption",
+        "color": "secondary"
+       },
+       {
+        "type": "text",
+        "text": "{{sunset}}",
+        "size": 30,
+        "weight": "bold",
+        "design": "rounded"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "progress",
+    "value": "{{dayShare}}",
+    "color": "yellow"
+   },
+   {
+    "type": "text",
+    "text": "{{status}} · день {{length}}",
+    "style": "caption",
+    "color": "secondary"
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "hstack",
+    "spacing": 14,
+    "children": [
+     {
+      "type": "sprite",
+      "frames": "{{moon.frames}}",
+      "fps": 1,
+      "palette": {
+       "l": "#F2EFE4",
+       "c": "#D6D1C0",
+       "d": "#2B2F3A",
+       "e": "#23262F"
+      }
+     },
+     {
+      "type": "vstack",
+      "spacing": 2,
+      "align": "leading",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{moon.phase}}",
+        "style": "headline"
+       },
+       {
+        "type": "text",
+        "text": "{{moon.lit}} · {{moon.nextFull}}",
+        "style": "caption",
+        "color": "secondary"
+       }
+      ]
+     },
+     {
+      "type": "spacer"
+     }
+    ]
+   }
+  ]
+ },
+ "small": {
+  "type": "vstack",
+  "spacing": 6,
+  "align": "leading",
+  "children": [
+   {
+    "type": "sprite",
+    "frames": "{{moon.frames}}",
+    "fps": 1,
+    "palette": {
+     "l": "#F2EFE4",
+     "c": "#D6D1C0",
+     "d": "#2B2F3A",
+     "e": "#23262F"
+    }
+   },
+   {
+    "type": "text",
+    "text": "{{moon.phase}}",
+    "style": "caption",
+    "weight": "semibold",
+    "lines": 2
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "text",
+    "text": "↑ {{sunrise}}",
+    "size": 22,
+    "weight": "bold",
+    "design": "rounded"
+   },
+   {
+    "type": "text",
+    "text": "↓ {{sunset}}",
+    "size": 22,
+    "weight": "bold",
+    "design": "rounded"
+   },
+   {
+    "type": "text",
+    "text": "день {{length}}",
+    "style": "caption2",
+    "color": "secondary"
+   }
+  ]
+ }
+}

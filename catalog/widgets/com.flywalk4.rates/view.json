@@ -1,48 +1,290 @@
 {
-  "full": {
-    "type": "vstack", "spacing": 14, "align": "leading",
+ "full": {
+  "type": "vstack",
+  "spacing": 14,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "spacing": 8,
     "children": [
-      { "type": "hstack", "spacing": 8, "children": [
-        { "type": "symbol", "name": "dollarsign.arrow.circlepath", "color": "green" },
-        { "type": "text", "text": "Курсы валют", "style": "title2" },
-        { "type": "spacer" },
-        { "type": "button", "title": "Обновить", "symbol": "arrow.clockwise", "action": "reload" }
-      ]},
-      { "type": "text", "text": "1 {{main.code}} = {{main.value}} {{target}}", "style": "largeTitle" },
-      { "type": "text", "text": "{{change}} за день", "color": "{{changeColor}}", "style": "headline", "if": "{{change}}" },
-      { "type": "chart", "values": "{{history}}", "color": "green", "if": "{{hasHistory}}" },
-      { "type": "divider" },
-      { "type": "list", "items": "{{rows}}", "spacing": 10, "template":
-        { "type": "hstack", "children": [
-          { "type": "text", "text": "{{item.code}}", "style": "headline" },
-          { "type": "spacer" },
-          { "type": "text", "text": "{{item.value}} {{target}}", "style": "body" }
-        ]}
+     {
+      "type": "symbol",
+      "name": "dollarsign.arrow.circlepath",
+      "color": "green",
+      "size": 15
+     },
+     {
+      "type": "text",
+      "text": "КУРСЫ ВАЛЮТ",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "secondary"
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "button",
+      "title": "Обновить",
+      "symbol": "arrow.clockwise",
+      "action": "reload"
+     }
+    ]
+   },
+   {
+    "type": "box",
+    "padding": 18,
+    "spacing": 10,
+    "children": [
+     {
+      "type": "hstack",
+      "align": "top",
+      "children": [
+       {
+        "type": "vstack",
+        "spacing": 2,
+        "align": "leading",
+        "children": [
+         {
+          "type": "text",
+          "text": "1 {{main.code}} в {{target}}",
+          "style": "subheadline",
+          "weight": "semibold",
+          "color": "secondary"
+         },
+         {
+          "type": "text",
+          "text": "{{main.value}}",
+          "size": 52,
+          "weight": "bold",
+          "design": "rounded",
+          "lines": 1
+         }
+        ]
+       },
+       {
+        "type": "spacer"
+       },
+       {
+        "type": "box",
+        "fit": true,
+        "padding": 6,
+        "radius": 8,
+        "background": "{{changeColor}}",
+        "opacity": 0.18,
+        "if": "{{change}}",
+        "children": [
+         {
+          "type": "text",
+          "text": "{{change}}",
+          "style": "subheadline",
+          "weight": "semibold",
+          "color": "{{changeColor}}"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "chart",
+      "values": "{{history}}",
+      "color": "green",
+      "style": "area",
+      "height": 110,
+      "if": "{{hasHistory}}"
+     },
+     {
+      "type": "text",
+      "text": "за последние дни",
+      "style": "caption",
+      "color": "secondary",
+      "if": "{{hasHistory}}"
+     }
+    ]
+   },
+   {
+    "type": "list",
+    "items": "{{rows}}",
+    "columns": 2,
+    "spacing": 10,
+    "template": {
+     "type": "box",
+     "padding": 12,
+     "spacing": 2,
+     "children": [
+      {
+       "type": "text",
+       "text": "1 {{item.code}}",
+       "style": "caption",
+       "weight": "semibold",
+       "color": "secondary"
       },
-      { "type": "spacer" },
-      { "type": "text", "text": "Обновлено {{updated}} · open.er-api.com", "style": "caption", "color": "secondary" }
-    ]
-  },
-  "medium": {
-    "type": "vstack", "spacing": 8, "align": "leading",
-    "children": [
-      { "type": "text", "text": "1 {{main.code}} = {{main.value}} {{target}}", "style": "title2" },
-      { "type": "text", "text": "{{change}}", "color": "{{changeColor}}", "style": "caption", "if": "{{change}}" },
-      { "type": "list", "items": "{{rows}}", "spacing": 4, "template":
-        { "type": "hstack", "children": [
-          { "type": "text", "text": "{{item.code}}", "style": "subheadline" },
-          { "type": "spacer" },
-          { "type": "text", "text": "{{item.value}}", "style": "subheadline" }
-        ]}
+      {
+       "type": "text",
+       "text": "{{item.value}}",
+       "size": 22,
+       "weight": "semibold",
+       "design": "rounded"
       }
-    ]
-  },
-  "small": {
-    "type": "vstack", "spacing": 4, "align": "leading",
+     ]
+    }
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "text",
+    "text": "Обновлено {{updated}} · open.er-api.com",
+    "style": "caption2",
+    "color": "secondary"
+   }
+  ]
+ },
+ "medium": {
+  "type": "vstack",
+  "spacing": 10,
+  "align": "leading",
+  "children": [
+   {
+    "type": "hstack",
+    "align": "top",
     "children": [
-      { "type": "text", "text": "{{main.code}}", "style": "caption", "color": "secondary" },
-      { "type": "text", "text": "{{main.value}}", "style": "title" },
-      { "type": "text", "text": "{{change}}", "color": "{{changeColor}}", "style": "caption2", "if": "{{change}}" }
+     {
+      "type": "vstack",
+      "spacing": 0,
+      "align": "leading",
+      "children": [
+       {
+        "type": "text",
+        "text": "1 {{main.code}} в {{target}}",
+        "style": "caption",
+        "weight": "semibold",
+        "color": "secondary"
+       },
+       {
+        "type": "text",
+        "text": "{{main.value}}",
+        "size": 36,
+        "weight": "bold",
+        "design": "rounded",
+        "lines": 1
+       }
+      ]
+     },
+     {
+      "type": "spacer"
+     },
+     {
+      "type": "box",
+      "fit": true,
+      "padding": 5,
+      "radius": 7,
+      "background": "{{changeColor}}",
+      "opacity": 0.18,
+      "if": "{{change}}",
+      "children": [
+       {
+        "type": "text",
+        "text": "{{change}}",
+        "style": "footnote",
+        "weight": "semibold",
+        "color": "{{changeColor}}"
+       }
+      ]
+     }
     ]
-  }
+   },
+   {
+    "type": "chart",
+    "values": "{{history}}",
+    "color": "green",
+    "style": "area",
+    "height": 80,
+    "if": "{{hasHistory}}"
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "list",
+    "items": "{{rows}}",
+    "columns": 3,
+    "spacing": 6,
+    "template": {
+     "type": "box",
+     "padding": 8,
+     "spacing": 0,
+     "children": [
+      {
+       "type": "text",
+       "text": "{{item.code}}",
+       "style": "caption2",
+       "weight": "semibold",
+       "color": "secondary"
+      },
+      {
+       "type": "text",
+       "text": "{{item.value}}",
+       "style": "subheadline",
+       "weight": "semibold",
+       "design": "rounded",
+       "lines": 1
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "small": {
+  "type": "vstack",
+  "spacing": 5,
+  "align": "leading",
+  "children": [
+   {
+    "type": "text",
+    "text": "1 {{main.code}} в {{target}}",
+    "style": "caption",
+    "weight": "semibold",
+    "color": "secondary"
+   },
+   {
+    "type": "text",
+    "text": "{{main.value}}",
+    "size": 34,
+    "weight": "bold",
+    "design": "rounded",
+    "lines": 1
+   },
+   {
+    "type": "box",
+    "fit": true,
+    "padding": 4,
+    "radius": 6,
+    "background": "{{changeColor}}",
+    "opacity": 0.18,
+    "if": "{{change}}",
+    "children": [
+     {
+      "type": "text",
+      "text": "{{change}}",
+      "style": "caption",
+      "weight": "semibold",
+      "color": "{{changeColor}}"
+     }
+    ]
+   },
+   {
+    "type": "spacer"
+   },
+   {
+    "type": "chart",
+    "values": "{{history}}",
+    "color": "green",
+    "style": "area",
+    "height": 60,
+    "if": "{{hasHistory}}"
+   }
+  ]
+ }
 }
