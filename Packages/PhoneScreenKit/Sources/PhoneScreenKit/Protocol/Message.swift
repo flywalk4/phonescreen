@@ -18,6 +18,25 @@ public enum Message: Equatable, Sendable {
     case nowPlaying(NowPlaying?)
     case stats(SystemStats)
 
+    // Notes (Apple Notes, read and written through the Mac)
+    /// Mac → phone: most recently edited notes.
+    case notes([NoteSummary])
+    /// Phone → Mac: send the full text of a note.
+    case noteRequest(id: String)
+    /// Mac → phone: full plain text of a note.
+    case noteBody(id: String, text: String)
+    /// Phone → Mac: create a note (first line becomes the title).
+    case noteCreate(text: String)
+    /// Phone → Mac: open the note in Notes on the Mac.
+    case noteShowOnMac(id: String)
+
+    // Launcher
+    /// Mac → phone: what can be launched.
+    case launcher([LauncherItem])
+
+    /// Phone → Mac: a page became visible; send fresh data for it now.
+    case refresh(PageKind)
+
     // Actions (phone → Mac)
     case mediaAction(MediaAction)
     case command(id: String)
@@ -38,11 +57,12 @@ public enum Message: Equatable, Sendable {
 extension Message: Codable {
     private enum Kind: String, Codable {
         case hello, ping, pong, pages, setPage, pageChanged, layout, nowPlaying, stats, mediaAction, command
+        case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit
     }
 
     private enum Keys: String, CodingKey {
-        case t, hello, list, current, index, value, id, along, dx, dy, button, down, phase
+        case t, hello, list, current, index, value, id, along, dx, dy, button, down, phase, text
     }
 
     public init(from decoder: Decoder) throws {
@@ -60,6 +80,13 @@ extension Message: Codable {
         case .stats: self = .stats(try c.decode(SystemStats.self, forKey: .value))
         case .mediaAction: self = .mediaAction(try c.decode(MediaAction.self, forKey: .value))
         case .command: self = .command(id: try c.decode(String.self, forKey: .id))
+        case .notes: self = .notes(try c.decode([NoteSummary].self, forKey: .list))
+        case .noteRequest: self = .noteRequest(id: try c.decode(String.self, forKey: .id))
+        case .noteBody: self = .noteBody(id: try c.decode(String.self, forKey: .id), text: try c.decode(String.self, forKey: .text))
+        case .noteCreate: self = .noteCreate(text: try c.decode(String.self, forKey: .text))
+        case .noteShowOnMac: self = .noteShowOnMac(id: try c.decode(String.self, forKey: .id))
+        case .launcher: self = .launcher(try c.decode([LauncherItem].self, forKey: .list))
+        case .refresh: self = .refresh(try c.decode(PageKind.self, forKey: .value))
         case .pointerEnter: self = .pointerEnter(along: try c.decode(Double.self, forKey: .along))
         case .pointerDelta: self = .pointerDelta(dx: try c.decode(Double.self, forKey: .dx),
                                                  dy: try c.decode(Double.self, forKey: .dy))
@@ -87,6 +114,14 @@ extension Message: Codable {
         case .stats(let v): try c.encode(Kind.stats, forKey: .t); try c.encode(v, forKey: .value)
         case .mediaAction(let v): try c.encode(Kind.mediaAction, forKey: .t); try c.encode(v, forKey: .value)
         case .command(let id): try c.encode(Kind.command, forKey: .t); try c.encode(id, forKey: .id)
+        case .notes(let v): try c.encode(Kind.notes, forKey: .t); try c.encode(v, forKey: .list)
+        case .noteRequest(let id): try c.encode(Kind.noteRequest, forKey: .t); try c.encode(id, forKey: .id)
+        case .noteBody(let id, let text):
+            try c.encode(Kind.noteBody, forKey: .t); try c.encode(id, forKey: .id); try c.encode(text, forKey: .text)
+        case .noteCreate(let text): try c.encode(Kind.noteCreate, forKey: .t); try c.encode(text, forKey: .text)
+        case .noteShowOnMac(let id): try c.encode(Kind.noteShowOnMac, forKey: .t); try c.encode(id, forKey: .id)
+        case .launcher(let v): try c.encode(Kind.launcher, forKey: .t); try c.encode(v, forKey: .list)
+        case .refresh(let v): try c.encode(Kind.refresh, forKey: .t); try c.encode(v, forKey: .value)
         case .pointerEnter(let a): try c.encode(Kind.pointerEnter, forKey: .t); try c.encode(a, forKey: .along)
         case .pointerDelta(let dx, let dy):
             try c.encode(Kind.pointerDelta, forKey: .t); try c.encode(dx, forKey: .dx); try c.encode(dy, forKey: .dy)

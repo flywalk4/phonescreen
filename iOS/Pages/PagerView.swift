@@ -98,7 +98,11 @@ private struct PageContent: View {
         switch page.kind {
         case .music: MusicPage()
         case .monitor: MonitorPage()
-        default: Text(page.title).font(.largeTitle).foregroundStyle(.secondary)
+        case .calendar: CalendarPage()
+        case .reminders: RemindersPage()
+        case .notes: NotesPage()
+        case .launcher: LauncherPage()
+        case .weather: WeatherPage()
         }
     }
 }

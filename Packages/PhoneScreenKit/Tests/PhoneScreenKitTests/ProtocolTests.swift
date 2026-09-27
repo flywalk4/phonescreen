@@ -52,6 +52,13 @@ import Testing
         .mediaAction(.next), .command(id: "lock"),
         .pointerEnter(along: 0.5), .pointerDelta(dx: 1.5, dy: -2), .pointerButton(button: .left, down: true),
         .pointerScroll(dx: 0, dy: 3, phase: .changed), .pointerExit(along: 0.25),
+        .notes([NoteSummary(id: "x-coredata://1", title: "Покупки", snippet: "молоко", folder: "Заметки",
+                            modified: Date(timeIntervalSince1970: 1_700_000_000))]),
+        .noteRequest(id: "n1"), .noteBody(id: "n1", text: "Текст\nвторая строка"), .noteCreate(text: "Идея"),
+        .noteShowOnMac(id: "n1"),
+        .launcher([LauncherItem(id: "app:/Applications/Safari.app", title: "Safari", kind: .app, icon: Data([9])),
+                   LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock")]),
+        .refresh(.notes),
     ]
 
     @Test(arguments: all) func roundTrip(_ message: Message) throws {

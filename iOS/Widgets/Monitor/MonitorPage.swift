@@ -1,7 +1,8 @@
+import Charts
 import PhoneScreenKit
 import SwiftUI
 
-/// First cut of the monitor page: totals + per-core bars. Charts come with the v1 widget work.
+/// Mac load at a glance: gauges, per-core bars and the last minute as charts.
 struct MonitorPage: View {
     @EnvironmentObject private var model: PhoneModel
 
@@ -15,6 +16,8 @@ struct MonitorPage: View {
                           caption: ByteCountFormatter.string(fromByteCount: Int64(stats.memoryUsed), countStyle: .memory))
                 }
                 CoreBars(values: stats.cpuPerCore)
+                LoadChart(history: model.statsHistory)
+                NetworkChart(history: model.statsHistory)
                 HStack {
                     Label(rate(stats.netInBytesPerSec), systemImage: "arrow.down")
                     Spacer()
@@ -27,7 +30,8 @@ struct MonitorPage: View {
                 Text("Жду данные с Mac…").foregroundStyle(.secondary)
             }
         }
-        .padding(24)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 36)
         .frame(maxWidth: 520, maxHeight: .infinity)
     }
 
@@ -86,5 +90,65 @@ private struct CoreBars: View {
         }
         .frame(height: 80)
         .animation(.easeOut(duration: 0.4), value: values)
+    }
+}
+
+/// CPU and GPU over the last minute.
+private struct LoadChart: View {
+    let history: [SystemStats]
+
+    var body: some View {
+        Chart {
+            ForEach(Array(history.enumerated()), id: \.offset) { i, s in
+                LineMark(x: .value("t", i), y: .value("%", s.cpu * 100), series: .value("", "CPU"))
+                    .foregroundStyle(.cyan)
+                if let gpu = s.gpu {
+                    LineMark(x: .value("t", i), y: .value("%", gpu * 100), series: .value("", "GPU"))
+                        .foregroundStyle(.purple)
+                }
+            }
+        }
+        .chartYScale(domain: 0...100)
+        .chartXScale(domain: 0...59)
+        .chartXAxis(.hidden)
+        .chartYAxis {
+            AxisMarks(values: [0, 50, 100]) { value in
+                AxisGridLine()
+                AxisValueLabel("\(value.as(Int.self) ?? 0)%")
+            }
+        }
+        .chartLegend(.hidden)
+        .overlay(alignment: .topLeading) {
+            HStack(spacing: 10) {
+                Label("CPU", systemImage: "circle.fill").foregroundStyle(.cyan)
+                Label("GPU", systemImage: "circle.fill").foregroundStyle(.purple)
+            }
+            .font(.caption2).labelStyle(.titleAndIcon)
+        }
+        .frame(height: 110)
+        .animation(.linear(duration: 0.3), value: history.count)
+    }
+}
+
+/// Download (filled) and upload (line) throughput over the last minute.
+private struct NetworkChart: View {
+    let history: [SystemStats]
+
+    var body: some View {
+        Chart {
+            ForEach(Array(history.enumerated()), id: \.offset) { i, s in
+                AreaMark(x: .value("t", i), y: .value("B/s", s.netInBytesPerSec))
+                    .foregroundStyle(LinearGradient(colors: [.green.opacity(0.6), .green.opacity(0.05)],
+                                                    startPoint: .top, endPoint: .bottom))
+                    .interpolationMethod(.monotone)
+                LineMark(x: .value("t", i), y: .value("B/s", s.netOutBytesPerSec), series: .value("", "out"))
+                    .foregroundStyle(.orange)
+                    .interpolationMethod(.monotone)
+            }
+        }
+        .chartXScale(domain: 0...59)
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .frame(height: 60)
     }
 }

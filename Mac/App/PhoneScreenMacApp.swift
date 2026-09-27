@@ -75,12 +75,12 @@ struct MenuBarView: View {
                     Text(page.title).tag(index)
                 }
             }
-            .pickerStyle(.segmented)
+            .pickerStyle(.menu)
             if let track = model.nowPlaying {
                 Text("\(track.title) — \(track.artist)").font(.caption).lineLimit(1)
             }
             pointerSection
-            Text("⌃⌥← / ⌃⌥→ — листать, ⌃⌥1…9 — страница").font(.caption2).foregroundStyle(.secondary)
+            Text("⌃⌥← / ⌃⌥→ — листать, ⌃⌥1…7 — страница").font(.caption2).foregroundStyle(.secondary)
             Divider()
             Button("Расположение iPhone…", action: showArrangement)
             Button("Выйти") { NSApplication.shared.terminate(nil) }

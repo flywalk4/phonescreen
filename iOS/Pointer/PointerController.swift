@@ -25,6 +25,11 @@ final class PointerController: ObservableObject {
     private(set) var isVisible = false
     private var model = PhonePointer(size: CGSize(width: 393, height: 852), macSide: .left)
     private var targets: [UUID: (frame: CGRect, action: () -> Void)] = [:]
+    private var scrollers: [UUID: (frame: CGRect, scroll: (CGFloat) -> Void)] = [:]
+    private enum Axis { case horizontal, vertical }
+    /// Locked on the first real movement of a trackpad gesture, kept for its momentum.
+    private var gestureAxis: Axis?
+    private var gestureScroller: UUID?
     fileprivate weak var layerView: PointerLayerView?
     private var swipeVelocity: CGFloat = 0
     private var lastWheelPage = Date.distantPast
@@ -73,15 +78,32 @@ final class PointerController: ObservableObject {
 
     func scroll(dx: Double, dy: Double, phase: PhoneScreenKit.ScrollPhase) {
         guard isVisible else { return }
-        switch phase {
-        case .began:
+        if phase == .began {
+            gestureAxis = nil
+            gestureScroller = nil
             swipeVelocity = 0
-            swipe.offset = dx
-        case .changed:
+        }
+        if gestureAxis == nil, dx != 0 || dy != 0, phase != .momentum {
+            gestureAxis = abs(dx) > abs(dy) ? .horizontal : .vertical
+            gestureScroller = scroller(at: model.position)
+        }
+
+        // Vertical: scroll the list under the pointer, momentum included (feels like a real scroll view).
+        if gestureAxis == .vertical || (phase == .wheel && abs(dy) >= abs(dx)) {
+            let id = phase == .wheel ? scroller(at: model.position) : gestureScroller
+            if let id { scrollers[id]?.scroll(dy) }
+            if phase == .ended || phase == .wheel { gestureAxis = phase == .wheel ? nil : gestureAxis }
+            return
+        }
+
+        // Horizontal: the pager follows the fingers.
+        switch phase {
+        case .began, .changed:
             // Content follows the fingers 1:1 (natural scrolling is already applied by macOS).
             swipe.offset += dx
             swipeVelocity = 0.6 * swipeVelocity + 0.4 * dx
         case .ended:
+            guard gestureAxis == .horizontal else { return }
             let width = model.size.width
             let step = swipe.offset < -width * 0.18 || swipeVelocity < -8 ? 1
                 : swipe.offset > width * 0.18 || swipeVelocity > 8 ? -1 : 0
@@ -90,7 +112,7 @@ final class PointerController: ObservableObject {
             break // inertia after the fingers lift: the swipe has already been decided
         case .wheel:
             // Horizontal wheel steps (shift+wheel, tilt wheels): one page per notch burst.
-            guard abs(dx) > abs(dy), abs(dx) > 0, Date().timeIntervalSince(lastWheelPage) > 0.35 else { return }
+            guard abs(dx) > 0, Date().timeIntervalSince(lastWheelPage) > 0.35 else { return }
             lastWheelPage = Date()
             onSwipeEnd?(dx < 0 ? 1 : -1)
         }
@@ -114,7 +136,18 @@ final class PointerController: ObservableObject {
 
     func unregister(_ id: UUID) {
         targets[id] = nil
+        scrollers[id] = nil
         if hovered == id { hovered = nil }
+    }
+
+    func registerScroller(_ id: UUID, frame: CGRect, scroll: @escaping (CGFloat) -> Void) {
+        scrollers[id] = (frame, scroll)
+    }
+
+    private func scroller(at point: CGPoint) -> UUID? {
+        scrollers.filter { $0.value.frame.contains(point) }
+            .min { $0.value.frame.width * $0.value.frame.height < $1.value.frame.width * $1.value.frame.height }?
+            .key
     }
 
     private func hit(_ point: CGPoint) -> UUID? {
@@ -126,7 +159,10 @@ final class PointerController: ObservableObject {
 
     private func updateHover() {
         let id = isVisible ? hit(model.position) : nil
-        if id != hovered { hovered = id }
+        if id != hovered {
+            hovered = id
+            layerView?.setHovering(id != nil)
+        }
     }
 
     fileprivate func attach(_ view: PointerLayerView) {
@@ -157,9 +193,49 @@ struct PointerTarget: ViewModifier {
     }
 }
 
+/// Lets the Mac pointer scroll a vertical `ScrollView` (trackpad / wheel over it). Apply to the ScrollView.
+struct PointerScrollable: ViewModifier {
+    @EnvironmentObject private var pointer: PointerController
+    @State private var id = UUID()
+    @State private var position = ScrollPosition(edge: .top)
+    @State private var offset: CGFloat = 0
+    @State private var maxOffset: CGFloat = 0
+
+    func body(content: Content) -> some View {
+        content
+            .scrollPosition($position)
+            .onScrollGeometryChange(for: [CGFloat].self) { geo in
+                [geo.contentOffset.y, max(0, geo.contentSize.height + geo.contentInsets.top + geo.contentInsets.bottom - geo.containerSize.height)]
+            } action: { _, v in
+                offset = v[0]
+                maxOffset = v[1]
+            }
+            .background(GeometryReader { geo in
+                let frame = geo.frame(in: .named(pointerSpace))
+                Color.clear
+                    .onAppear { register(frame) }
+                    .onChange(of: frame) { _, new in register(new) }
+            })
+            .onDisappear { pointer.unregister(id) }
+    }
+
+    private func register(_ frame: CGRect) {
+        pointer.registerScroller(id, frame: frame) { dy in
+            // Positive dy = content moves down (natural scrolling already applied by macOS).
+            let target = min(max(offset - dy, 0), maxOffset)
+            offset = target
+            position.scrollTo(y: target)
+        }
+    }
+}
+
 extension View {
     func pointerTarget(action: @escaping () -> Void) -> some View {
         modifier(PointerTarget(action: action))
+    }
+
+    func pointerScrollable() -> some View {
+        modifier(PointerScrollable())
     }
 }
 
@@ -176,60 +252,67 @@ struct PointerOverlay: UIViewRepresentable {
     func updateUIView(_ view: PointerLayerView, context: Context) {}
 }
 
+/// iPad-style pointer: a translucent circle. Over a control it shrinks and fades (the control lights up
+/// instead); a press squeezes it.
 final class PointerLayerView: UIView {
-    private let arrow = CAShapeLayer()
+    private let dot = CALayer()
+    private static let size: CGFloat = 20
+    private var hovering = false
+    private var pressed = false
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = false
         backgroundColor = .clear
-        arrow.path = Self.arrowPath()
-        arrow.fillColor = UIColor.white.cgColor
-        arrow.strokeColor = UIColor.black.cgColor
-        arrow.lineWidth = 1.3
-        arrow.bounds = CGRect(x: 0, y: 0, width: 14, height: 22)
-        arrow.anchorPoint = .zero // the tip is the layer's origin
-        arrow.shadowColor = UIColor.black.cgColor
-        arrow.shadowOpacity = 0.4
-        arrow.shadowRadius = 2
-        arrow.shadowOffset = CGSize(width: 0, height: 1)
-        arrow.shadowPath = arrow.path
-        arrow.opacity = 0
-        layer.addSublayer(arrow)
+        dot.bounds = CGRect(x: 0, y: 0, width: Self.size, height: Self.size)
+        dot.cornerRadius = Self.size / 2
+        dot.backgroundColor = UIColor.white.withAlphaComponent(0.35).cgColor
+        dot.borderColor = UIColor.white.withAlphaComponent(0.7).cgColor
+        dot.borderWidth = 1
+        dot.shadowColor = UIColor.black.cgColor
+        dot.shadowOpacity = 0.35
+        dot.shadowRadius = 4
+        dot.shadowOffset = .zero
+        dot.shadowPath = UIBezierPath(ovalIn: dot.bounds).cgPath
+        dot.opacity = 0
+        layer.addSublayer(dot)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
     func move(to point: CGPoint) {
         CATransaction.begin()
-        CATransaction.setDisableActions(true) // no implicit 0.25 s animation: follow the mouse exactly
-        arrow.position = point
+        CATransaction.setDisableActions(true) // no implicit animation: follow the mouse exactly
+        dot.position = point
         CATransaction.commit()
     }
 
     func show(at point: CGPoint) {
         move(to: point)
-        arrow.opacity = 1
+        dot.opacity = hovering ? 0.35 : 1
     }
 
     func hide() {
-        arrow.opacity = 0
+        dot.opacity = 0
     }
 
-    func setPressed(_ pressed: Bool) {
+    func setHovering(_ value: Bool) {
+        guard value != hovering else { return }
+        hovering = value
+        applyState()
+    }
+
+    func setPressed(_ value: Bool) {
+        pressed = value
+        applyState()
+    }
+
+    private func applyState() {
         CATransaction.begin()
-        CATransaction.setAnimationDuration(0.08)
-        arrow.setAffineTransform(pressed ? CGAffineTransform(scaleX: 0.88, y: 0.88) : .identity)
+        CATransaction.setAnimationDuration(0.12)
+        let scale: CGFloat = pressed ? 0.7 : hovering ? 0.6 : 1
+        dot.setAffineTransform(CGAffineTransform(scaleX: scale, y: scale))
+        if dot.opacity > 0 { dot.opacity = hovering ? 0.35 : 1 }
         CATransaction.commit()
-    }
-
-    /// Classic macOS arrow; the tip is at (0, 0).
-    private static func arrowPath() -> CGPath {
-        let p = CGMutablePath()
-        let points: [CGPoint] = [.init(x: 0, y: 0), .init(x: 0, y: 18), .init(x: 4.3, y: 14), .init(x: 7.2, y: 21),
-                                 .init(x: 10, y: 19.8), .init(x: 7.2, y: 13.2), .init(x: 13, y: 13)]
-        p.addLines(between: points)
-        p.closeSubpath()
-        return p
     }
 }

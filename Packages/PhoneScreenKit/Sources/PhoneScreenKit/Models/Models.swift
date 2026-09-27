@@ -38,7 +38,7 @@ public struct Hello: Codable, Equatable, Sendable {
 }
 
 public enum PageKind: String, Codable, CaseIterable, Sendable {
-    case music, monitor, todo, weather, launcher
+    case music, monitor, notes, reminders, calendar, weather, launcher
 }
 
 public struct PageInfo: Codable, Equatable, Identifiable, Sendable {
@@ -113,6 +113,46 @@ public enum ScrollPhase: String, Codable, Sendable {
     case began, changed, ended, momentum
     /// A discrete mouse-wheel step (no gesture).
     case wheel
+}
+
+/// An Apple Notes note, as listed on the phone.
+public struct NoteSummary: Codable, Equatable, Identifiable, Sendable {
+    public var id: String
+    public var title: String
+    public var snippet: String
+    public var folder: String?
+    public var modified: Date
+
+    public init(id: String, title: String, snippet: String, folder: String?, modified: Date) {
+        self.id = id
+        self.title = title
+        self.snippet = snippet
+        self.folder = folder
+        self.modified = modified
+    }
+}
+
+/// Something the phone can launch on the Mac. The Mac only runs ids it has itself offered.
+public struct LauncherItem: Codable, Equatable, Identifiable, Sendable {
+    public enum Kind: String, Codable, Sendable {
+        case app, shortcut, system
+    }
+
+    public var id: String
+    public var title: String
+    public var kind: Kind
+    /// SF Symbol for shortcuts and system actions.
+    public var symbol: String?
+    /// PNG app icon.
+    public var icon: Data?
+
+    public init(id: String, title: String, kind: Kind, symbol: String? = nil, icon: Data? = nil) {
+        self.id = id
+        self.title = title
+        self.kind = kind
+        self.symbol = symbol
+        self.icon = icon
+    }
 }
 
 public enum Protocol {

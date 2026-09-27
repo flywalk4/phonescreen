@@ -3,8 +3,10 @@ options:
   bundleIdPrefix: com.flywalk4.phonescreen
   deploymentTarget:
     macOS: "14.0"
-    iOS: "17.0"
+    iOS: "18.0"
   createIntermediateGroups: true
+  # Russian UI: dates, weekdays and relative times format in Russian.
+  developmentLanguage: ru
 
 packages:
   PhoneScreenKit:
@@ -35,7 +37,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
-        INFOPLIST_KEY_NSAppleEventsUsageDescription: "PhoneScreen читает текущий трек и управляет воспроизведением в Музыке и Spotify."
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "PhoneScreen читает текущий трек, заметки и команды и показывает их на iPhone."
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen находит iPhone в локальной сети и по прямому Wi-Fi."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
@@ -63,6 +65,9 @@ targets:
         # Orientation comes from the Mac arrangement, not the accelerometer (the phone usually lies flat).
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen принимает подключение от Mac по Wi-Fi и напрямую."
+        INFOPLIST_KEY_NSRemindersFullAccessUsageDescription: "Показывает и отмечает ваши напоминания на экране рядом с Mac."
+        INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Показывает повестку дня из вашего календаря."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Нужна для прогноза погоды там, где вы находитесь."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
     info:

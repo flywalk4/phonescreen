@@ -40,7 +40,12 @@ final class AppModel: ObservableObject {
 
     let pages: [PageInfo] = [
         PageInfo(id: "music", kind: .music, title: "Музыка"),
+        PageInfo(id: "calendar", kind: .calendar, title: "Календарь"),
+        PageInfo(id: "reminders", kind: .reminders, title: "Напоминания"),
+        PageInfo(id: "notes", kind: .notes, title: "Заметки"),
+        PageInfo(id: "launcher", kind: .launcher, title: "Команды"),
         PageInfo(id: "monitor", kind: .monitor, title: "Мониторинг"),
+        PageInfo(id: "weather", kind: .weather, title: "Погода"),
     ]
 
     private let sessionId = UUID()
@@ -50,6 +55,10 @@ final class AppModel: ObservableObject {
     private let music = NowPlayingProvider()
     private let stats = SystemStatsProvider()
     private let hotKeys = HotKeys()
+    private let notes = NotesProvider()
+    private let launcher = LauncherProvider()
+    private var launcherItems: [LauncherItem] = []
+    private var notesTimer: Timer?
 
     init() {
         let sessionId = self.sessionId
@@ -179,8 +188,8 @@ final class AppModel: ObservableObject {
         music.start()
 
         stats.onSample = { [weak self] sample in
-            guard let self, self.pages[self.currentPage].kind == .monitor else { return }
-            self.pool.send(.stats(sample))
+            // Always sent (tiny, 1 Hz), so the phone's charts already hold the last minute when shown.
+            self?.pool.send(.stats(sample))
         }
         stats.start()
 
@@ -196,11 +205,47 @@ final class AppModel: ObservableObject {
         }
         hotKeys.register()
         startPointer()
+
+        notes.onNotes = { [weak self] list in
+            Self.log.info("notes: \(list.count) fetched")
+            self?.pool.send(.notes(list))
+        }
+        #if DEBUG
+        if CommandLine.arguments.contains("--notes-selftest") { notes.refresh(force: true) }
+        #endif
+        notes.onBody = { [weak self] id, text in self?.pool.send(.noteBody(id: id, text: text)) }
+        launcher.onItems = { [weak self] items in
+            self?.launcherItems = items
+            self?.sendLauncher()
+        }
+        launcher.refresh()
+        // Notes change on other devices too; poll only while their page is on screen.
+        notesTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, self.pages[self.currentPage].kind == .notes else { return }
+                self.notes.refresh()
+            }
+        }
+    }
+
+    private func pageBecameVisible() {
+        switch pages[currentPage].kind {
+        case .notes: notes.refresh()
+        case .launcher: launcher.refresh()
+        default: break
+        }
+    }
+
+    private func sendLauncher() {
+        // Icons are the heavy part; a Bluetooth link gets symbols and titles only.
+        let items = pool.isLowBandwidth ? launcherItems.map { var i = $0; i.icon = nil; return i } : launcherItems
+        pool.send(.launcher(items))
     }
 
     func show(page index: Int) {
         currentPage = index
         pool.send(.setPage(index: index))
+        pageBecameVisible()
     }
 
     func perform(_ action: MediaAction) {
@@ -211,6 +256,18 @@ final class AppModel: ObservableObject {
         switch message {
         case .pageChanged(let index) where pages.indices.contains(index):
             currentPage = index
+            pageBecameVisible()
+        case .refresh(let kind):
+            if kind == .notes { notes.refresh(force: true) }
+            if kind == .launcher { launcher.refresh() }
+        case .noteRequest(let id):
+            notes.body(id: id)
+        case .noteCreate(let text):
+            notes.create(text: text)
+        case .noteShowOnMac(let id):
+            notes.showOnMac(id: id)
+        case .command(let id):
+            launcher.run(id)
         case .pointerExit(let along):
             pointerLeftPhone(along: along)
         case .mediaAction(let action):
@@ -226,6 +283,9 @@ final class AppModel: ObservableObject {
         pool.send(.layout(arrangement.layout))
         pool.send(.pages(list: pages, current: currentPage))
         sendNowPlaying()
+        sendLauncher()
+        // Notes are fetched only when their page is shown: asking Notes launches the app.
+        if pages[currentPage].kind == .notes { notes.refresh(force: true) }
     }
 
     private func sendNowPlaying() {
