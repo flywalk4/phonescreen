@@ -1,0 +1,73 @@
+name: PhoneScreen
+options:
+  bundleIdPrefix: com.flywalk4.phonescreen
+  deploymentTarget:
+    macOS: "14.0"
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  PhoneScreenKit:
+    path: Packages/PhoneScreenKit
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    # Set DEVELOPMENT_TEAM in the environment (or in Xcode) to run on a real iPhone.
+    DEVELOPMENT_TEAM: ${DEVELOPMENT_TEAM}
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  PhoneScreenMac:
+    type: application
+    platform: macOS
+    sources: [Mac]
+    dependencies:
+      - package: PhoneScreenKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.flywalk4.phonescreen.mac
+        PRODUCT_NAME: PhoneScreen
+        # Local-only distribution: no sandbox (needs usbmuxd socket, AppleScript, later CGEventTap).
+        ENABLE_HARDENED_RUNTIME: NO
+        # A real identity (not ad-hoc) keeps the Accessibility grant across rebuilds.
+        CODE_SIGN_IDENTITY: "Apple Development"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSUIElement: YES
+        INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "PhoneScreen читает текущий трек и управляет воспроизведением в Музыке и Spotify."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen находит iPhone в локальной сети и по прямому Wi-Fi."
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: Mac/Info.plist
+      properties:
+        NSBonjourServices: [_phonescreen._tcp]
+
+  PhoneScreeniOS:
+    type: application
+    platform: iOS
+    sources: [iOS]
+    dependencies:
+      - package: PhoneScreenKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.flywalk4.phonescreen.ios
+        PRODUCT_NAME: PhoneScreen
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: YES
+        INFOPLIST_KEY_UIStatusBarHidden: YES
+        # Orientation comes from the Mac arrangement, not the accelerometer (the phone usually lies flat).
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen принимает подключение от Mac по Wi-Fi и напрямую."
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: iOS/Info.plist
+      properties:
+        NSBonjourServices: [_phonescreen._tcp]
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
