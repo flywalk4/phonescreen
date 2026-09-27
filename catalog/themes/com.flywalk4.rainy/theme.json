@@ -1,0 +1,31 @@
+{
+  "id": "com.flywalk4.rainy",
+  "name": "Дождливый вечер",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Косой дождь и капли на стекле, графитовые карточки, тёплый янтарный акцент — как у окна кафе.",
+  "style": "flat",
+  "appearance": "dark",
+  "font": "system",
+  "radius": 18,
+  "background": {
+    "colors": ["#0E1319", "#1F2833"],
+    "angle": 180,
+    "animation": "rain",
+    "tints": ["#9DB4CC", "#C9D6E3", "#6F8BA6"],
+    "speed": 1
+  },
+  "colors": {
+    "text": "#E9EEF4",
+    "secondary": "#9AA8B8",
+    "accent": "#F2B45A",
+    "card": "#161D25E6",
+    "border": "#2B3642",
+    "palette": {
+      "orange": "#F2B45A",
+      "yellow": "#F5D28A",
+      "blue": "#7FA7D1",
+      "cyan": "#8EC5D6"
+    }
+  }
+}

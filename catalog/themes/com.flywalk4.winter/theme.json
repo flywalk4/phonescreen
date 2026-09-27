@@ -1,0 +1,34 @@
+{
+  "id": "com.flywalk4.winter",
+  "name": "Зима",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Тихий снегопад на тёмно-синем небе, стеклянные карточки цвета инея.",
+  "style": "glass",
+  "appearance": "dark",
+  "font": "rounded",
+  "radius": 26,
+  "background": {
+    "colors": ["#0B1426", "#1C2B4A"],
+    "angle": 170,
+    "animation": "snow",
+    "tints": ["#FFFFFF", "#DCEBFF", "#A9C8F5"],
+    "speed": 0.8
+  },
+  "colors": {
+    "text": "#F4F8FF",
+    "secondary": "#B7C6DD",
+    "accent": "#8CC8FF",
+    "card": "#FFFFFF14",
+    "border": "#FFFFFF2E",
+    "palette": {
+      "blue": "#8CC8FF",
+      "cyan": "#A6E3FF",
+      "teal": "#7FDBD0",
+      "green": "#8FE3B0",
+      "purple": "#C3B5FF",
+      "orange": "#FFC38A",
+      "yellow": "#FFE59A"
+    }
+  }
+}

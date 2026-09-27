@@ -1,0 +1,11 @@
+{
+ "description": "Снег сам берёт зимние цвета",
+ "settings": {
+  "style": "snow"
+ },
+ "expect": {
+  "kind": "snow",
+  "colors.0": "#0B1426",
+  "tints.0": "#FFFFFF"
+ }
+}

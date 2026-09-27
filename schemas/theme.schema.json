@@ -89,7 +89,10 @@
       "matrix",
       "waves",
       "bokeh",
-      "lava"
+      "lava",
+      "snow",
+      "rain",
+      "gradient"
      ]
     },
     "tints": {

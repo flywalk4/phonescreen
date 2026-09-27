@@ -199,15 +199,15 @@
     {
       "id": "com.flywalk4.wallpaper",
       "name": "Живые обои",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
       "description": "Анимированные обои на всю плитку: северное сияние, звёзды, «матрица», волны, огоньки или лавовая лампа — в цветах темы или своей палитре. По желанию с часами поверх. Без сети.",
       "symbol": "sparkles",
       "path": "widgets/com.flywalk4.wallpaper",
       "files": {
-        "manifest.json": "a68c81e4ba5c48da85f56e9afa5b7e64360011bbf688fdb49293250b10dff1da",
+        "manifest.json": "c2f23574f0b538868d82518ced38be3f1304c1eadffd6352952a74ac5eca7cd5",
         "view.json": "6ffe0f9d94c493dcdc64186fa2b4ab19c8fe03dc3925babd24114e692ba5e047",
-        "provider.js": "6a1ac30eb218d21a5a919e7ac9e209815aae067857a9cfe0c2cdec8be6a2c98e"
+        "provider.js": "6da80df340a489f0a6461d3257b15312aab6bb0e340924b5a97dc5256a594299"
       }
     },
     {
@@ -287,6 +287,18 @@
       }
     },
     {
+      "id": "com.flywalk4.rainy",
+      "name": "Дождливый вечер",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Косой дождь и капли на стекле, графитовые карточки, тёплый янтарный акцент — как у окна кафе.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.rainy",
+      "files": {
+        "theme.json": "2b57113003f75ce2e0d5c611ca305da96deee7742c37b2a77c6f1d633528c769"
+      }
+    },
+    {
       "id": "com.flywalk4.solarized",
       "name": "Solarized",
       "version": "1.0.0",
@@ -308,6 +320,18 @@
       "path": "themes/com.flywalk4.synthwave",
       "files": {
         "theme.json": "73e1badeae1c879ad742fc76b93ad614d941af1ed28bd9f31db42b0475ca3e8d"
+      }
+    },
+    {
+      "id": "com.flywalk4.winter",
+      "name": "Зима",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Тихий снегопад на тёмно-синем небе, стеклянные карточки цвета инея.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.winter",
+      "files": {
+        "theme.json": "e4da99550aa7f528a5d3f850e7ce1eece800f16e838340a6cdc3e5d53ee8a218"
       }
     }
   ]

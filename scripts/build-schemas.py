@@ -11,6 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = {}
 spec=importlib.util.spec_from_file_location("v",ROOT/"scripts/validate-widget.py"); v=importlib.util.module_from_spec(spec); spec.loader.exec_module(v)
+spec=importlib.util.spec_from_file_location("vt",ROOT/"scripts/validate-theme.py"); vt=importlib.util.module_from_spec(spec); spec.loader.exec_module(vt)
 binding={"type":"string","pattern":"\\{\\{.+\\}\\}"}
 num={"anyOf":[{"type":"number"},binding]}
 strv={"type":"string"}
@@ -31,7 +32,7 @@ props={
  "height":num,"title":strv,"symbol":strv,"action":{"type":"string","description":"action(name) in provider.js; may contain {{bindings}}"},
  "frames":{"anyOf":[{"type":"array"},binding]},"palette":{"anyOf":[{"type":"object"},binding]},"fps":num,
  "items":binding,"template":{"$ref":"#/$defs/node"},"columns":num,"padding":num,"background":color,"opacity":num,"radius":num,"fit":boolv,"aspect":num,
- "kind":{"anyOf":[{"enum":["aurora","stars","matrix","waves","bokeh","lava"]},binding]},"colors":{"anyOf":[{"type":"array","items":strv},binding,{"type":"null"}]},
+ "kind":{"anyOf":[{"enum":vt.ANIMATIONS},binding]},"colors":{"anyOf":[{"type":"array","items":strv},binding,{"type":"null"}]},
  "tints":{"anyOf":[{"type":"array","items":strv},binding,{"type":"null"}]},"speed":num,
 }
 nodes=[]
@@ -68,7 +69,7 @@ theme={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://r
   "radius":{"type":"number","minimum":0,"maximum":40},
   "background":{"type":"object","required":["colors"],"additionalProperties":False,"properties":{
     "colors":{"type":"array","items":hexc,"minItems":1,"maxItems":4},"angle":{"type":"number"},
-    "animation":{"enum":["aurora","stars","matrix","waves","bokeh","lava"]},"tints":{"type":"array","items":hexc,"maxItems":6},
+    "animation":{"enum":vt.ANIMATIONS},"tints":{"type":"array","items":hexc,"maxItems":6},
     "speed":{"type":"number","minimum":0.1,"maximum":5}}},
   "colors":{"type":"object","required":["text","secondary","accent"],"additionalProperties":False,"properties":{
     "text":hexc,"secondary":hexc,"accent":hexc,"card":hexc,"border":hexc,"palette":{"type":"object","additionalProperties":hexc}}}},

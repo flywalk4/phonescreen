@@ -1,15 +1,31 @@
 {
   "id": "com.flywalk4.wallpaper",
   "name": "Живые обои",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
   "description": "Анимированные обои на всю плитку: северное сияние, звёзды, «матрица», волны, огоньки или лавовая лампа — в цветах темы или своей палитре. По желанию с часами поверх. Без сети.",
   "symbol": "sparkles",
   "refresh": 30,
   "settings": [
-    { "key": "style", "title": "Анимация: aurora, stars, matrix, waves, bokeh, lava", "default": "aurora" },
-    { "key": "palette", "title": "Цвета: theme, sunset, ocean, forest, neon, mono", "default": "theme" },
-    { "key": "clock", "title": "Часы поверх (yes / no)", "default": "yes" },
-    { "key": "speed", "title": "Скорость (0.2–3)", "default": "1" }
+    {
+      "key": "style",
+      "title": "Анимация: aurora, stars, matrix, waves, bokeh, lava, snow, rain, gradient",
+      "default": "aurora"
+    },
+    {
+      "key": "palette",
+      "title": "Цвета: auto, theme, sunset, ocean, forest, neon, mono, winter, storm",
+      "default": "auto"
+    },
+    {
+      "key": "clock",
+      "title": "Часы поверх (yes / no)",
+      "default": "yes"
+    },
+    {
+      "key": "speed",
+      "title": "Скорость (0.2–3)",
+      "default": "1"
+    }
   ]
 }

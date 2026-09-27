@@ -40,7 +40,7 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
     }
 
     /// Animated backgrounds the phone can draw (`background.animation`, and the `scene` widget node).
-    public static let animations = ["aurora", "stars", "matrix", "waves", "bokeh", "lava"]
+    public static let animations = ["aurora", "stars", "matrix", "waves", "bokeh", "lava", "snow", "rain", "gradient"]
 
     /// Colours as `#RRGGBB` or `#RRGGBBAA`.
     public struct Colors: Codable, Equatable, Sendable {

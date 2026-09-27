@@ -11,7 +11,7 @@ from pathlib import Path
 STYLES = {"flat", "glass", "ascii"}
 APPEARANCES = {"dark", "light"}
 FONTS = {"system", "rounded", "monospaced", "serif"}
-ANIMATIONS = ["aurora", "stars", "matrix", "waves", "bokeh", "lava"]
+ANIMATIONS = ["aurora", "stars", "matrix", "waves", "bokeh", "lava", "snow", "rain", "gradient"]
 HEX = re.compile(r"^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$")
 MAX_BYTES = 64 * 1024
 

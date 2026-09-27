@@ -33,7 +33,7 @@ public indirect enum WidgetNode: Codable, Equatable, Sendable {
     case grid(columns: Int, spacing: Double?, children: [WidgetNode])
     /// Children on top of each other (the first at the back), aligned by `align` (`center`, `top`, `bottomLeading`…).
     case layers(align: String?, children: [WidgetNode])
-    /// An animated scene drawn by the phone (`kind`: aurora, stars, matrix, waves, bokeh, lava), filling its space.
+    /// An animated scene drawn by the phone (`kind`: aurora, stars, matrix, waves, bokeh, lava, snow, rain, gradient), filling its space.
     /// `colors` — the background (1–4), `tints` — the moving parts; the theme's colours when absent.
     case scene(kind: String, colors: [String]?, tints: [String]?, speed: Double?)
 }

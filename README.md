@@ -9,7 +9,7 @@
 - **Native, not a mirror.** The iPhone draws every widget in SwiftUI. The Mac sends only data, so it stays sharp, smooth and light on battery.
 - **Any link that works.** USB, Wi-Fi, peer-to-peer Wi-Fi (AWDL) and Bluetooth LE all run at once, and traffic takes the best one. Pull the cable and the session carries on over Wi-Fi.
 - **Widgets anyone can write.** A widget is three small files: a manifest, a declarative `view.json` and a `provider.js` that runs on the Mac in a sandbox. There is a catalog, live reload and a Node toolkit that works without a Mac.
-- **Themes that restyle everything.** Dark, light, Liquid Glass (iOS 26), ASCII, and more from the catalog. Themes can have animated backgrounds: aurora, stars, Matrix rain, waves, bokeh, lava.
+- **Themes that restyle everything.** Dark, light, Liquid Glass (iOS 26), ASCII, and more from the catalog. Themes can have animated backgrounds: aurora, stars, Matrix rain, waves, bokeh, lava, snow, rain on glass, a drifting gradient.
 
 ## Widgets
 

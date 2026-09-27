@@ -5,7 +5,7 @@ import SwiftUI
 /// With Reduce Motion the scene is drawn once, still.
 struct SceneView: View {
     enum Kind: String, CaseIterable {
-        case aurora, stars, matrix, waves, bokeh, lava
+        case aurora, stars, matrix, waves, bokeh, lava, snow, rain, gradient
     }
 
     let kind: Kind
@@ -29,6 +29,9 @@ struct SceneView: View {
                 case .waves: Self.waves(&ctx, size, t, palette)
                 case .bokeh: Self.bokeh(&ctx, size, t, palette)
                 case .lava: Self.lava(&ctx, size, t, palette)
+                case .snow: Self.snow(&ctx, size, t, palette)
+                case .rain: Self.rain(&ctx, size, t, palette)
+                case .gradient: Self.gradient(&ctx, size, t, palette)
                 }
             }
         }
@@ -161,5 +164,69 @@ struct SceneView: View {
                 }
             }
         }
+    }
+
+    // MARK: Snow — flakes of three depths drifting down and sideways.
+
+    private static func snow(_ ctx: inout GraphicsContext, _ size: CGSize, _ t: Double, _ tints: [Color]) {
+        let count = max(60, Int(size.width * size.height / 3000))
+        for i in 0..<count {
+            let depth = 0.35 + rand(i * 7) * 0.65
+            let fall = size.height + 20
+            let y = (rand(i * 3) * fall + t * (10 + 26 * depth)).truncatingRemainder(dividingBy: fall) - 10
+            let x = (rand(i) * size.width + 14 * sin(t * (0.4 + rand(i * 5)) + Double(i))).truncatingRemainder(dividingBy: size.width)
+            let d = 1.2 + depth * 3.2
+            ctx.opacity = 0.35 + depth * 0.6
+            ctx.fill(Path(ellipseIn: CGRect(x: x, y: y, width: d, height: d)), with: .color(tints[i % tints.count]))
+        }
+        ctx.opacity = 1
+    }
+
+    // MARK: Rain — slanted streaks and a few drops sliding down the glass.
+
+    private static func rain(_ ctx: inout GraphicsContext, _ size: CGSize, _ t: Double, _ tints: [Color]) {
+        let count = max(50, Int(size.width * size.height / 2600))
+        let slant = 0.18
+        for i in 0..<count {
+            let depth = 0.3 + rand(i * 7) * 0.7
+            let length = 10 + depth * 18
+            let fall = size.height + length
+            let y = (rand(i * 3) * fall + t * (220 + 380 * depth)).truncatingRemainder(dividingBy: fall) - length
+            let x = (rand(i) * (size.width + 60) - y * slant).truncatingRemainder(dividingBy: size.width + 60)
+            var streak = Path()
+            streak.move(to: CGPoint(x: x, y: y))
+            streak.addLine(to: CGPoint(x: x + length * slant, y: y + length))
+            ctx.opacity = 0.15 + depth * 0.45
+            ctx.stroke(streak, with: .color(tints[i % tints.count]), lineWidth: 0.6 + depth)
+        }
+        for i in 0..<14 { // drops on the glass: sit still, then slide
+            let cycle = 6 + rand(i * 11) * 8
+            let phase = (t + rand(i * 13) * cycle).truncatingRemainder(dividingBy: cycle) / cycle
+            let slide = phase < 0.6 ? 0 : pow((phase - 0.6) / 0.4, 2) * size.height * 0.5
+            let r = 2 + rand(i * 17) * 4
+            let x = rand(i * 19) * size.width, y = rand(i * 23) * size.height * 0.8 + slide
+            ctx.opacity = 0.5 * (1 - max(0, phase - 0.85) / 0.15)
+            ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r * 1.2, width: r * 2, height: r * 2.4)),
+                     with: .color(tints[i % tints.count]))
+        }
+        ctx.opacity = 1
+    }
+
+    // MARK: Gradient — the tints as a slowly turning gradient with a drifting glow.
+
+    private static func gradient(_ ctx: inout GraphicsContext, _ size: CGSize, _ t: Double, _ tints: [Color]) {
+        let angle = t * 0.04
+        let c = CGPoint(x: size.width / 2, y: size.height / 2)
+        let r = hypot(size.width, size.height) / 2
+        let start = CGPoint(x: c.x - cos(angle) * r, y: c.y - sin(angle) * r)
+        let end = CGPoint(x: c.x + cos(angle) * r, y: c.y + sin(angle) * r)
+        ctx.opacity = 0.85
+        ctx.fill(Path(CGRect(origin: .zero, size: size)), with: .linearGradient(Gradient(colors: tints), startPoint: start, endPoint: end))
+        let glow = CGPoint(x: size.width * (0.5 + 0.35 * sin(t * 0.09)), y: size.height * (0.5 + 0.3 * cos(t * 0.07)))
+        ctx.opacity = 0.35
+        ctx.fill(Path(CGRect(origin: .zero, size: size)),
+                 with: .radialGradient(Gradient(colors: [tints[tints.count > 1 ? 1 : 0], .clear]), center: glow,
+                                       startRadius: 0, endRadius: r * 0.8))
+        ctx.opacity = 1
     }
 }
