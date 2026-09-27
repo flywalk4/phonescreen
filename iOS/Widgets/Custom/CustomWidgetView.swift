@@ -64,6 +64,8 @@ struct NodeView: View {
     let node: WidgetNode
     let widgetID: String
     @EnvironmentObject private var model: PhoneModel
+    @Environment(\.theme) private var theme
+    private var ascii: Bool { theme.style == .ascii }
 
     var body: some View {
         switch node {
@@ -78,37 +80,51 @@ struct NodeView: View {
         case .text(let text, let style, let color, let lines, let align):
             Text(text)
                 .font(font(style))
-                .foregroundStyle(WidgetColor.style(color))
+                .foregroundStyle(WidgetColor.style(color, theme: theme))
                 .lineLimit(lines)
                 .multilineTextAlignment(align == "center" ? .center : align == "trailing" ? .trailing : .leading)
         case .symbol(let name, let color, let size):
             Image(systemName: name)
                 .font(size.map { .system(size: CGFloat($0)) } ?? .body)
-                .foregroundStyle(WidgetColor.style(color))
+                .foregroundStyle(WidgetColor.style(color, theme: theme))
+        case .gauge(let value, let label, let color) where ascii:
+            VStack(alignment: .leading, spacing: 2) {
+                Text([label, "\(Int((value * 100).rounded()))%"].compactMap { $0 }.joined(separator: " ")).font(Ascii.font)
+                AsciiBar(value: value, color: tint(color))
+            }
         case .gauge(let value, let label, let color):
             VStack(spacing: 4) {
                 ZStack {
-                    Circle().stroke(.white.opacity(0.12), lineWidth: 6)
+                    Circle().stroke(theme.text.opacity(0.12), lineWidth: 6)
                     Circle().trim(from: 0, to: value)
-                        .stroke(WidgetColor.color(color) ?? .accentColor, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                        .stroke(tint(color), style: StrokeStyle(lineWidth: 6, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                     Text("\(Int((value * 100).rounded()))%").font(.caption.monospacedDigit().weight(.semibold))
                 }
                 .frame(width: 56, height: 56)
                 if let label { Text(label).font(.caption2).foregroundStyle(.secondary) }
             }
+        case .progress(let value, let color) where ascii:
+            AsciiBar(value: value, color: tint(color))
         case .progress(let value, let color):
-            ProgressView(value: value).tint(WidgetColor.color(color) ?? .accentColor)
+            ProgressView(value: value).tint(tint(color))
+        case .chart(let values, let color) where ascii:
+            AsciiChart(values: values, color: tint(color))
         case .chart(let values, let color):
             Chart(Array(values.enumerated()), id: \.offset) { i, v in
                 LineMark(x: .value("i", i), y: .value("v", v))
-                    .foregroundStyle(WidgetColor.color(color) ?? .accentColor)
+                    .foregroundStyle(tint(color))
                     .interpolationMethod(.monotone)
             }
             .chartXAxis(.hidden)
             .chartYAxis(.hidden)
             .chartYScale(domain: .automatic(includesZero: false))
             .frame(minHeight: 60, maxHeight: 120)
+        case .button(let title, _, let action) where ascii:
+            Button { model.customAction(widgetID, action) } label: { Text("[ \(title) ]").font(Ascii.font) }
+                .buttonStyle(.plain)
+                .foregroundStyle(theme.accent)
+                .pointerTarget { model.customAction(widgetID, action) }
         case .button(let title, let symbol, let action):
             Button { model.customAction(widgetID, action) } label: {
                 if let symbol { Label(title, systemImage: symbol) } else { Text(title) }
@@ -119,10 +135,14 @@ struct NodeView: View {
             SpriteView(frames: frames, palette: palette, fps: fps ?? 4)
         case .spacer:
             Spacer(minLength: 0)
+        case .divider where ascii:
+            AsciiRule(color: theme.secondaryText)
         case .divider:
             Divider()
         }
     }
+
+    private func tint(_ name: String?) -> Color { WidgetColor.color(name, theme: theme) ?? theme.accent }
 
     private func horizontal(_ a: String?) -> HorizontalAlignment {
         switch a { case "center": .center; case "trailing": .trailing; default: .leading }
@@ -149,14 +169,17 @@ struct NodeView: View {
     }
 }
 
-/// Colours a widget may name: system names or `#RRGGBB`.
+/// Colours a widget may name: system names or `#RRGGBB` / `#RRGGBBAA`. The theme can replace any name
+/// (`colors.palette`); `primary` / `secondary` / `accent` are the theme's own.
 enum WidgetColor {
-    static func color(_ name: String?) -> Color? {
+    static func color(_ name: String?, theme: Theme) -> Color? {
         guard let name = name?.lowercased(), !name.isEmpty else { return nil }
+        if let replaced = theme.paletteColor(name) { return replaced }
         switch name {
-        case "primary": return .primary
-        case "secondary": return .secondary
-        case "accent": return .accentColor
+        case "primary": return theme.text
+        case "secondary": return theme.secondaryText
+        case "tertiary": return theme.secondaryText.opacity(0.6)
+        case "accent": return theme.accent
         case "red": return .red
         case "orange": return .orange
         case "yellow": return .yellow
@@ -171,15 +194,12 @@ enum WidgetColor {
         case "brown": return .brown
         case "gray", "grey": return .gray
         case "white": return .white
-        default:
-            guard name.hasPrefix("#"), name.count == 7, let v = UInt32(name.dropFirst(), radix: 16) else { return nil }
-            return Color(red: Double((v >> 16) & 0xFF) / 255, green: Double((v >> 8) & 0xFF) / 255, blue: Double(v & 0xFF) / 255)
+        default: return RGBA(hex: name).map { Color(.sRGB, red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) }
         }
     }
 
-    static func style(_ name: String?) -> AnyShapeStyle {
-        if name?.lowercased() == "tertiary" { return AnyShapeStyle(.tertiary) }
-        return AnyShapeStyle(color(name) ?? .primary)
+    static func style(_ name: String?, theme: Theme) -> AnyShapeStyle {
+        AnyShapeStyle(color(name, theme: theme) ?? theme.text)
     }
 }
 
@@ -189,12 +209,13 @@ struct SpriteView: View {
     let frames: [[String]]
     let palette: [String: String]
     let fps: Double
+    @Environment(\.theme) private var theme
 
     var body: some View {
         let rows = frames.map(\.count).max() ?? 1
         let cols = frames.flatMap { $0 }.map(\.count).max() ?? 1
         let colors = palette.reduce(into: [Character: Color]()) { result, entry in
-            if let ch = entry.key.first, let color = WidgetColor.color(entry.value) { result[ch] = color }
+            if let ch = entry.key.first, let color = WidgetColor.color(entry.value, theme: theme) { result[ch] = color }
         }
         TimelineView(.periodic(from: .now, by: 1 / max(0.5, min(fps, 30)))) { context in
             let index = frames.count > 1 ? Int(context.date.timeIntervalSinceReferenceDate * fps) % frames.count : 0

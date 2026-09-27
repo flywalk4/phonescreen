@@ -35,6 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         if CommandLine.arguments.contains("--pages") { showSettings(.pages) }
         if CommandLine.arguments.contains("--widgets") { showSettings(.widgets) }
+        if CommandLine.arguments.contains("--themes") { showSettings(.themes) }
         #endif
     }
 
@@ -98,6 +99,7 @@ struct MenuBarView: View {
             Divider()
             Button("Страницы…") { showSettings(.pages) }
             Button("Виджеты…") { showSettings(.widgets) }
+            Button("Темы…") { showSettings(.themes) }
             Button("Расположение iPhone…") { showSettings(.arrangement) }
             Button("Выйти") { NSApplication.shared.terminate(nil) }
         }

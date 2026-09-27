@@ -122,3 +122,49 @@ async function action(name, ctx) {
 Цвета: `primary` `secondary` `tertiary` `accent` `red` `orange` `yellow` `green` `mint` `teal` `cyan` `blue` `indigo` `purple` `pink` `brown` `gray` `white` или `#RRGGBB`. Неизвестный `type` пропускается. Максимум 500 элементов и 2000 символов в тексте.
 
 Примеры целиком: [`widgets/com.flywalk4.rates`](widgets/com.flywalk4.rates) (сеть, настройки, история, график) и [`widgets/com.flywalk4.claude-code`](widgets/com.flywalk4.claude-code) (локальные файлы, анимированный спрайт).
+
+## Темы
+
+Тема меняет вид всего телефона: фон страниц, карточки, текст, акцент, шрифт — у встроенных виджетов и у виджетов из каталога. Выбирается на Mac: **«Темы…»** в меню. Встроенные: **Тёмная**, **Светлая**, **Liquid Glass** (стекло iOS 26; на старых iOS — матовое стекло), **ASCII** (всё как в терминале).
+
+Своя тема — один файл `catalog/themes/<id>/theme.json`:
+
+```json
+{
+  "id": "com.author.paper",
+  "name": "Бумага",
+  "version": "1.0.0",
+  "author": "author",
+  "description": "Светлая, с засечками",
+  "style": "flat",
+  "appearance": "light",
+  "font": "serif",
+  "radius": 14,
+  "background": { "colors": ["#FAF7F0", "#EFE8DA"], "angle": 0 },
+  "colors": {
+    "text": "#222222",
+    "secondary": "#777777",
+    "accent": "#C0392B",
+    "card": "#FFFFFF",
+    "border": "#00000014",
+    "palette": { "green": "#2E7D32", "orange": "#C0392B" }
+  }
+}
+```
+
+| Поле | |
+| --- | --- |
+| `style` | `flat` — залитые карточки; `glass` — Liquid Glass поверх фона (красивее всего на градиенте); `ascii` — рамки `+--+`, полосы `[####....]`, графики из `*`, кнопки `[ Обновить ]` |
+| `appearance` | `dark` / `light` — системные элементы (переключатели, поля ввода) подстраиваются под неё |
+| `font` | `system`, `rounded`, `monospaced`, `serif` |
+| `radius` | скругление карточек, 0…40 |
+| `background.colors` | 1 цвет — заливка, 2–4 — линейный градиент; `angle` — направление в градусах (0 — сверху вниз) |
+| `colors.text` / `secondary` / `accent` | основной текст, второстепенный, акцент (кнопки, полосы без своего цвета) |
+| `colors.card` / `border` | заливка карточки (для `glass` — оттенок стекла) и обводка (для `ascii` — цвет рамки) |
+| `colors.palette` | замена цветов, которые называют виджеты: `{"green": "#…"}` перекрасит всё «зелёное» во всех виджетах |
+
+Цвета — `#RRGGBB` или `#RRGGBBAA` (с прозрачностью). Проверка: `python3 scripts/validate-theme.py catalog/themes/<id>`, затем `python3 scripts/build-catalog.py` — и pull request.
+
+Во время работы над темой: **Темы → «Файл разработки…»** — сохраняйте `theme.json`, iPhone перекрашивается сразу.
+
+**Авторам виджетов:** чтобы виджет хорошо выглядел в любой теме, используйте имена цветов (`primary`, `secondary`, `accent`, `green`…), а не `#RRGGBB` — имена тема может заменить. `primary` и `secondary` — цвета текста темы.

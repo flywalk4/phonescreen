@@ -79,7 +79,7 @@ private struct Gauge: View {
     var body: some View {
         VStack(spacing: 8) {
             ZStack {
-                Circle().stroke(.white.opacity(0.1), lineWidth: diameter * 0.09)
+                Circle().stroke(Color.primary.opacity(0.1), lineWidth: diameter * 0.09)
                 Circle()
                     .trim(from: 0, to: value ?? 0)
                     .stroke(color, style: StrokeStyle(lineWidth: diameter * 0.09, lineCap: .round))

@@ -160,8 +160,11 @@ public struct WidgetCatalog: Codable, Equatable, Sendable {
     }
 
     public var widgets: [Entry]
+    /// Themes: `path` is the theme's folder, `files` holds the hash of its `theme.json`. Absent in older indexes.
+    public var themes: [Entry]?
 
-    public init(widgets: [Entry]) {
+    public init(widgets: [Entry], themes: [Entry]? = nil) {
         self.widgets = widgets
+        self.themes = themes
     }
 }

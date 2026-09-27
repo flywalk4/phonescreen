@@ -87,7 +87,7 @@ private struct NoteRow: View {
             }
             .padding(.vertical, 6).padding(.horizontal, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 8).fill(.white.opacity(0.05)))
+            .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.05)))
         } else {
             full
         }
@@ -108,7 +108,7 @@ private struct NoteRow: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.06)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(0.06)))
     }
 }
 
@@ -170,7 +170,7 @@ private struct NoteComposer: View {
                 .focused($focused)
                 .scrollContentBackground(.hidden)
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(focused ? 0.1 : 0.06)))
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(focused ? 0.1 : 0.06)))
                 .pointerTarget(highlight: false) { focused = true }
                 .overlay(alignment: .topLeading) {
                     if text.isEmpty {

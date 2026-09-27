@@ -70,5 +70,43 @@
         "provider.js": "1e24a9d9db2e03c0462988d32c966f42e8839ea707feaa7e8835418d6437e0c4"
       }
     }
+  ],
+  "themes": [
+    {
+      "id": "com.flywalk4.amber",
+      "name": "Янтарный терминал",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "ASCII в духе старых мониторов: янтарные символы на чёрном.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.amber",
+      "files": {
+        "theme.json": "1779e5dfc5a9c8b4ff3bc9d551295193f28488a5c3dbc5efec23f829b716f332"
+      }
+    },
+    {
+      "id": "com.flywalk4.claude",
+      "name": "Claude",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Тёплая бумага, терракотовый акцент и шрифт с засечками.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.claude",
+      "files": {
+        "theme.json": "0a1a318f9d5f6d75163add1f012bf58e8ba212e51b3ee5145af16923129adeb1"
+      }
+    },
+    {
+      "id": "com.flywalk4.synthwave",
+      "name": "Synthwave",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Стекло на неоновом закате: фиолетовый, розовый, оранжевый.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.synthwave",
+      "files": {
+        "theme.json": "6da63e17c3bbb23105453c741e2a9436e7b7921fde32427f870f8204874f42e8"
+      }
+    }
   ]
 }

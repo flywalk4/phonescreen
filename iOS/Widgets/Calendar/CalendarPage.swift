@@ -149,7 +149,7 @@ private struct EventRow: View {
             if ongoing { Text("сейчас").font(.caption.weight(.bold)).foregroundStyle(.green) }
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 10).fill(.white.opacity(ongoing ? 0.12 : 0.05)))
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(ongoing ? 0.12 : 0.05)))
         .opacity(past ? 0.45 : 1)
     }
 }

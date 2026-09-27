@@ -249,7 +249,7 @@ struct WeatherPage: View {
                     }
                     .padding(12)
                 }
-                .background(RoundedRectangle(cornerRadius: 14).fill(.white.opacity(0.06)))
+                .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.06)))
                 DailyList(daily: f.daily)
             }
             .widgetPadding()
@@ -272,7 +272,7 @@ private struct DailyList: View {
                     Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary).frame(width: 34, alignment: .trailing)
                     GeometryReader { geo in
                         let w = geo.size.width, span = max(hi - lo, 1)
-                        Capsule().fill(.white.opacity(0.1))
+                        Capsule().fill(Color.primary.opacity(0.1))
                             .overlay(alignment: .leading) {
                                 Capsule().fill(LinearGradient(colors: [.cyan, .orange], startPoint: .leading, endPoint: .trailing))
                                     .frame(width: max(6, w * (d.max - d.min) / span))
@@ -286,6 +286,6 @@ private struct DailyList: View {
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14).fill(.white.opacity(0.06)))
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.06)))
     }
 }

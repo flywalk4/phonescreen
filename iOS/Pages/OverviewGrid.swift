@@ -52,10 +52,10 @@ private struct Tile: View {
                 .scaleEffect(scale, anchor: .topLeading)
                 .frame(width: pageSize.width * scale, height: pageSize.height * scale, alignment: .topLeading)
                 .allowsHitTesting(false)
-                .background(Color.white.opacity(0.04))
+                .background(ThemeBackground())
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isCurrent ? Color.white : Color.white.opacity(0.15), lineWidth: isCurrent ? 2 : 1))
+                    .stroke(isCurrent ? Color.primary : Color.primary.opacity(0.15), lineWidth: isCurrent ? 2 : 1))
             Text(title).font(.caption2).foregroundStyle(isCurrent ? .primary : .secondary).lineLimit(1)
         }
     }

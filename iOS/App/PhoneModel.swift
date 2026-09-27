@@ -26,6 +26,12 @@ final class PhoneModel: ObservableObject {
     var customNames: [String: String] { customWidgets.mapValues(\.name) }
     @Published private(set) var stats: SystemStats?
     @Published private(set) var statsHistory: [SystemStats] = []
+    /// The look chosen on the Mac; kept so the phone looks right before it reconnects.
+    @Published private(set) var theme: Theme = PhoneModel.savedTheme() {
+        didSet {
+            if let data = try? JSONEncoder().encode(theme) { UserDefaults.standard.set(data, forKey: "theme") }
+        }
+    }
     /// How the phone lies next to the Mac. Remembered, so the UI is right before the Mac reconnects.
     @Published private(set) var layout: PhoneLayout = PhoneModel.savedLayout() {
         didSet {
@@ -256,6 +262,8 @@ final class PhoneModel: ObservableObject {
             customWidgets[state.id] = state
         case .customWidgetRemoved(let id):
             customWidgets[id] = nil
+        case .theme(let value):
+            withAnimation(.easeInOut(duration: 0.35)) { theme = value }
         case .stats(let value):
             stats = value
             statsHistory = Array((statsHistory + [value]).suffix(60))
@@ -284,6 +292,10 @@ final class PhoneModel: ObservableObject {
             currentPage = target
             pointer.swipe.offset = 0
         }
+    }
+
+    private static func savedTheme() -> Theme {
+        UserDefaults.standard.data(forKey: "theme").flatMap { try? JSONDecoder().decode(Theme.self, from: $0) } ?? .dark
     }
 
     private static func savedLayout() -> PhoneLayout {

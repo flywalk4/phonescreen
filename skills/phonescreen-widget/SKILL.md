@@ -1,6 +1,6 @@
 ---
 name: phonescreen-widget
-description: Write, test and publish widgets for PhoneScreen (the iPhone side screen for the Mac) — a JavaScript data provider plus a declarative view. Use when asked to create, fix or port a PhoneScreen widget, or to add one to the catalog.
+description: Write, test and publish widgets and themes for PhoneScreen (the iPhone side screen for the Mac) — a JavaScript data provider plus a declarative view, or a theme.json that restyles every widget. Use when asked to create, fix or port a PhoneScreen widget or theme, or to add one to the catalog.
 ---
 
 # Writing a PhoneScreen widget
@@ -39,7 +39,7 @@ The full reference (every field, node type and sandbox API) is `catalog/README.m
 ## View cheatsheet
 
 Nodes: `vstack` / `hstack` (`children`, `spacing`, `align`), `text` (`text`, `style`, `color`, `lines`, `align`), `symbol` (SF Symbol `name`, `color`, `size`), `gauge` / `progress` (`value` 0…1), `chart` (`values` array), `button` (`title`, `symbol`, `action`), `list` (`items`, `template`), `sprite` (pixel animation: `frames` = arrays of equal-length strings, `palette` char → colour, `fps`; draw frames in code, see `com.flywalk4.claude-code`), `spacer`, `divider`. Any node may have `"if"`.
-Text styles: `largeTitle title title2 title3 headline body callout subheadline footnote caption caption2`. Colours: system names (`green`, `secondary`, `accent`, …) or `#RRGGBB`.
+Text styles: `largeTitle title title2 title3 headline body callout subheadline footnote caption caption2`. Colours: system names (`green`, `secondary`, `accent`, …) or `#RRGGBB`. Prefer names: themes restyle them (`primary`/`secondary` are the theme's text colours; a theme's `palette` can remap any name), while `#RRGGBB` stays fixed in every theme — keep hex for things like a mascot's own colours.
 
 ## Quality bar
 
@@ -48,3 +48,12 @@ Text styles: `largeTitle title title2 title3 headline body callout subheadline f
 - Handle empty and error states: an API that returns nothing should give a clear message, not a blank card.
 - Don't poll faster than the data changes; respect API rate limits.
 - Never exfiltrate: send nothing to APIs beyond what the widget needs to fetch its data.
+
+## Themes
+
+A theme is one file, `catalog/themes/<id>/theme.json` (folder name = `id`), that restyles the whole phone — built-in and JavaScript widgets. Full format: the "Темы" section of `catalog/README.md`; examples in `catalog/themes/`. Fields: `style` (`flat` | `glass` | `ascii`), `appearance` (`dark` | `light`), `font` (`system` | `rounded` | `monospaced` | `serif`), `radius` (0…40), `background.colors` (1 colour or a 2–4 colour gradient, `angle` in degrees), `colors.text/secondary/accent` (required), `colors.card/border`, `colors.palette` (remap widget colour names, e.g. `{"green": "#72F1B8"}`). Colours are `#RRGGBB` or `#RRGGBBAA`.
+
+1. Check contrast: `text` and `secondary` must stay readable on both `background` and `card`; for `glass`, pick a vivid gradient and a translucent `card`.
+2. Validate: `python3 scripts/validate-theme.py catalog/themes/<id>` — fix every ✗.
+3. `python3 scripts/build-catalog.py`, commit the folder with `catalog/index.json`. Bump `version` on changes.
+4. To see it live: Mac → Темы → «Файл разработки…» and pick the `theme.json`; every save recolours the phone.

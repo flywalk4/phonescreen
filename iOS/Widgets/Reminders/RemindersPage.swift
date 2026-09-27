@@ -126,7 +126,7 @@ struct RemindersPage: View {
                     Text(list.title)
                         .font(.subheadline.weight(.medium))
                         .padding(.horizontal, 12).padding(.vertical, 6)
-                        .background(Capsule().fill(selected ? Color(cgColor: list.cgColor) : .white.opacity(0.08)))
+                        .background(Capsule().fill(selected ? Color(cgColor: list.cgColor) : Color.primary.opacity(0.08)))
                         .onTapGesture { model.selectedListID = list.calendarIdentifier }
                         .pointerTarget { model.selectedListID = list.calendarIdentifier }
                 }
@@ -147,7 +147,7 @@ struct RemindersPage: View {
                 }
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(adding ? 0.12 : 0.06)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(adding ? 0.12 : 0.06)))
         .pointerTarget(highlight: false) { adding = true }
     }
 }

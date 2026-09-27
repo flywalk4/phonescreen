@@ -51,7 +51,7 @@ private struct Card: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(.white.opacity(0.07))
+            Color.clear
             if let ref {
                 WidgetView(ref: ref)
                     .environment(\.widgetSize, size)
@@ -60,7 +60,7 @@ private struct Card: View {
                 Image(systemName: "plus.square.dashed").font(.title).foregroundStyle(.tertiary)
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .themedCard()
     }
 }
 

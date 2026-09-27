@@ -212,6 +212,7 @@ struct SettingsView: View {
         TabView(selection: $model.settingsTab) {
             PagesEditor().tabItem { Label("Страницы", systemImage: "rectangle.grid.2x2") }.tag(AppModel.SettingsTab.pages)
             WidgetsSettings(widgets: model.widgets).tabItem { Label("Виджеты", systemImage: "puzzlepiece.extension") }.tag(AppModel.SettingsTab.widgets)
+            ThemesSettings(themes: model.themes).tabItem { Label("Темы", systemImage: "paintpalette") }.tag(AppModel.SettingsTab.themes)
             ArrangementView().tabItem { Label("Расположение", systemImage: "iphone.gen3") }.tag(AppModel.SettingsTab.arrangement)
         }
         .frame(minWidth: 680, minHeight: 520)

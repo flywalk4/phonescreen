@@ -53,7 +53,7 @@ struct MusicPage: View {
                     Text(m.rawValue)
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 14).padding(.vertical, 6)
-                        .background(Capsule().fill(m == mode ? Color.white.opacity(0.18) : .clear))
+                        .background(Capsule().fill(m == mode ? Color.primary.opacity(0.18) : .clear))
                         .contentShape(Capsule())
                         .onTapGesture { withAnimation(.snappy) { mode = m } }
                         .pointerTarget { withAnimation(.snappy) { mode = m } }
@@ -171,8 +171,8 @@ struct LevelBar: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(.white.opacity(0.15))
-                Capsule().fill(.white).frame(width: max(height, geo.size.width * value))
+                Capsule().fill(Color.primary.opacity(0.15))
+                Capsule().fill(Color.primary).frame(width: max(height, geo.size.width * value))
             }
             .frame(height: height)
             .frame(maxHeight: .infinity)
@@ -211,7 +211,7 @@ private struct QueueView: View {
                             }
                         }
                         .padding(.vertical, 8).padding(.horizontal, 10)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(.white.opacity(0.05)))
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
                         .contentShape(Rectangle())
                         .onTapGesture { model.music(.playQueueItem(i)) }
                         .pointerTarget { model.music(.playQueueItem(i)) }
@@ -301,7 +301,7 @@ private struct AirPlayRow: View {
                 .foregroundStyle(device.selected ? Color.accentColor : .secondary)
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(device.selected ? 0.1 : 0.05)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(device.selected ? 0.1 : 0.05)))
         .contentShape(Rectangle())
         .onTapGesture(perform: toggle)
         .pointerTarget(action: toggle)
@@ -322,7 +322,7 @@ private struct Artwork: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 18).fill(.white.opacity(0.08))
+            RoundedRectangle(cornerRadius: 18).fill(Color.primary.opacity(0.08))
             if let image {
                 Image(uiImage: image).resizable().scaledToFill()
             } else {
@@ -362,7 +362,7 @@ private struct ProgressRow: View {
             let elapsed = min(currentElapsed(at: context.date), duration)
             VStack(spacing: 6) {
                 ProgressView(value: duration > 0 ? elapsed / duration : 0)
-                    .tint(.white)
+                    .tint(Color.primary)
                 HStack {
                     Text(format(elapsed))
                     Spacer()
@@ -397,7 +397,7 @@ private struct Controls: View {
             button(playing ? "pause.fill" : "play.fill", size: compact ? 24 : 44) { action(.togglePlayPause) }
             button("forward.fill", size: compact ? 16 : 30) { action(.next) }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.primary)
     }
 
     private func button(_ symbol: String, size: CGFloat, perform: @escaping () -> Void) -> some View {

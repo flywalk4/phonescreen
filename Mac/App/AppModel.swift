@@ -53,7 +53,7 @@ final class AppModel: ObservableObject {
     /// Which Settings tab to show.
     @Published var settingsTab = SettingsTab.pages
 
-    enum SettingsTab: Hashable { case pages, widgets, arrangement }
+    enum SettingsTab: Hashable { case pages, widgets, themes, arrangement }
 
     private static let pagesKey = "phonePages"
 
@@ -73,6 +73,8 @@ final class AppModel: ObservableObject {
 
     /// Installed JavaScript widgets.
     let widgets = WidgetManager()
+    /// The phone's look (built-in and installed themes).
+    let themes = ThemeManager()
 
     private let sessionId = UUID()
     let pool: ChannelPool
@@ -260,6 +262,8 @@ final class AppModel: ObservableObject {
         launcher.refresh()
         widgets.send = { [weak self] in self?.pool.send($0) }
         widgets.start()
+        themes.send = { [weak self] in self?.pool.send($0) }
+        themes.start()
         // Notes change on other devices too; poll only while their page is on screen.
         notesTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
@@ -326,6 +330,7 @@ final class AppModel: ObservableObject {
     /// Sent on every (re)connection and transport switch, so the phone never shows stale state.
     private func sendFullState() {
         pool.send(.layout(arrangement.layout))
+        themes.sendCurrent()
         pool.send(.pages(list: pages, current: currentPage))
         sendNowPlaying()
         sendLauncher()

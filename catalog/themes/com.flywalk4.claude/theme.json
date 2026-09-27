@@ -1,0 +1,20 @@
+{
+  "id": "com.flywalk4.claude",
+  "name": "Claude",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Тёплая бумага, терракотовый акцент и шрифт с засечками.",
+  "style": "flat",
+  "appearance": "light",
+  "font": "serif",
+  "radius": 18,
+  "background": { "colors": ["#F4EFE6", "#EDE4D6"], "angle": 0 },
+  "colors": {
+    "text": "#1F1E1D",
+    "secondary": "#6B6560",
+    "accent": "#D97757",
+    "card": "#FFFCF7",
+    "border": "#1F1E1D14",
+    "palette": { "orange": "#D97757", "accent": "#D97757" }
+  }
+}

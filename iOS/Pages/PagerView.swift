@@ -6,7 +6,7 @@ struct PagerView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            ThemeBackground()
             OrientedContainer(orientation: model.layout.orientation) { island in
                 ZStack {
                     content
@@ -24,6 +24,7 @@ struct PagerView: View {
                 })
             }
         }
+        .themed(model.theme)
     }
 
     @ViewBuilder private var content: some View {
@@ -141,7 +142,7 @@ struct PageDots: View {
         HStack(spacing: 0) {
             ForEach(0..<count, id: \.self) { i in
                 Circle()
-                    .fill(i == current ? Color.white : Color.white.opacity(0.3))
+                    .fill(i == current ? Color.primary : Color.primary.opacity(0.3))
                     .frame(width: 7, height: 7)
                     .frame(width: 22, height: 22) // comfortable target for the Mac pointer
                     .contentShape(Rectangle())
@@ -171,7 +172,7 @@ struct ConnectionBadge: View {
         .foregroundStyle(.secondary)
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
-        .background(.white.opacity(0.06), in: Capsule())
+        .background(Color.primary.opacity(0.06), in: Capsule())
     }
 }
 

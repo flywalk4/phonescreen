@@ -11,7 +11,6 @@ struct PhoneScreenApp: App {
             PagerView()
                 .environmentObject(model)
                 .environmentObject(model.pointer)
-                .preferredColorScheme(.dark)
                 .statusBarHidden()
                 .persistentSystemOverlays(.hidden)
                 .task {
