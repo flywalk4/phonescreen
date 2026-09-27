@@ -15,7 +15,18 @@ catalog/widgets/com.author.mywidget/
 2. Проверьте: `python3 scripts/validate-widget.py catalog/widgets/<id>`
 3. Запустите по-настоящему (нужен собранный Mac-агент): `PhoneScreen --widget-test catalog/widgets/<id>` — выполнит `refresh()` в той же песочнице, что и приложение, и напечатает данные и итоговое дерево.
 4. Обновите индекс: `python3 scripts/build-catalog.py` (хеши SHA-256 всех файлов; приложение не установит файл с другим хешем).
-5. Pull request. Ревьюер смотрит прежде всего `permissions` и куда ходит `fetch`.
+5. Добавьте сценарии в `fixtures/` (хотя бы «всё хорошо» и «API недоступен») и проверьте: `node scripts/widget-dev.mjs test catalog/widgets/<id>`.
+6. Pull request. Ревьюер смотрит прежде всего `permissions` и куда ходит `fetch`.
+
+**Без Mac** (Linux, Windows, CI, ИИ-агент в облаке) — `scripts/widget-dev.mjs` на Node 18+:
+
+```bash
+node scripts/widget-dev.mjs run catalog/widgets/<id> --fixture ok --views   # refresh() в эмуляции песочницы + дерево для телефона
+node scripts/widget-dev.mjs preview catalog/widgets/<id> out.png --theme glass # примерный PNG всех трёх размеров (нужен Playwright)
+node scripts/widget-dev.mjs test                                             # все сценарии fixtures/ всех виджетов
+```
+
+Сценарии лежат в `catalog/widgets/<id>/fixtures/*.json` (в приложение не скачиваются): ответы API (`fetch`), настройки, секреты, `storage`, файлы, нажатия (`actions`), время (`now`, `timezone`) и что должно получиться (`expect` по путям в данных или `error`). Формат — в начале `scripts/widget-dev.mjs`. Pull request в каталог проверяется автоматически: валидаторы, актуальность `index.json` и все сценарии. Эмуляция повторяет API и лимиты песочницы, но окончательная проверка — `--widget-test` на Mac.
 
 Во время разработки удобнее **Настройки → Виджеты → «Папка разработки…»**: сохраните файл — виджет перезагрузится на iPhone сам. Журнал `console.log` и ошибок — там же.
 
