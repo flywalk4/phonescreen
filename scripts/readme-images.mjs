@@ -15,7 +15,17 @@ const OUT = path.join(ROOT, "docs/images");
 const shots = path.resolve(process.argv[2] || "screenshots");
 const list = (dir) => (fs.existsSync(path.join(shots, dir)) ? fs.readdirSync(path.join(shots, dir)).filter((f) => f.endsWith(".png")).sort() : []);
 const png = (file) => `data:image/png;base64,${fs.readFileSync(path.join(shots, file)).toString("base64")}`;
+// English captions for the README (the widgets themselves speak Russian).
+const ENGLISH = {
+  "com.flywalk4.air": "Air quality", "com.flywalk4.claude-code": "Claude Code", "com.flywalk4.focus": "Focus",
+  "com.flywalk4.game2048": "2048", "com.flywalk4.github": "GitHub", "com.flywalk4.hackernews": "Hacker News",
+  "com.flywalk4.markets": "Markets", "com.flywalk4.memory": "Memory", "com.flywalk4.minesweeper": "Minesweeper",
+  "com.flywalk4.month": "Month", "com.flywalk4.rain": "Rain", "com.flywalk4.rates": "Rates", "com.flywalk4.sky": "Sun & Moon",
+  "com.flywalk4.tictactoe": "Tic-tac-toe", "com.flywalk4.time": "Time", "com.flywalk4.wallpaper": "Live wallpaper",
+  "com.flywalk4.worldclock": "World clock", "com.flywalk4.winter": "Winter", "com.flywalk4.rainy": "Rainy evening",
+};
 const name = (id) => {
+  if (ENGLISH[id]) return ENGLISH[id];
   const f = path.join(ROOT, "catalog/widgets", id, "manifest.json");
   const t = path.join(ROOT, "catalog/themes", id, "theme.json");
   return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")).name : fs.existsSync(t) ? JSON.parse(fs.readFileSync(t, "utf8")).name : id;
@@ -70,7 +80,7 @@ await render("widgets.png", phones(widgets, { width: 230 }), { columns: Math.min
 
 // Pages: each mixed page, cycling through the themes.
 const mixed = numbers.map((n, i) => ({ file: page(THEMES[i % 4][0], n) || page("dark", n), label: "" }));
-await render("pages.png", phones(mixed, { width: 260, caption: false }), { columns: Math.min(4, mixed.length), width: 260 });
+await render("pages.png", phones(mixed, { width: 260, caption: false }), { columns: Math.min(3, mixed.length), width: 260 });
 
 // Catalog themes.
 const themes = list("catalog-themes").map((f) => ({ file: `catalog-themes/${f}`, label: name(f.replace(/\.png$/, "")) }));

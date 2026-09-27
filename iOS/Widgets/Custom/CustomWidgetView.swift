@@ -120,13 +120,23 @@ struct NodeView: View {
             WidgetChart(values: values, color: tint(color), style: style ?? "line")
                 .frame(minHeight: height.map { CGFloat($0) } ?? 60, maxHeight: height.map { CGFloat($0) } ?? 120)
         case .button(let title, _, let action) where ascii:
-            Button { model.customAction(widgetID, action) } label: { Text("[ \(title) ]").font(Ascii.font) }
+            Button { model.customAction(widgetID, action) } label: {
+                Text("[ \(title) ]").font(Ascii.font).lineLimit(1).minimumScaleFactor(0.7)
+            }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.accent)
                 .pointerTarget { model.customAction(widgetID, action) }
         case .button(let title, let symbol, let action):
             Button { model.customAction(widgetID, action) } label: {
-                if let symbol { Label(title, systemImage: symbol) } else { Text(title) }
+                // Tight on space: the icon alone, never a title broken mid-word.
+                if let symbol {
+                    ViewThatFits(in: .horizontal) {
+                        Label(title, systemImage: symbol).lineLimit(1).fixedSize()
+                        Image(systemName: symbol)
+                    }
+                } else {
+                    Text(title).lineLimit(1).minimumScaleFactor(0.7)
+                }
             }
             .buttonStyle(.bordered)
             .pointerTarget { model.customAction(widgetID, action) }
