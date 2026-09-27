@@ -36,6 +36,8 @@ final class PointerController: ObservableObject {
 
     /// The pointer left through the Mac-facing side.
     var onExit: ((Double) -> Void)?
+    /// A click that hit no control (ends text editing, like tapping away).
+    var onEmptyClick: (() -> Void)?
     /// A swipe ended: move by this many pages (−1, 0, +1); the pager animates `swipe.offset` back to 0.
     var onSwipeEnd: ((Int) -> Void)?
 
@@ -71,6 +73,7 @@ final class PointerController: ObservableObject {
         } else {
             // Like a real button: fires when released over the same control it was pressed on.
             if let id = pressed, hit(model.position) == id { targets[id]?.action() }
+            if pressed == nil, hit(model.position) == nil { onEmptyClick?() }
             pressed = nil
         }
         layerView?.setPressed(down)
@@ -175,6 +178,7 @@ final class PointerController: ObservableObject {
 struct PointerTarget: ViewModifier {
     @EnvironmentObject private var pointer: PointerController
     @State private var id = UUID()
+    var highlight = true
     let action: () -> Void
 
     func body(content: Content) -> some View {
@@ -186,8 +190,8 @@ struct PointerTarget: ViewModifier {
                     .onChange(of: frame) { _, new in pointer.register(id, frame: new, action: action) }
             })
             .onDisappear { pointer.unregister(id) }
-            .scaleEffect(pointer.pressed == id ? 0.92 : pointer.hovered == id ? 1.08 : 1)
-            .brightness(pointer.hovered == id ? 0.15 : 0)
+            .scaleEffect(!highlight ? 1 : pointer.pressed == id ? 0.92 : pointer.hovered == id ? 1.08 : 1)
+            .brightness(highlight && pointer.hovered == id ? 0.15 : 0)
             .animation(.snappy(duration: 0.15), value: pointer.hovered == id)
             .animation(.snappy(duration: 0.1), value: pointer.pressed == id)
     }
@@ -230,8 +234,8 @@ struct PointerScrollable: ViewModifier {
 }
 
 extension View {
-    func pointerTarget(action: @escaping () -> Void) -> some View {
-        modifier(PointerTarget(action: action))
+    func pointerTarget(highlight: Bool = true, action: @escaping () -> Void) -> some View {
+        modifier(PointerTarget(highlight: highlight, action: action))
     }
 
     func pointerScrollable() -> some View {

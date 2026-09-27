@@ -72,6 +72,7 @@ extension AppModel {
     private func finishCapture(at point: CGPoint?) {
         pointerCapture.end(at: point)
         isPointerOnPhone = false
+        isTypingOnPhone = false
         captureEntry = nil
         Self.log.info("pointer → mac")
     }

@@ -9,7 +9,11 @@ struct NotesPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if let id = openID, let note = model.notes?.first(where: { $0.id == id }) {
+            if composing {
+                // Inline, not a sheet: sheets live outside the rotated UI and out of the Mac pointer's reach.
+                NoteComposer(save: { model.createNote($0) }, close: { withAnimation(.snappy) { composing = false } })
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if let id = openID, let note = model.notes?.first(where: { $0.id == id }) {
                 NoteDetail(note: note, text: model.noteBodies[id],
                            back: { withAnimation(.snappy) { openID = nil } },
                            showOnMac: { model.showNoteOnMac(id) })
@@ -20,20 +24,17 @@ struct NotesPage: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 36)
-        .sheet(isPresented: $composing) {
-            NoteComposer { text in model.createNote(text) }
-        }
     }
 
     private var list: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 WidgetHeader(title: "Заметки", symbol: "note.text")
-                Button { composing = true } label: {
+                Button { startComposing() } label: {
                     Image(systemName: "square.and.pencil").font(.title2).frame(width: 40, height: 40)
                 }
                 .buttonStyle(.plain)
-                .pointerTarget { composing = true }
+                .pointerTarget { startComposing() }
             }
             if let notes = model.notes {
                 if notes.isEmpty {
@@ -59,6 +60,10 @@ struct NotesPage: View {
                 Spacer()
             }
         }
+    }
+
+    private func startComposing() {
+        withAnimation(.snappy) { composing = true }
     }
 
     private func open(_ note: NoteSummary) {
@@ -125,26 +130,45 @@ private struct NoteDetail: View {
 
 private struct NoteComposer: View {
     let save: (String) -> Void
-    @Environment(\.dismiss) private var dismiss
+    let close: () -> Void
     @State private var text = ""
     @FocusState private var focused: Bool
 
     var body: some View {
-        NavigationStack {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Button("Отмена", action: close)
+                    .buttonStyle(.plain).foregroundStyle(.secondary)
+                    .pointerTarget(action: close)
+                Spacer()
+                Text("Новая заметка").font(.headline)
+                Spacer()
+                Button("Сохранить", action: commit)
+                    .buttonStyle(.plain).foregroundStyle(.yellow).fontWeight(.semibold)
+                    .disabled(isEmpty)
+                    .pointerTarget(action: commit)
+            }
             TextEditor(text: $text)
                 .focused($focused)
-                .padding()
-                .navigationTitle("Новая заметка")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) { Button("Отмена") { dismiss() } }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Сохранить") { save(text); dismiss() }
-                            .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .scrollContentBackground(.hidden)
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(focused ? 0.1 : 0.06)))
+                .pointerTarget(highlight: false) { focused = true }
+                .overlay(alignment: .topLeading) {
+                    if text.isEmpty {
+                        Text("Первая строка станет заголовком. Можно печатать с клавиатуры Mac.")
+                            .foregroundStyle(.tertiary).padding(16).allowsHitTesting(false)
                     }
                 }
-                .onAppear { focused = true }
         }
-        .preferredColorScheme(.dark)
+        .onAppear { focused = true }
+    }
+
+    private var isEmpty: Bool { text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    private func commit() {
+        guard !isEmpty else { return }
+        save(text)
+        close()
     }
 }

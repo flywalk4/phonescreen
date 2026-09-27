@@ -27,6 +27,7 @@ final class PhoneModel: ObservableObject {
     }
 
     let pointer = PointerController()
+    let keyboard = KeyboardBridge()
     private let pool: ChannelPool
     private let listener: Listener
     /// Set while applying a page change that came from the Mac, so it is not echoed back.
@@ -45,7 +46,12 @@ final class PhoneModel: ObservableObject {
     }
 
     func start() {
-        pointer.onExit = { [weak self] along in self?.pool.send(.pointerExit(along: along)) }
+        pointer.onExit = { [weak self] along in
+            self?.keyboard.macInputActive = false
+            self?.pool.send(.pointerExit(along: along))
+        }
+        pointer.onEmptyClick = { [weak self] in self?.keyboard.endEditing() }
+        keyboard.onFocusChange = { [weak self] focused in self?.pool.send(.textFocus(focused)) }
         pointer.onSwipeEnd = { [weak self] step in self?.finishSwipe(step) }
         pool.onMessage = { [weak self] in self?.handle($0) }
         pool.onStatus = { [weak self] in self?.status = $0 }
@@ -118,6 +124,8 @@ final class PhoneModel: ObservableObject {
             withAnimation(.snappy) { layout = value }
         case .pointerEnter(let along):
             pointer.enter(along: along)
+            keyboard.macInputActive = true
+            pool.send(.textFocus(keyboard.hasFocus)) // a field may already be focused from before
         case .pointerDelta(let dx, let dy):
             pointer.move(dx: dx, dy: dy)
         case .pointerButton(let button, let down):
@@ -126,6 +134,11 @@ final class PhoneModel: ObservableObject {
             pointer.scroll(dx: dx, dy: dy, phase: phase)
         case .pointerExit:
             pointer.hide()
+            keyboard.macInputActive = false
+        case .keyText(let text):
+            keyboard.insert(text)
+        case .key(let key):
+            keyboard.press(key)
         case .nowPlaying(let value):
             nowPlaying = value
         case .notes(let list):

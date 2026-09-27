@@ -31,6 +31,7 @@ final class AppModel: ObservableObject {
 
     // Pointer (see AppModel+Pointer.swift)
     @Published var isPointerOnPhone = false
+    @Published var isTypingOnPhone = false
     @Published var hasAccessibility = PointerCapture.hasAccessibility
     let pointerCapture = PointerCapture()
     let edgeWatcher = EdgeWatcher()
@@ -270,6 +271,9 @@ final class AppModel: ObservableObject {
             launcher.run(id)
         case .pointerExit(let along):
             pointerLeftPhone(along: along)
+        case .textFocus(let focused):
+            pointerCapture.phoneTextFocus = focused
+            isTypingOnPhone = focused
         case .mediaAction(let action):
             Self.log.info("mediaAction \(action.rawValue, privacy: .public)")
             music.perform(action)

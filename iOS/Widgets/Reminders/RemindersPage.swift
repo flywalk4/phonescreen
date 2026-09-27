@@ -129,10 +129,15 @@ struct RemindersPage: View {
                 TextField("Новое напоминание", text: $draft)
                     .focused($adding)
                     .submitLabel(.done)
-                    .onSubmit { model.add(draft); draft = "" }
+                    .onSubmit {
+                        model.add(draft)
+                        draft = ""
+                        adding = true // keep typing the next one
+                    }
             }
             .padding(12)
-            .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.06)))
+            .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(adding ? 0.12 : 0.06)))
+            .pointerTarget(highlight: false) { adding = true }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 36)

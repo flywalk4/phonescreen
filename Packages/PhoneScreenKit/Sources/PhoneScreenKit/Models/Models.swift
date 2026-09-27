@@ -115,6 +115,14 @@ public enum ScrollPhase: String, Codable, Sendable {
     case wheel
 }
 
+/// Non-text keys typed on the Mac keyboard while the pointer is on the phone.
+public enum SpecialKey: String, Codable, Sendable {
+    case enter, tab, escape
+    case backspace, forwardDelete, deleteWordBackward, deleteLineBackward
+    case left, right, up, down, lineStart, lineEnd
+    case selectAll
+}
+
 /// An Apple Notes note, as listed on the phone.
 public struct NoteSummary: Codable, Equatable, Identifiable, Sendable {
     public var id: String

@@ -97,7 +97,10 @@ struct MenuBarView: View {
                 Button("Разрешить…") { model.requestAccessibility() }
             }
         } else if model.isPointerOnPhone {
-            Label("Курсор на iPhone — Esc или ⌃⌥⌘P вернут его", systemImage: "cursorarrow.rays")
+            Label(model.isTypingOnPhone
+                  ? "Клавиатура печатает на iPhone — Esc закончит ввод"
+                  : "Курсор на iPhone — Esc или ⌃⌥⌘P вернут его",
+                  systemImage: model.isTypingOnPhone ? "keyboard" : "cursorarrow.rays")
                 .font(.caption)
                 .foregroundStyle(.green)
         } else {

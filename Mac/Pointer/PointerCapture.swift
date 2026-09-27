@@ -23,6 +23,9 @@ final class PointerCapture: @unchecked Sendable {
     private let lock = NSLock()
     private var _captured = false
     private var _scale = 1.0
+    private var _phoneTextFocus = false
+    /// Key codes whose keyDown went to the phone: their keyUp must not reach the Mac either.
+    private var swallowedKeys = Set<Int64>()
     private var tap: CFMachPort?
     private var tapThread: Thread?
     private var tapRunLoop: CFRunLoop?
@@ -36,6 +39,12 @@ final class PointerCapture: @unchecked Sendable {
     private let minInterval = 1.0 / 240
 
     var isCaptured: Bool { lock.withLock { _captured } }
+
+    /// A text field on the phone has focus: while captured, typing goes there.
+    var phoneTextFocus: Bool {
+        get { lock.withLock { _phoneTextFocus } }
+        set { lock.withLock { _phoneTextFocus = newValue } }
+    }
 
     static var hasAccessibility: Bool { AXIsProcessTrusted() }
 
@@ -62,7 +71,7 @@ final class PointerCapture: @unchecked Sendable {
     /// Give the cursor back at `point` (global CG coordinates). Call on the main thread.
     @MainActor func end(at point: CGPoint?) {
         guard isCaptured else { return }
-        lock.withLock { _captured = false }
+        lock.withLock { _captured = false; _phoneTextFocus = false }
         if let tap { CGEvent.tapEnable(tap: tap, enable: false) }
         if let point { CGWarpMouseCursorPosition(point) }
         CGAssociateMouseAndMouseCursorPosition(1)
@@ -91,7 +100,7 @@ final class PointerCapture: @unchecked Sendable {
         if tap != nil { return true }
         let types: [CGEventType] = [.mouseMoved, .leftMouseDown, .leftMouseUp, .leftMouseDragged,
                                     .rightMouseDown, .rightMouseUp, .rightMouseDragged,
-                                    .otherMouseDragged, .scrollWheel, .keyDown]
+                                    .otherMouseDragged, .scrollWheel, .keyDown, .keyUp]
         let mask = types.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
         guard let tap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
                                           eventsOfInterest: mask, callback: { _, type, event, info in
@@ -127,7 +136,7 @@ final class PointerCapture: @unchecked Sendable {
 
     /// Tap thread.
     private func handle(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
-        let (captured, scale) = lock.withLock { (_captured, _scale) }
+        let (captured, scale, textFocus) = lock.withLock { (_captured, _scale, _phoneTextFocus) }
         switch type {
         case .tapDisabledByTimeout, .tapDisabledByUserInput:
             // macOS turns slow taps off; turn it back on while we still own the cursor.
@@ -151,15 +160,50 @@ final class PointerCapture: @unchecked Sendable {
             flush(force: true)
             send?(scroll(event, scale: scale))
         case .keyDown:
-            if event.getIntegerValueField(.keyboardEventKeycode) == 53 { // Esc
-                DispatchQueue.main.async { [onEscape] in MainActor.assumeIsolated { onEscape?() } }
-                return nil
-            }
-            return Unmanaged.passUnretained(event) // typing still goes to the Mac for now
+            return keyDown(event, textFocus: textFocus)
+        case .keyUp:
+            let code = event.getIntegerValueField(.keyboardEventKeycode)
+            return swallowedKeys.remove(code) != nil ? nil : Unmanaged.passUnretained(event)
         default:
             return Unmanaged.passUnretained(event)
         }
         return nil // swallowed: the Mac doesn't see mouse input while it's on the phone
+    }
+
+    /// Tap thread. With a phone text field focused, typing goes to the phone (resolved through the Mac's
+    /// current keyboard layout); shortcuts the phone has no use for stay with the Mac.
+    private func keyDown(_ event: CGEvent, textFocus: Bool) -> Unmanaged<CGEvent>? {
+        let code = event.getIntegerValueField(.keyboardEventKeycode)
+        guard textFocus else {
+            if code == KeyMapping.Code.escape { // nothing to type into: Esc brings the cursor home
+                swallowedKeys.insert(code)
+                DispatchQueue.main.async { [onEscape] in MainActor.assumeIsolated { onEscape?() } }
+                return nil
+            }
+            return Unmanaged.passUnretained(event)
+        }
+        var length = 0
+        var chars = [UniChar](repeating: 0, count: 16)
+        event.keyboardGetUnicodeString(maxStringLength: chars.count, actualStringLength: &length, unicodeString: &chars)
+        let flags = event.flags
+        let action = KeyMapping.action(keyCode: code, command: flags.contains(.maskCommand),
+                                       option: flags.contains(.maskAlternate), control: flags.contains(.maskControl),
+                                       text: String(utf16CodeUnits: chars, count: length))
+        switch action {
+        case .passThrough:
+            return Unmanaged.passUnretained(event)
+        case .text(let text):
+            send?(.keyText(text))
+        case .special(let key):
+            send?(.key(key))
+        case .pasteMacClipboard:
+            DispatchQueue.main.async { [send] in
+                guard let text = NSPasteboard.general.string(forType: .string), !text.isEmpty else { return }
+                send?(.keyText(String(text.prefix(20_000))))
+            }
+        }
+        swallowedKeys.insert(code)
+        return nil
     }
 
     /// Tap thread. Sends accumulated movement now, or waits for the timer if we sent very recently.

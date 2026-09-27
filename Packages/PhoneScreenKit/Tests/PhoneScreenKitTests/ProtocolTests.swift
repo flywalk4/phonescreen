@@ -59,6 +59,7 @@ import Testing
         .launcher([LauncherItem(id: "app:/Applications/Safari.app", title: "Safari", kind: .app, icon: Data([9])),
                    LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock")]),
         .refresh(.notes),
+        .textFocus(true), .keyText("Привет, мир"), .key(.deleteWordBackward),
     ]
 
     @Test(arguments: all) func roundTrip(_ message: Message) throws {
