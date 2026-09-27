@@ -129,15 +129,15 @@
     {
       "id": "com.flywalk4.rain",
       "name": "Осадки",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": "flywalk4",
       "description": "Будет ли дождь или снег в ближайшие часы: «дождь через 40 минут», «закончится через 25 минут», график осадков по 15 минут на 3 часа и вероятность по часам. Данные Open-Meteo, без ключа.",
       "symbol": "cloud.rain",
       "path": "widgets/com.flywalk4.rain",
       "files": {
-        "manifest.json": "cbcc7627f7fec39c5e359330437f9caeb0403ae1296bebc03e2b3775b4c02a85",
-        "view.json": "db8eff475c4f4733c5dcc1981372d91777e22cddf5f8188d3ce90c3122317889",
-        "provider.js": "b14a3bf0d512b78ff21e7517f291f676c732431bd744b259f2064e22c9dcc98b"
+        "manifest.json": "03e10be6f88619b1b59974a78db79a6d53cd96b43edf0bae1c0c7832647fd760",
+        "view.json": "7cf737197217db6e4b7c214258ddbdcae22a0fad08758c370e0e89c1ac19d252",
+        "provider.js": "34571e9fb3b85830e7c778d051b993dd167e3b37516d940f125c9f93a72b3294"
       }
     },
     {
