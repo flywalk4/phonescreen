@@ -15,6 +15,12 @@ struct PhotosPage: View {
                 switch library.state {
                 case .loading:
                     ThemedSpinner()
+                case .needsAccess:
+                    VStack(spacing: 10) {
+                        message("Фото-рамка", "Показывает ваши избранные фото слайд-шоу. Снимки не покидают iPhone.")
+                        Button("Разрешить доступ") { Task { await library.requestAccess() } }
+                            .buttonStyle(.borderedProminent)
+                    }
                 case .denied:
                     message("Нет доступа к фото", "Разрешите PhoneScreen доступ в Настройках → Конфиденциальность → Фото")
                 case .empty:
@@ -73,7 +79,7 @@ private struct KenBurns: View {
 
 @MainActor
 final class PhotoLibrary: ObservableObject {
-    enum State { case loading, denied, empty, ready }
+    enum State { case loading, needsAccess, denied, empty, ready }
 
     static let interval: TimeInterval = 9
 
@@ -83,28 +89,54 @@ final class PhotoLibrary: ObservableObject {
     @Published private(set) var index = 0
 
     private var assets: PHFetchResult<PHAsset>?
+    /// DEBUG `--demo`: pictures from Documents/demo-photos (screenshots, where the photo library is locked).
+    private var demoImages: [UIImage] = []
+    private var count: Int { demoImages.isEmpty ? assets?.count ?? 0 : demoImages.count }
     private var target = CGSize(width: 400, height: 400)
     private var timer: Timer?
 
     func start(target size: CGSize) async {
         target = CGSize(width: size.width * UIScreen.main.scale, height: size.height * UIScreen.main.scale)
-        let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+        #if DEBUG
+        if demoImages.isEmpty, ProcessInfo.processInfo.arguments.contains("--demo") { demoImages = Self.demoPictures() }
+        if !demoImages.isEmpty { begin(); return }
+        #endif
+        // Never ask on our own: the pager builds pages ahead, and a prompt over some other widget is confusing.
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        if status == .notDetermined { state = .needsAccess; return }
         guard status == .authorized || status == .limited else { state = .denied; return }
         assets = Self.fetch()
         guard let assets, assets.count > 0 else { state = .empty; return }
-        index = Int.random(in: 0..<assets.count)
-        await show()
+        begin()
+    }
+
+    private func begin() {
+        index = demoImages.isEmpty ? Int.random(in: 0..<count) : 0 // the demo is the same on every screenshot
+        Task { await show() }
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: Self.interval, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.next() }
         }
     }
 
+    func requestAccess() async {
+        _ = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+        await start(target: CGSize(width: target.width / UIScreen.main.scale, height: target.height / UIScreen.main.scale))
+    }
+
     func next() {
-        guard let assets, assets.count > 0 else { return }
-        index = (index + 1) % assets.count
+        guard count > 0 else { return }
+        index = (index + 1) % count
         Task { await show() }
     }
+
+    #if DEBUG
+    private static func demoPictures() -> [UIImage] {
+        let dir = URL.documentsDirectory.appending(path: "demo-photos")
+        let files = (try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []
+        return files.sorted { $0.lastPathComponent < $1.lastPathComponent }.compactMap { UIImage(contentsOfFile: $0.path) }
+    }
+    #endif
 
     /// Favorites; without any, the 200 latest photos.
     private static func fetch() -> PHFetchResult<PHAsset> {
@@ -121,6 +153,14 @@ final class PhotoLibrary: ObservableObject {
     }
 
     private func show() async {
+        if !demoImages.isEmpty {
+            withAnimation(.easeInOut(duration: 1.2)) {
+                image = demoImages[index % demoImages.count]
+                caption = "Избранное · демо"
+                state = .ready
+            }
+            return
+        }
         guard let assets, assets.count > index else { return }
         let asset = assets.object(at: index)
         let options = PHImageRequestOptions()

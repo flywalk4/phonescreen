@@ -32,6 +32,11 @@ xcrun simctl location "$DEV" set 55.7558,37.6173 || true # Moscow, so the weathe
 for service in calendar reminders location photos; do xcrun simctl privacy "$DEV" grant "$service" "$BUNDLE_ID" || true; done
 DATA=$(xcrun simctl get_app_container "$DEV" "$BUNDLE_ID" data)
 mkdir -p "$DATA/Documents"
+# The photo frame's demo pictures: the Simulator's own sample photos (its photo library can't be unlocked from here).
+mkdir -p "$DATA/Documents/demo-photos"
+find "$HOME/Library/Developer/CoreSimulator/Devices/$DEV/data/Media/DCIM" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.heic' -o -iname '*.png' \) 2>/dev/null \
+  | head -8 | while read -r f; do cp "$f" "$DATA/Documents/demo-photos/"; done || true
+echo "demo photos: $(ls "$DATA/Documents/demo-photos" | wc -l | tr -d ' ')"
 node scripts/widget-dev.mjs bundle "$DATA/Documents/demo.json" > build/bundle.txt
 cat build/bundle.txt
 
@@ -42,7 +47,8 @@ shot() { # shot <file> <launch args…>
   sleep 6
   xcrun simctl io "$DEV" screenshot "$file" >/dev/null 2>&1
   # The app hides the status bar; if it is gone from the process list, it crashed — keep the report.
-  if ! xcrun simctl spawn "$DEV" launchctl list | grep -q "$BUNDLE_ID"; then
+  # (not grep -q: it exits early, launchctl gets SIGPIPE and pipefail turns that into a false «crash»)
+  if ! xcrun simctl spawn "$DEV" launchctl list | grep "$BUNDLE_ID" >/dev/null; then
     echo "  ✗ $file: приложение не работает"
     find ~/Library/Logs/DiagnosticReports -name 'PhoneScreen*' -newer build/bundle.txt -exec cp {} "$OUT/crashes/" \; 2>/dev/null || true
   else
