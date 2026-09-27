@@ -16,7 +16,7 @@ binding={"type":"string","pattern":"\\{\\{.+\\}\\}"}
 num={"anyOf":[{"type":"number"},binding]}
 strv={"type":"string"}
 boolv={"anyOf":[{"type":"boolean"},binding]}
-color={"type":"string","description":"primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}","examples":["secondary","accent","green","#FF6600"]}
+color={"type":"string","description":"primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}","examples":["secondary","accent","green","#FF6600"]}
 desc={
  "vstack":"Children stacked vertically.","hstack":"Children side by side.","text":"Text; style or size/weight/design.","symbol":"An SF Symbol.",
  "gauge":"Ring, value 0…1.","progress":"Bar, value 0…1.","chart":"Chart of values: line, area or bar.","button":"Calls action(name) in provider.js.",

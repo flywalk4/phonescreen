@@ -71,9 +71,6 @@
     ]
    },
    {
-    "type": "spacer"
-   },
-   {
     "type": "hstack",
     "spacing": 10,
     "align": "top",

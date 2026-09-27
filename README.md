@@ -29,6 +29,7 @@
 | **Sky** | Sunrise and sunset, day length and the moon phase |
 | **World clock** | Your cities, who is at work and who is asleep |
 | **Time** | Progress of the day, week, month and year, plus countdowns |
+| **Month** | A month calendar with today, weekends and Russian public holidays, and the working days left |
 | **Focus** | A Pomodoro timer with a daily tally |
 | **GitHub** | PRs waiting for your review, your open PRs and notifications |
 | **Hacker News** | Top stories |

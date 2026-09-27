@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: screenshots-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false # a push queues the next run instead of killing a 20-minute one
 
 jobs:
   screenshots:

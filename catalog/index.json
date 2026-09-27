@@ -24,7 +24,7 @@
       "path": "widgets/com.flywalk4.claude-code",
       "files": {
         "manifest.json": "496075a8382e9e25e6aefc4a63b75dc4b612c9868ff887be45281d2f3c90db01",
-        "view.json": "3aa3b53d2c4836926f7f898be3517f298cc86d2b68e6ee26e640651b0b153f8f",
+        "view.json": "5ccaa9f85a9fce8cc056211b15d2ae73ece3dc008a4763e6280e41f15775f2bc",
         "provider.js": "5f617d34bbe52b90ba1f6f9ddec2796cd7e85fe37639d159fff1ffaf97fc6b67"
       }
     },
@@ -124,6 +124,20 @@
         "manifest.json": "1d03003138e94b7ed51589eb1da7ae5235db08bdffa430a70e7308f119428c79",
         "view.json": "df015b3a0c9b70e0a06bd010eef132731d3027d4eac2de8fa2f3734c6d68eeff",
         "provider.js": "2aaea91630af2cddb5bd8ffe6910d54c091f4e56a003593b9ee135d8b035b250"
+      }
+    },
+    {
+      "id": "com.flywalk4.month",
+      "name": "Месяц",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Календарь месяца сеткой: сегодня выделено, выходные и праздники РФ красным, номер недели и сколько рабочих дней осталось. Без сети.",
+      "symbol": "calendar",
+      "path": "widgets/com.flywalk4.month",
+      "files": {
+        "manifest.json": "1c1fc1bea1c6b6126711b84f967b73f7a0f5a003f91d3b12a6a3c6ca80581f35",
+        "view.json": "a5772b1a1ab6e6a8d996169b9b15f45afe4b2bde4d6ed70e1949eed9006c510a",
+        "provider.js": "7378fc8ab9fe7cbe2385e36807c36b0f12cb81e32add4f87b80beb1bc22ca821"
       }
     },
     {

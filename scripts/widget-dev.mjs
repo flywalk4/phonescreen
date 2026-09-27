@@ -348,6 +348,7 @@ function renderHTML(tree, themeName) {
     if (!n) return null;
     const l = String(n).toLowerCase();
     if (T.palette?.[l]) return T.palette[l];
+    if (l === "clear" || l === "none") return "transparent";
     if (l === "primary") return T.text;
     if (l === "secondary" || l === "tertiary") return T.sec;
     if (l === "accent") return T.accent;
@@ -370,7 +371,10 @@ function renderHTML(tree, themeName) {
       case "gauge": return `<div class="v" style="gap:4px;align-items:center"><svg width="56" height="56"><circle cx="28" cy="28" r="25" fill="none" stroke="${T.text}" stroke-opacity=".12" stroke-width="6"/><circle cx="28" cy="28" r="25" fill="none" stroke="${color(n.color) || T.accent}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${157 * n.value} 999" transform="rotate(-90 28 28)"/><text x="28" y="32" text-anchor="middle" font-size="12" font-weight="600" fill="${T.text}">${Math.round(n.value * 100)}%</text></svg>${n.label ? `<div class="t" style="font-size:11px;color:${T.sec}">${esc(n.label)}</div>` : ""}</div>`;
       case "progress": {
         const c = color(n.color) || T.accent;
-        if (T.style === "ascii") { const k = Math.round(24 * n.value); return `<div class="t mono" style="color:${c}">[${"#".repeat(k)}${".".repeat(24 - k)}]</div>`; }
+        if (T.style === "ascii") { // like AsciiBar: as many cells as fit the width
+          const run = (ch, w) => `<span style="flex:0 0 ${w}%;overflow:hidden;white-space:nowrap">${ch.repeat(120)}</span>`;
+          return `<div class="t mono" style="color:${c};display:flex;width:100%;overflow:hidden"><span>[</span><span style="flex:1;display:flex;min-width:0">${run("#", n.value * 100)}${run(".", 100 - n.value * 100)}</span><span>]</span></div>`;
+        }
         return `<div class="track"><div style="width:${n.value * 100}%;height:100%;border-radius:2px;background:${c}"></div></div>`;
       }
       case "chart": return chart(n.values, color(n.color) || T.accent, n.style || "line", n.height, T);

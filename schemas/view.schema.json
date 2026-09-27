@@ -54,7 +54,7 @@
       },
       "background": {
        "type": "string",
-       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}",
        "examples": [
         "secondary",
         "accent",
@@ -172,7 +172,7 @@
       },
       "color": {
        "type": "string",
-       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}",
        "examples": [
         "secondary",
         "accent",
@@ -269,7 +269,7 @@
       },
       "color": {
        "type": "string",
-       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}",
        "examples": [
         "secondary",
         "accent",
@@ -473,7 +473,7 @@
       },
       "color": {
        "type": "string",
-       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}",
        "examples": [
         "secondary",
         "accent",
@@ -665,7 +665,7 @@
       },
       "color": {
        "type": "string",
-       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}",
        "examples": [
         "secondary",
         "accent",
@@ -711,7 +711,7 @@
       },
       "color": {
        "type": "string",
-       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, #RRGGBB(AA) or a {{binding}}",
+       "description": "primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}",
        "examples": [
         "secondary",
         "accent",

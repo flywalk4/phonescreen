@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
+  "id": "com.flywalk4.month",
+  "name": "Месяц",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Календарь месяца сеткой: сегодня выделено, выходные и праздники РФ красным, номер недели и сколько рабочих дней осталось. Без сети.",
+  "symbol": "calendar",
+  "refresh": 300,
+  "settings": [
+    {
+      "key": "holidays",
+      "title": "Ещё выходные (переносы): ММ-ДД через запятую",
+      "default": ""
+    }
+  ]
+}

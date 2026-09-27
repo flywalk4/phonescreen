@@ -333,6 +333,7 @@ enum WidgetColor {
         case "brown": return .brown
         case "gray", "grey": return .gray
         case "white": return .white
+        case "clear", "none": return .clear // a box without a surface
         default: return RGBA(hex: name).map { Color(.sRGB, red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) }
         }
     }
