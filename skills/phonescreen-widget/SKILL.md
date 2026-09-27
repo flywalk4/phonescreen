@@ -33,7 +33,7 @@ The full reference (every field, node type and sandbox API) is `catalog/README.m
 - No `require`, `import`, `XMLHttpRequest`, `WebSocket`, `process`, shell, and no files beyond `permissions.files`. Plain modern JavaScript (async/await, `Intl`, `JSON`, `Date` work).
 - `secrets.get(key)` returns `null` for keys not declared in the manifest.
 - `storage.get/set` — JSON, ≤ 64 KB per widget (history for charts, caches).
-- `files.read("~/…")` / `files.modified("~/…")` — read-only, only paths declared in `permissions.files` (`~/folder/` or `~/file`); symlinks out of them are refused. Use for local data other apps write (e.g. the Claude Code bridge files). Local-only widgets may set `refresh` as low as 5 s.
+- `files.read("~/…")` / `files.modified("~/…")` / `files.lines(path, {offset, length})` / `files.list("~/…/")` — read-only, only paths declared in `permissions.files` (`~/folder/` or `~/file`); symlinks out of them are refused. `files.lines` returns whole lines from a byte offset plus `next` — read big logs in chunks and only what's new (see how `com.flywalk4.claude-code` reads Claude Code's session logs). Use for local data other apps write. Local-only widgets may set `refresh` as low as 5 s.
 - A synchronous stretch of code may run ≤ 2 s; a whole `refresh()` ≤ 20 s.
 
 ## View cheatsheet

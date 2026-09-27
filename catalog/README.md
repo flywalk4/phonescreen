@@ -79,6 +79,8 @@ async function action(name, ctx) {
 | `secrets.get(key)` | строка или `null` (если не задан или не объявлен в манифесте) |
 | `ctx.settings.<key>` | значения из `settings` (строки) |
 | `files.read("~/…")` / `files.modified("~/…")` | текст файла (до 1 МБ) или `null`; время изменения (секунды Unix) или `null`. Только пути из `permissions.files` |
+| `files.lines("~/…", {offset, length})` | целые строки начиная с байта `offset` (не больше `length`, до 1 МБ): `{ lines, next, size }`. `next` передайте в следующий вызов — так читаются большие журналы по кускам и только новые строки. Строка длиннее лимита пропускается |
+| `files.list("~/…/")` | содержимое папки: `[{ name, dir, size, modified }]` (скрытые пропускаются, до 2000) или `null` |
 | `storage.get(key)` / `storage.set(key, value)` | маленькое постоянное хранилище (JSON, до 64 КБ на виджет) — история, кэш |
 | `setTimeout(fn, ms)`, `sleep(ms)` | задержки (до 60 с) |
 | `console.log/warn/error` | в журнал виджета в настройках |

@@ -12,7 +12,7 @@ private func JSContextGroupSetExecutionTimeLimit(_ group: JSContextGroupRef, _ l
 ///
 /// The script sees only: `fetch` (HTTPS, hosts from the manifest — redirects included), `secrets.get`
 /// (keys declared in the manifest, values from the Keychain), `settings`, `storage.get/set` (small, persisted),
-/// `setTimeout`, `console`. No files, no processes, no other network.
+/// `files` (read-only, paths from the manifest), `setTimeout`, `console`. No processes, no other network.
 /// It defines `async function refresh(ctx)` returning data for `view.json`, and optionally
 /// `async function action(name, ctx)` for buttons.
 final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
@@ -176,8 +176,19 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
             else { return NSNull() }
             return date.timeIntervalSince1970
         }
+        // Complete lines from a byte offset — for logs bigger than 1 MB or read incrementally.
+        let readLines: @convention(block) (String, Double, Double) -> Any = { [weak self] path, offset, length in
+            guard let self, let url = self.fileURL(path) else { return NSNull() }
+            return Self.lines(at: url, offset: offset, length: length) ?? NSNull()
+        }
+        let listDir: @convention(block) (String) -> Any = { [weak self] path in
+            guard let self, let url = self.fileURL(path) else { return NSNull() }
+            return Self.list(url) ?? NSNull()
+        }
         context.setObject(readFile, forKeyedSubscript: "__readFile" as NSString)
         context.setObject(fileModified, forKeyedSubscript: "__fileModified" as NSString)
+        context.setObject(readLines, forKeyedSubscript: "__readLines" as NSString)
+        context.setObject(listDir, forKeyedSubscript: "__listDir" as NSString)
 
         let timeout: @convention(block) (JSValue, Double) -> Void = { [weak self] fn, ms in
             self?.queue.asyncAfter(deadline: .now() + max(0, min(ms, 60_000)) / 1000) { fn.call(withArguments: []) }
@@ -202,6 +213,9 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
             globalThis.files = Object.freeze({
               read: (path) => __readFile(String(path)),
               modified: (path) => __fileModified(String(path)),
+              lines: (path, opts = {}) => __readLines(String(path), Number(opts.offset) || 0,
+                Number(opts.length) || 1048576),
+              list: (path) => __listDir(String(path)),
             });
             globalThis.storage = Object.freeze({
               get: (key) => __storageGet(String(key)),
@@ -239,6 +253,40 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
             return nil
         }
         return resolved
+    }
+
+    /// `files.lines`: `{ lines, next, size }` — whole lines starting at `offset` (bytes), at most `length` bytes
+    /// (≤ 1 MB). `next` is the offset after the last complete line: pass it back to continue. A line longer than
+    /// the limit is skipped in pieces (they won't parse, so scripts ignore them).
+    static func lines(at url: URL, offset: Double, length: Double) -> [String: Any]? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        guard let size = try? handle.seekToEnd() else { return nil }
+        let start = min(UInt64(max(0, offset)), size)
+        let limit = Int(min(max(1, length), Double(maxFileBytes)))
+        try? handle.seek(toOffset: start)
+        let data = Data((try? handle.read(upToCount: limit)) ?? Data())
+        var end = data.lastIndex(of: UInt8(ascii: "\n")).map { $0 + 1 } ?? 0
+        if end == 0, data.count == limit { end = data.count } // one giant line: step over this piece
+        let text = String(decoding: data.prefix(end), as: UTF8.self)
+        var lines = text.split(separator: "\n", omittingEmptySubsequences: true).map(String.init)
+        if end == data.count, data.last != UInt8(ascii: "\n") { lines = [] }
+        return ["lines": lines, "next": Double(start) + Double(end), "size": Double(size)]
+    }
+
+    /// `files.list`: the folder's entries (hidden ones skipped, at most 2000) as
+    /// `{ name, dir, size, modified }`, or `nil` if it isn't a readable folder.
+    static func list(_ url: URL) -> [[String: Any]]? {
+        let keys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .contentModificationDateKey]
+        guard let items = try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: keys,
+                                                                       options: [.skipsHiddenFiles]) else { return nil }
+        return items.prefix(2000).map { item in
+            let values = try? item.resourceValues(forKeys: Set(keys))
+            return ["name": item.lastPathComponent,
+                    "dir": values?.isDirectory ?? false,
+                    "size": Double(values?.fileSize ?? 0),
+                    "modified": values?.contentModificationDate?.timeIntervalSince1970 ?? 0]
+        }
     }
 
     private func fetch(url: String, method: String, headersJSON: String, body: String?, resolve: JSValue, reject: JSValue) {

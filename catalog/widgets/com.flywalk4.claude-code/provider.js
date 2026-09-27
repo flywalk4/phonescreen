@@ -1,28 +1,52 @@
-// Лимиты Claude Code и его состояние. Данные пишет мост (scripts/claude-code-bridge.py):
-//   ~/.claude/phonescreen/status.json — rate_limits из статусной строки Claude Code (Pro/Max)
-//   ~/.claude/phonescreen/state.json  — что делает каждая сессия: working / waiting / idle (хуки)
+// Лимиты Claude Code и его состояние. Работает сам по себе, мост — по желанию.
+//
+// Без моста: читает журналы сессий, которые Claude Code и так пишет в ~/.claude/projects/*/*.jsonl
+// (только чтение, в сеть виджет не ходит вовсе). Из них — что делает Claude (краб) и сколько токенов
+// потрачено за текущее 5-часовое окно и за 7 дней. Процентов тут нет: лимиты подписки нигде не
+// публикуются, но в настройках можно задать свой бюджет токенов — тогда будут полосы.
+//
+// С мостом (python3 scripts/claude-code-bridge.py install) — точнее:
+//   ~/.claude/phonescreen/status.json — официальные rate_limits из статусной строки (Pro/Max): % и время сброса
+//   ~/.claude/phonescreen/state.json  — состояние сессий из хуков: working / waiting / idle
 
-const DIR = "~/.claude/phonescreen/";
+const BRIDGE = "~/.claude/phonescreen/";
+const ROOTS = ["~/.claude/projects/", "~/.config/claude/projects/"];
+const HOUR = 3600, WEEK = 7 * 86400;
 
 async function refresh(ctx) {
-  const status = readJSON(DIR + "status.json");
-  if (!status) {
-    throw new Error("Мост не установлен. В репозитории PhoneScreen: python3 scripts/claude-code-bridge.py install");
-  }
   const now = Date.now() / 1000;
-  const mood = currentMood(readJSON(DIR + "state.json"), status, now);
-  const limits = status.rate_limits || {};
+  await scanLogs(now);
+
+  const status = readJSON(BRIDGE + "status.json");
+  const limits = (status && status.rate_limits) || {};
+  const official = Boolean(limits.five_hour || limits.seven_day);
+  const hooks = readJSON(BRIDGE + "state.json");
+  const mood = hooks && now - (hooks.at || 0) < HOUR ? hookMood(hooks, now) : logMood(now);
+
+  let five, week, note = "", noteShort = "";
+  if (official) {
+    five = limitWindow(limits.five_hour, now, false);
+    week = limitWindow(limits.seven_day, now, true);
+  } else {
+    five = tokenWindow(currentBlock(now), Number(ctx.settings.budget5h), now);
+    week = tokenWindow(lastWeek(now), Number(ctx.settings.budgetWeek), now);
+    note = !scan.ready ? "Подсчитываю историю…"
+      : status ? "Проценты появятся после первого ответа Claude (подписка Pro или Max)."
+      : !scan.logs ? "Сессий Claude Code за неделю не найдено."
+      : "Токены по журналам Claude Code. Точные % лимитов — с мостом.";
+    noteShort = !scan.ready ? "Считаю историю…" : status ? "% — после первого ответа" : !scan.logs ? "Сессий пока нет" : "";
+  }
 
   return {
     mood: mood.key,
     moodText: mood.text,
     moodColor: mood.color,
     mascot: mascot(mood.key),
-    model: status.model || "",
-    hasLimits: Boolean(limits.five_hour || limits.seven_day),
-    noLimits: !(limits.five_hour || limits.seven_day),
-    five: limitWindow(limits.five_hour, now, false),
-    week: limitWindow(limits.seven_day, now, true),
+    model: prettyModel((status && status.model) || scan.model),
+    official,
+    five, week,
+    note,
+    noteShort,
   };
 }
 
@@ -32,34 +56,247 @@ function readJSON(path) {
   try { return JSON.parse(text); } catch (e) { return null; }
 }
 
-// Working if any session is working (recently), else waiting, else idle.
-function currentMood(state, status, now) {
-  const sessions = Object.values((state && state.sessions) || {});
-  const fresh = (s, maxAge) => now - (s.at || 0) < maxAge;
-  if (sessions.some((s) => s.state === "working" && fresh(s, 600))) return MOODS.working;
-  if (sessions.some((s) => s.state === "waiting" && fresh(s, 3600))) return MOODS.waiting;
-  // No hooks yet: a status line update in the last 20 s also means Claude is busy.
-  if (!state && status && now - status.at < 20) return MOODS.working;
-  return MOODS.idle;
-}
-
 const MOODS = {
   working: { key: "working", text: "Claude работает", color: "orange" },
   waiting: { key: "waiting", text: "Ждёт тебя", color: "yellow" },
   idle: { key: "idle", text: "Отдыхает", color: "secondary" },
 };
 
+// Мост: working, если хоть одна сессия работает (недавно), иначе waiting, иначе idle.
+function hookMood(state, now) {
+  const sessions = Object.values(state.sessions || {});
+  const fresh = (s, maxAge) => now - (s.at || 0) < maxAge;
+  if (sessions.some((s) => s.state === "working" && fresh(s, 600))) return MOODS.working;
+  if (sessions.some((s) => s.state === "waiting" && fresh(s, HOUR))) return MOODS.waiting;
+  return MOODS.idle;
+}
+
+// ---- Журналы сессий ----
+//
+// Читаем их кусками с того места, где остановились, так что обычный refresh() разбирает только новые строки.
+// Токены копим по часам (для 5-часового окна и недели), по каждому файлу помним последнюю реплику — из неё краб.
+
+const scan = {
+  ready: false,
+  files: {},      // путь → { off, size, modified, last }
+  hours: {},      // начало часа (с) → токены
+  seen: [],       // id последних сообщений: одна реплика пишется несколькими строками с одним usage
+  model: "",
+  loaded: false,
+};
+
+const CHUNK = 1024 * 1024;
+
+async function scanLogs(now) {
+  if (!scan.loaded) restore();
+  const started = Date.now();
+  const logs = listLogs(now);
+  scan.logs = logs.length;
+  let pending = false, chunks = 0;
+  for (const log of logs) {
+    let f = scan.files[log.path];
+    if (!f || log.size < f.off) {
+      // Новый или переписанный файл читаем с начала. Незнакомый, но не менявшийся с прошлого полного подсчёта,
+      // уже учтён (в хранилище помещаются не все файлы) — его пропускаем.
+      const counted = !f && scan.countedAt && log.modified <= scan.countedAt;
+      f = scan.files[log.path] = { off: counted ? log.size : 0, last: null };
+    }
+    f.size = log.size;
+    f.modified = log.modified;
+    while (f.off < log.size) {
+      // Остальное — в следующий раз (но хотя бы кусок за вызов, чтобы подсчёт всегда двигался).
+      if (chunks > 0 && Date.now() - started > 3000) { pending = true; break; }
+      chunks++;
+      const part = files.lines(log.path, { offset: f.off, length: CHUNK });
+      if (!part || part.next <= f.off) break;
+      digest(f, part.lines, now);
+      f.off = part.next;
+      await sleep(0); // отдельный отрезок синхронного кода на каждый мегабайт
+    }
+    if (pending) break;
+    // После перезапуска приложения последняя реплика неизвестна — берём её из хвоста файла.
+    if (!f.last && now - log.modified < HOUR) {
+      const tail = files.lines(log.path, { offset: Math.max(0, log.size - 256 * 1024), length: 256 * 1024 });
+      if (tail) digest(f, tail.lines, now, false);
+    }
+  }
+  // Забываем то, что старше недели.
+  const alive = new Set(logs.map((l) => l.path));
+  for (const path of Object.keys(scan.files)) if (!alive.has(path)) delete scan.files[path];
+  for (const h of Object.keys(scan.hours)) if (Number(h) < now - WEEK - HOUR) delete scan.hours[h];
+  if (scan.seen.length > 400) scan.seen = scan.seen.slice(-200);
+  scan.ready = !pending;
+  if (scan.ready) scan.countedAt = now;
+  save();
+}
+
+// *.jsonl за последнюю неделю, свежие первыми (их состояние нужнее всего). Подпапки — сессии субагентов.
+function listLogs(now) {
+  const out = [];
+  const walk = (dir, depth) => {
+    for (const e of files.list(dir) || []) {
+      const path = dir + e.name;
+      if (e.dir) { if (depth < 3) walk(path + "/", depth + 1); }
+      else if (e.name.endsWith(".jsonl") && now - e.modified < WEEK) out.push({ path, size: e.size, modified: e.modified });
+    }
+  };
+  ROOTS.forEach((root) => walk(root, 0));
+  return out.sort((a, b) => b.modified - a.modified);
+}
+
+function digest(f, lines, now, count = true) {
+  let last = null;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!MESSAGE.test(line)) continue; // служебные записи (attachment, mode, …) не разбираем
+    let e;
+    try { e = JSON.parse(line); } catch (err) { continue; }
+    if (e.type !== "assistant" && e.type !== "user") continue;
+    if (e.isMeta) continue;
+    const at = Date.parse(e.timestamp) / 1000 || 0;
+    const m = e.message || {};
+    last = { type: e.type, at, blocks: blockTypes(m.content), stop: m.stop_reason || null };
+    if (count && e.type === "assistant" && m.usage && m.id && !scan.seen.includes(m.id)) {
+      scan.seen.push(m.id);
+      if (now - at < WEEK + HOUR) {
+        const u = m.usage;
+        // Кэш-чтение дешёвое и огромное — не считаем, иначе цифры ни о чём не говорят.
+        const tokens = (u.input_tokens || 0) + (u.output_tokens || 0) + (u.cache_creation_input_tokens || 0);
+        const h = Math.floor(at / HOUR) * HOUR;
+        scan.hours[h] = (scan.hours[h] || 0) + tokens;
+      }
+      if (m.model && m.model !== "<synthetic>" && at >= (scan.modelAt || 0)) { scan.model = m.model; scan.modelAt = at; }
+    }
+  }
+  if (last) f.last = last;
+}
+
+function blockTypes(content) {
+  if (typeof content === "string") return [content.startsWith("[Request interrupted") ? "interrupt" : "text"];
+  if (!Array.isArray(content)) return [];
+  return content.map((b) => {
+    if (b.type === "tool_use") return QUESTION_TOOLS.includes(b.name) ? "question" : "tool_use";
+    if (b.type === "text" && String(b.text).startsWith("[Request interrupted")) return "interrupt";
+    return b.type;
+  });
+}
+
+const MESSAGE = /"type":\s*"(assistant|user)"/;
+const QUESTION_TOOLS = ["AskUserQuestion", "ExitPlanMode"];
+
+// Настроение по последним репликам сессий, изменённых за последний час.
+function logMood(now) {
+  let best = MOODS.idle;
+  for (const f of Object.values(scan.files)) {
+    if (!f.last || now - f.modified > HOUR) continue;
+    const m = sessionMood(f.last, now - f.modified);
+    if (m === MOODS.working) return m;
+    if (m === MOODS.waiting) best = m;
+  }
+  return best;
+}
+
+function sessionMood(last, quiet) {
+  const b = last.blocks;
+  if (b.includes("interrupt")) return MOODS.idle;
+  if (last.type === "user") return quiet < 600 ? MOODS.working : MOODS.idle; // промпт или результат инструмента
+  if (b.includes("question")) return MOODS.waiting;                         // Claude задал вопрос
+  if (b.includes("tool_use")) {
+    // Инструмент запрошен, результата нет: либо ещё выполняется, либо ждёт разрешения. Журнал их не различает,
+    // поэтому долгая тишина считается ожиданием (мост различает точно).
+    return quiet < 45 ? MOODS.working : MOODS.waiting;
+  }
+  if (last.stop === "end_turn" || last.stop === "stop_sequence" || last.stop === "max_tokens") return MOODS.idle;
+  return quiet < 600 ? MOODS.working : MOODS.idle; // ещё думает / пишет ответ
+}
+
+// Текущее 5-часовое окно: как у Claude — начинается с первого сообщения (с точностью до часа) и длится 5 часов;
+// следующее сообщение после конца окна открывает новое. Цепочку окон строим по всей сохранённой неделе.
+function currentBlock(now) {
+  const hours = Object.keys(scan.hours).map(Number).sort((a, b) => a - b);
+  let start = null;
+  for (const h of hours) if (start === null || h >= start + 5 * HOUR) start = h;
+  if (start === null || now >= start + 5 * HOUR) return { tokens: 0, resetsAt: null };
+  let tokens = 0;
+  for (const h of hours) if (h >= start) tokens += scan.hours[h];
+  return { tokens, resetsAt: start + 5 * HOUR };
+}
+
+function lastWeek(now) {
+  let tokens = 0;
+  for (const [h, t] of Object.entries(scan.hours)) if (Number(h) > now - WEEK) tokens += t;
+  return { tokens, resetsAt: null, weekly: true };
+}
+
+function tokenWindow(w, budget, now) {
+  const hasBudget = budget > 0;
+  const share = hasBudget ? Math.min(1, w.tokens / budget) : 0;
+  return {
+    has: true,
+    bar: hasBudget,
+    pct: hasBudget ? `${Math.round((w.tokens / budget) * 100)}%` : tokensText(w.tokens),
+    value: share,
+    color: hasBudget ? levelColor(share * 100) : "primary",
+    reset: [hasBudget ? `${tokensText(w.tokens)} ток.` : "токенов",
+      w.resetsAt ? "≈ " + resetText(w.resetsAt, now, false) : w.weekly ? "за 7 дней" : ""].filter(Boolean).join(" · "),
+  };
+}
+
+function tokensText(n) {
+  if (n >= 1e6) return `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(".", ",")} млн`;
+  if (n >= 1e3) return `${Math.round(n / 1e3)} тыс.`;
+  return String(n);
+}
+
+function prettyModel(id) {
+  const m = /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{8})?(\[1m\])?$/.exec(id || "");
+  if (!m) return id || "";
+  return `${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}${m[3] ? "." + m[3] : ""}`;
+}
+
+// Счётчики переживают перезапуск приложения (storage), чтобы не перечитывать неделю журналов заново.
+function restore() {
+  scan.loaded = true;
+  const saved = storage.get("scan");
+  // Первый подсчёт не закончился — смещения сохранены не для всех файлов, надёжнее начать заново.
+  if (!saved || saved.v !== 1 || !saved.countedAt) return;
+  scan.hours = saved.hours || {};
+  scan.seen = saved.seen || [];
+  scan.model = saved.model || "";
+  scan.modelAt = saved.modelAt || 0;
+  scan.countedAt = saved.countedAt || 0;
+  for (const [path, off] of Object.entries(saved.offsets || {})) scan.files[path] = { off, last: null };
+}
+
+let savedJSON = "";
+function save() {
+  const offsets = {};
+  // Не больше 150 самых свежих файлов, чтобы уложиться в 64 КБ хранилища.
+  Object.entries(scan.files).sort((a, b) => (b[1].modified || 0) - (a[1].modified || 0)).slice(0, 150)
+    .forEach(([path, f]) => { offsets[path] = f.off; });
+  const data = { v: 1, hours: scan.hours, seen: scan.seen.slice(-200), model: scan.model, modelAt: scan.modelAt, offsets };
+  const json = JSON.stringify(data);
+  if (json === savedJSON) return; // ничего нового — не пишем на диск каждые 5 с
+  storage.set("scan", { ...data, countedAt: scan.countedAt || 0 });
+  savedJSON = json;
+}
+
+// ---- Официальные лимиты (мост) ----
+
 function limitWindow(w, now, weekly) {
-  if (!w) return { pct: "—", value: 0, color: "secondary", reset: "", has: false };
+  if (!w) return { pct: "—", value: 0, color: "secondary", reset: "", has: false, bar: false };
   const pct = Math.max(0, Math.min(100, Number(w.used_percentage) || 0));
   return {
     has: true,
+    bar: true,
     pct: `${Math.round(pct)}%`,
     value: pct / 100,
-    color: pct < 50 ? "green" : pct < 80 ? "orange" : "red",
+    color: levelColor(pct),
     reset: w.resets_at ? resetText(w.resets_at, now, weekly) : "",
   };
 }
+
+function levelColor(pct) { return pct < 50 ? "green" : pct < 80 ? "orange" : "red"; }
 
 function resetText(at, now, weekly) {
   const left = at - now;

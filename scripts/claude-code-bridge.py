@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Bridge from Claude Code to the PhoneScreen "Claude Code" widget.
+"""Optional bridge from Claude Code to the PhoneScreen "Claude Code" widget.
+
+The widget works without it (it reads Claude Code's session logs: activity and token counts). The bridge adds
+the official plan limits in % with reset times, and exact working / waiting state from hooks.
 
     python3 scripts/claude-code-bridge.py install     # hook into ~/.claude/settings.json (backup first)
     python3 scripts/claude-code-bridge.py status      # what the widget currently sees
@@ -12,7 +15,7 @@ What it adds (and nothing else):
     your status line looks exactly as before;
   * hooks that record whether Claude is working, waiting for you, or idle, per session, in
     ~/.claude/phonescreen/state.json (next to your existing hooks, not instead of them).
-The widget reads only those two files (it has read access to ~/.claude/phonescreen/ and nothing else).
+The widget reads those two files when present (read-only, like the session logs).
 """
 import json
 import os

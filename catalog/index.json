@@ -3,15 +3,15 @@
     {
       "id": "com.flywalk4.claude-code",
       "name": "Claude Code",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
-      "description": "Лимиты Claude Code — 5-часовой и недельный, со временем сброса — и пиксельный краб, который бегает, когда Claude работает, машет, когда ждёт тебя, и спит в простое. Нужен мост: python3 scripts/claude-code-bridge.py install.",
+      "description": "Что делает Claude Code и сколько потрачено: пиксельный краб бегает, когда Claude работает, машет, когда ждёт тебя, и спит в простое; токены за 5-часовое окно и за неделю. Работает сразу — читает журналы сессий Claude Code (только чтение, в сеть не ходит). С мостом (python3 scripts/claude-code-bridge.py install) — точные проценты лимитов Pro/Max и время сброса.",
       "symbol": "sparkles",
       "path": "widgets/com.flywalk4.claude-code",
       "files": {
-        "manifest.json": "d24a5d31cf5738054ccfe00dcfa292479c5270d5151c6ef0d2525c877c5b6a59",
-        "view.json": "26986e8c43e03bfd656f759ce87d3a548e1375fa22ff320e478be30d7b6d2d36",
-        "provider.js": "ed9be498d6a6a7be634401b0aadbbee5d5ff46601dd65dd7e9a0fd8716c7132d"
+        "manifest.json": "5e8925647c352ab91e94cc4a4ca6e68973e2e716f1ef84af2f5eb26fd471e380",
+        "view.json": "03aec9a7840998c04d5abd7242bdea900e5e42e693c9af91f2cb64396f5f1370",
+        "provider.js": "5f617d34bbe52b90ba1f6f9ddec2796cd7e85fe37639d159fff1ffaf97fc6b67"
       }
     },
     {

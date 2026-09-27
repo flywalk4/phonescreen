@@ -93,7 +93,7 @@ def validate(folder: Path) -> list[str]:
     source = files["provider.js"].decode("utf-8", errors="replace")
     if not re.search(r"function\s+refresh\s*\(", source):
         errors.append("provider.js: нет функции refresh(ctx)")
-    if re.search(r"files\.(read|modified)\(", source) and not perms.get("files"):
+    if re.search(r"files\.(read|modified|lines|list)\(", source) and not perms.get("files"):
         errors.append("provider.js читает файлы, но permissions.files пуст")
     if re.search(r"\b(require|import\s|XMLHttpRequest|WebSocket|process\.)", source):
         errors.append("provider.js: require/import/XMLHttpRequest/WebSocket/process в песочнице нет — используйте fetch")

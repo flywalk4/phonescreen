@@ -86,6 +86,7 @@
           },
           {
             "type": "progress",
+            "if": "{{five.bar}}",
             "value": "{{five.value}}",
             "color": "{{five.color}}"
           },
@@ -124,6 +125,7 @@
           },
           {
             "type": "progress",
+            "if": "{{week.bar}}",
             "value": "{{week.value}}",
             "color": "{{week.color}}"
           },
@@ -137,10 +139,10 @@
       },
       {
         "type": "text",
-        "if": "{{noLimits}}",
+        "if": "{{note}}",
         "style": "footnote",
         "color": "secondary",
-        "text": "Лимиты появятся после первого ответа Claude в сессии (подписка Pro или Max)."
+        "text": "{{note}}"
       },
       {
         "type": "spacer"
@@ -210,6 +212,7 @@
               },
               {
                 "type": "progress",
+                "if": "{{five.bar}}",
                 "value": "{{five.value}}",
                 "color": "{{five.color}}"
               },
@@ -248,6 +251,7 @@
               },
               {
                 "type": "progress",
+                "if": "{{week.bar}}",
                 "value": "{{week.value}}",
                 "color": "{{week.color}}"
               },
@@ -261,10 +265,11 @@
           },
           {
             "type": "text",
-            "if": "{{noLimits}}",
+            "if": "{{noteShort}}",
             "style": "caption",
             "color": "secondary",
-            "text": "Лимиты — после первого ответа"
+            "text": "{{noteShort}}",
+            "lines": 2
           }
         ]
       }
