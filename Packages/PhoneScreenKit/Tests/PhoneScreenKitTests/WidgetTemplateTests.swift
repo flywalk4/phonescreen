@@ -168,10 +168,10 @@ import Testing
                 {"type": "text", "text": "12:40"}
             ]}
             """#), data: json(#"{"k": "stars", "c": "#00FF00"}"#))
-        #expect(node == .layers(align: "bottomLeading", children: [
-            .scene(kind: "stars", colors: nil, tints: ["#FF0000", "#00FF00"], speed: 5),
-            .text("12:40", style: nil, color: nil, lines: nil, align: nil),
-        ]))
+        let scene: WidgetNode = .scene(kind: "stars", colors: nil, tints: ["#FF0000", "#00FF00"], speed: 5)
+        let text: WidgetNode = .text("12:40", style: nil, color: nil, lines: nil, align: nil)
+        let expected: WidgetNode = .layers(align: "bottomLeading", children: [scene, text])
+        #expect(node == expected)
     }
 
     @Test func gridUpToTwelveColumns() throws {
