@@ -632,7 +632,7 @@ async function main() {
     console.log(`${rel}: manifest.json, view.json, provider.js, fixtures/ok.json\n` +
       `дальше:  node scripts/widget-dev.mjs watch ${rel}   (правьте файлы — preview.png обновляется)\n` +
       `         node scripts/widget-dev.mjs test ${rel}\n` +
-      `на Mac:  PhoneScreen → Настройки → Виджеты → «Подключить папку…» (живая перезагрузка)`);
+      `на Mac:  меню PhoneScreen → «Виджеты…» → «Папка разработки…» (живая перезагрузка)`);
   } else if (command === "watch") {
     const dir = widgetDir(args._[0] || ".");
     const out = args.out || path.join(dir, "preview.png");

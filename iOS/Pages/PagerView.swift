@@ -3,6 +3,7 @@ import SwiftUI
 
 struct PagerView: View {
     @EnvironmentObject private var model: PhoneModel
+    private static let demo = ProcessInfo.processInfo.arguments.contains("--demo")
 
     var body: some View {
         ZStack {
@@ -52,7 +53,7 @@ struct PagerView: View {
             // (20 pages of 22-pt dots are 440 pt — wider than an iPhone — and pushed every page off both edges).
             .overlay {
                 VStack {
-                    ConnectionBadge(status: model.status)
+                    if !Self.demo { ConnectionBadge(status: model.status) } // demo screenshots have no Mac
                     Spacer()
                     if !model.overview {
                         PageDots(count: model.pages.count, current: model.currentPage) { index in
