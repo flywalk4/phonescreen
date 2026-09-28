@@ -37,6 +37,11 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     }
 
     func start() {
+        #if DEBUG
+        // Demo screenshots shouldn't depend on the network; `--demo-weather` fetches the real forecast.
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("--demo"), !args.contains("--demo-weather") { forecast = Self.sample(); return }
+        #endif
         if authorization == .notDetermined { manager.requestWhenInUseAuthorization() }
         if let forecast, Date().timeIntervalSince(forecast.fetched) < 15 * 60 { return }
         manager.requestLocation()
@@ -105,6 +110,22 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
             self.error = "Нет данных о погоде"
         }
     }
+
+    #if DEBUG
+    /// A mild autumn day in Moscow for demo screenshots.
+    private static func sample() -> Forecast {
+        let hour = Calendar.current.dateInterval(of: .hour, for: Date())!.start
+        let day = Calendar.current.startOfDay(for: Date())
+        let temps: [Double] = [10, 11, 12, 12, 13, 12, 11, 10, 9, 8, 8, 7]
+        let codes = [2, 2, 1, 1, 2, 3, 3, 61, 61, 3, 2, 2]
+        return Forecast(place: "Москва", temperature: 10.4, feelsLike: 8.1, wind: 3.2, code: 2, isDay: true,
+                        hourly: temps.indices.map { (time: hour.addingTimeInterval(Double($0) * 3600), temp: temps[$0], code: codes[$0]) },
+                        daily: ([(7, 13, 2), (6, 11, 61), (4, 9, 3), (5, 12, 1), (6, 14, 0)] as [(Double, Double, Int)]).enumerated().map {
+                            (day: day.addingTimeInterval(Double($0.offset) * 86400), min: $0.element.0, max: $0.element.1, code: $0.element.2)
+                        },
+                        fetched: Date())
+    }
+    #endif
 
     private struct OpenMeteo: Decodable {
         struct Current: Decodable {
