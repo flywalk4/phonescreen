@@ -145,7 +145,7 @@ Any page can also drop its cards so the widgets sit straight on the background. 
 
 </details>
 
-## 🖥️ Second screen
+## 📺 Second screen
 
 Not a mirror and not a widget: macOS gets a **real extra display** right where the phone sits in the arrangement. Drag any window across the edge and it lands on the phone — Safari, Xcode, a video, Slack. It stays a normal Mac window, so the keyboard, Mission Control and full-screen apps work as usual.
 
