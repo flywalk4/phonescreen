@@ -14,7 +14,7 @@
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white)
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-F05138?logo=swift&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-blue.svg)](LICENSE)
 
 [English](README.md) · **Русский**
 
@@ -279,7 +279,9 @@ node scripts/widget-dev.mjs test                # все сценарии вид
 
 ## 📄 Лицензия
 
-[MIT](LICENSE) © 2026 Vadim Shalimov
+[PolyForm Noncommercial 1.0.0](LICENSE) © 2026 Vadim Shalimov
+
+Бесплатно для личного, учебного, исследовательского и любого другого некоммерческого использования: пользуйтесь, меняйте, делитесь. Для коммерческого использования нужна отдельная лицензия — напишите через [GitHub](https://github.com/flywalk4). Версии, опубликованные до смены лицензии, остаются доступны под MIT.
 
 <div align="center">
 <br>
