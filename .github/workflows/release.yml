@@ -40,6 +40,7 @@ jobs:
             --notes-file - <<'EOF'
           **Mac:** download `PhoneScreen-*.dmg`, drag PhoneScreen to Applications. The first launch needs one extra step
           because the app isn't notarized: see [Install](https://github.com/flywalk4/phonescreen#-install).
+
           **iPhone:** install `PhoneScreen-*.ipa` with [Sideloadly](https://sideloadly.io) or [AltStore](https://altstore.io)
           using your Apple ID (free accounts re-sign every 7 days).
           EOF
