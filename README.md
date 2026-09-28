@@ -15,10 +15,11 @@ Move the Mac's cursor off the edge of your display and it lands on the phone.
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-F05138?logo=swift&logoColor=white)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-blue.svg)](LICENSE)
+[![Download](https://img.shields.io/github/v/release/flywalk4/phonescreen?label=download&color=brightgreen)](https://github.com/flywalk4/phonescreen/releases/latest)
 
 **English** · [Русский](README.ru.md)
 
-[Features](#-features) · [Widgets](#-widgets) · [Themes](#-themes) · [Getting started](#-getting-started) · [Write a widget](#-write-a-widget) · [How it works](#-how-it-works)
+[Features](#-features) · [Widgets](#-widgets) · [Themes](#-themes) · [Install](#-install) · [Getting started](#-getting-started) · [Write a widget](#-write-a-widget) · [How it works](#-how-it-works)
 
 <br>
 
@@ -143,6 +144,42 @@ In the Mac app under **Themes**, **Fine-tuning** adjusts whichever theme you pic
 Any page can also drop its cards so the widgets sit straight on the background. Themes can set the same through an optional `layout` block in `theme.json`.
 
 </details>
+
+## 📦 Install
+
+Ready-made builds are on the [**Releases**](https://github.com/flywalk4/phonescreen/releases/latest) page. They aren't signed by Apple (that takes a paid developer account), so each platform needs one extra step. To build it yourself instead, see [Getting started](#-getting-started).
+
+<details open>
+<summary><b>💻 Mac</b> — <code>PhoneScreen-x.y.z.dmg</code>, macOS 14+, Apple silicon and Intel</summary>
+<br>
+
+1. Open the `.dmg` and drag **PhoneScreen** to **Applications**.
+2. Open PhoneScreen. macOS says it can't check the app for malicious software: click **Done**.
+3. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to PhoneScreen, then confirm. From now on it opens normally.
+
+Or in Terminal, before the first launch:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/PhoneScreen.app
+```
+
+After an update macOS may ask for **Accessibility** and **Screen Recording** again: switch PhoneScreen off and on in that list.
+
+</details>
+
+<details open>
+<summary><b>📱 iPhone</b> — <code>PhoneScreen-x.y.z.ipa</code>, iOS 18+</summary>
+<br>
+
+Install it with your own Apple ID using [Sideloadly](https://sideloadly.io) or [AltStore](https://altstore.io):
+
+1. Connect the iPhone to the Mac with a cable, open Sideloadly, drop the `.ipa` onto it, enter your Apple ID and press **Start**.
+2. On the iPhone: **Settings → Privacy & Security → Developer Mode** → on (the phone restarts), then **Settings → General → VPN & Device Management** → trust your Apple ID.
+3. A free Apple ID signs apps for 7 days: re-install the same `.ipa` with Sideloadly, or let AltStore refresh it over Wi-Fi by itself.
+
+</details>
+
+Then place the phone and add widgets: steps 3–5 of [Getting started](#-getting-started).
 
 ## 🚀 Getting started
 

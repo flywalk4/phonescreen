@@ -1,0 +1,45 @@
+name: Release
+
+# A tag like v0.2.0 builds the installers and publishes a GitHub release with them.
+# Run by hand (Actions → Release → Run workflow) to only build them and keep them as workflow artifacts.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          xcodebuild -version
+      - run: brew install xcodegen
+      - name: Version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-$(git rev-parse --short HEAD)"; fi
+          echo "value=$v" >> "$GITHUB_OUTPUT"
+      - name: Build the installers
+        run: scripts/package.sh "${{ steps.version.outputs.value }}" dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhoneScreen-${{ steps.version.outputs.value }}
+          path: dist/*
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --title "PhoneScreen ${GITHUB_REF_NAME#v}" --generate-notes \
+            --notes-file - <<'EOF'
+          **Mac:** download `PhoneScreen-*.dmg`, drag PhoneScreen to Applications. The first launch needs one extra step
+          because the app isn't notarized: see [Install](https://github.com/flywalk4/phonescreen#-install).
+          **iPhone:** install `PhoneScreen-*.ipa` with [Sideloadly](https://sideloadly.io) or [AltStore](https://altstore.io)
+          using your Apple ID (free accounts re-sign every 7 days).
+          EOF

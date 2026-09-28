@@ -15,10 +15,11 @@
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-F05138?logo=swift&logoColor=white)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-blue.svg)](LICENSE)
+[![Download](https://img.shields.io/github/v/release/flywalk4/phonescreen?label=download&color=brightgreen)](https://github.com/flywalk4/phonescreen/releases/latest)
 
 [English](README.md) · **Русский**
 
-[Возможности](#-возможности) · [Виджеты](#-виджеты) · [Темы](#-темы) · [Быстрый старт](#-быстрый-старт) · [Свой виджет](#-свой-виджет) · [Как это устроено](#-как-это-устроено)
+[Возможности](#-возможности) · [Виджеты](#-виджеты) · [Темы](#-темы) · [Установка](#-установка) · [Быстрый старт](#-быстрый-старт) · [Свой виджет](#-свой-виджет) · [Как это устроено](#-как-это-устроено)
 
 <br>
 
@@ -143,6 +144,42 @@ Mac → **Темы…**, под списком тем — **Тонкая нас�
 Любую страницу можно сделать «без карточек» — виджеты прямо на фоне. То же тема может задать блоком `layout` в `theme.json`.
 
 </details>
+
+## 📦 Установка
+
+Готовые сборки лежат на странице [**Releases**](https://github.com/flywalk4/phonescreen/releases/latest). Они не подписаны Apple (для этого нужен платный аккаунт разработчика), поэтому на каждой платформе есть один лишний шаг. Собрать самому — см. [Быстрый старт](#-быстрый-старт).
+
+<details open>
+<summary><b>💻 Mac</b> — <code>PhoneScreen-x.y.z.dmg</code>, macOS 14+, Apple silicon и Intel</summary>
+<br>
+
+1. Откройте `.dmg` и перетащите **PhoneScreen** в **Программы**.
+2. Откройте PhoneScreen. macOS скажет, что не может проверить программу на вредоносное ПО, — нажмите **Готово**.
+3. Откройте **Системные настройки → Конфиденциальность и безопасность**, пролистайте вниз и нажмите **Всё равно открыть** напротив PhoneScreen, подтвердите. Дальше программа открывается как обычно.
+
+Или в Терминале, до первого запуска:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/PhoneScreen.app
+```
+
+После обновления macOS может снова попросить **Универсальный доступ** и **Запись экрана** — выключите и включите PhoneScreen в этом списке.
+
+</details>
+
+<details open>
+<summary><b>📱 iPhone</b> — <code>PhoneScreen-x.y.z.ipa</code>, iOS 18+</summary>
+<br>
+
+Установите со своим Apple ID через [Sideloadly](https://sideloadly.io) или [AltStore](https://altstore.io):
+
+1. Подключите iPhone к Mac кабелем, откройте Sideloadly, перетащите в него `.ipa`, введите Apple ID и нажмите **Start**.
+2. На iPhone: **Настройки → Конфиденциальность и безопасность → Режим разработчика** → включить (телефон перезагрузится), затем **Настройки → Основные → VPN и управление устройством** → доверять своему Apple ID.
+3. С бесплатным Apple ID подпись живёт 7 дней: переустановите тот же `.ipa` через Sideloadly или пусть AltStore обновляет её сам по Wi-Fi.
+
+</details>
+
+Дальше поставьте телефон и добавьте виджеты — шаги 3–5 из [Быстрого старта](#-быстрый-старт).
 
 ## 🚀 Быстрый старт
 
