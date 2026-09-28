@@ -19,7 +19,7 @@ Move the Mac's cursor off the edge of your display and it lands on the phone.
 
 **English** · [Русский](README.ru.md)
 
-[Features](#-features) · [Widgets](#-widgets) · [Themes](#-themes) · [Install](#-install) · [Getting started](#-getting-started) · [Write a widget](#-write-a-widget) · [How it works](#-how-it-works)
+[Features](#-features) · [Widgets](#-widgets) · [Themes](#-themes) · [Second screen](#-second-screen) · [Install](#-install) · [Getting started](#-getting-started) · [Write a widget](#-write-a-widget) · [How it works](#-how-it-works)
 
 <br>
 
@@ -142,6 +142,33 @@ In the Mac app under **Themes**, **Fine-tuning** adjusts whichever theme you pic
 - the time and date beside the Dynamic Island, and the page dots
 
 Any page can also drop its cards so the widgets sit straight on the background. Themes can set the same through an optional `layout` block in `theme.json`.
+
+</details>
+
+## 🖥️ Second screen
+
+Not a mirror and not a widget: macOS gets a **real extra display** right where the phone sits in the arrangement. Drag any window across the edge and it lands on the phone — Safari, Xcode, a video, Slack. It stays a normal Mac window, so the keyboard, Mission Control and full-screen apps work as usual.
+
+**Turn it on:** add the **Second screen** widget to a page with the **One** layout and swipe to that page on the phone. The display appears while the page is open; leave it and the display goes away 5 s later, its windows move back to the main screen and return next time. The first time, macOS asks for **Screen Recording** (to stream the picture) and **Accessibility** (to turn touches into clicks).
+
+| On the phone | On the Mac |
+| --- | --- |
+| Tap | Click |
+| Drag with one finger | Drag, windows included |
+| Long press (½ s) | Right-click |
+| Two fingers | Scroll |
+| Type on the Mac's keyboard | Goes to the focused window, as on any display |
+
+- **Sharp:** a HiDPI mode (2 pixels per point), like a Retina screen, encoded in hardware as H.264 at up to 60 fps.
+- **Needs USB or Wi-Fi:** Bluetooth is too slow for video, so on Bluetooth alone the page says so and waits.
+- **Rotate the phone** and the display turns with it: a wide desktop lying sideways, a tall one upright.
+- **Switched it off in System Settings → Displays?** The phone offers to turn it back on rather than doing it behind your back.
+
+<details>
+<summary><b>How it works</b></summary>
+<br>
+
+The Mac creates the display with the private `CGVirtualDisplay` API at the phone's shape (at least 640 points across, the smallest size macOS offers a HiDPI mode for), captures it with ScreenCaptureKit, encodes frames with VideoToolbox and sends them over the same USB / Wi-Fi link as the widgets. The phone decodes them with `AVSampleBufferDisplayLayer` and sends raw touches back, which the Mac turns into mouse events on that display. The private API is also why PhoneScreen can't be in the Mac App Store.
 
 </details>
 
