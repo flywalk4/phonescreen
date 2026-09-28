@@ -13,6 +13,8 @@ public enum Message: Equatable, Sendable {
     case pageChanged(index: Int)
     /// Mac → phone: how the phone sits next to the Mac (orientation + which side faces it).
     case layout(PhoneLayout)
+    /// Phone → Mac: the accelerometer says the phone is held this way (only when tilted up, never lying flat).
+    case orientation(PhoneOrientation)
 
     // Widget data (Mac → phone)
     case nowPlaying(NowPlaying?)
@@ -100,7 +102,7 @@ extension Message: Codable {
         case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh, musicQueue, audio, music
         case customWidget, customWidgetRemoved, customAction, theme, runningApps, appAction, appPreview, language
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit, textFocus, keyText, key
-        case pointerPinch, pointerSmartZoom
+        case pointerPinch, pointerSmartZoom, orientation
     }
 
     private enum Keys: String, CodingKey {
@@ -118,6 +120,7 @@ extension Message: Codable {
         case .setPage: self = .setPage(index: try c.decode(Int.self, forKey: .index))
         case .pageChanged: self = .pageChanged(index: try c.decode(Int.self, forKey: .index))
         case .layout: self = .layout(try c.decode(PhoneLayout.self, forKey: .value))
+        case .orientation: self = .orientation(try c.decode(PhoneOrientation.self, forKey: .value))
         case .nowPlaying: self = .nowPlaying(try c.decodeIfPresent(NowPlaying.self, forKey: .value))
         case .stats: self = .stats(try c.decode(SystemStats.self, forKey: .value))
         case .mediaAction: self = .mediaAction(try c.decode(MediaAction.self, forKey: .value))
@@ -169,6 +172,7 @@ extension Message: Codable {
         case .setPage(let i): try c.encode(Kind.setPage, forKey: .t); try c.encode(i, forKey: .index)
         case .pageChanged(let i): try c.encode(Kind.pageChanged, forKey: .t); try c.encode(i, forKey: .index)
         case .layout(let v): try c.encode(Kind.layout, forKey: .t); try c.encode(v, forKey: .value)
+        case .orientation(let v): try c.encode(Kind.orientation, forKey: .t); try c.encode(v, forKey: .value)
         case .nowPlaying(let v): try c.encode(Kind.nowPlaying, forKey: .t); try c.encodeIfPresent(v, forKey: .value)
         case .stats(let v): try c.encode(Kind.stats, forKey: .t); try c.encode(v, forKey: .value)
         case .mediaAction(let v): try c.encode(Kind.mediaAction, forKey: .t); try c.encode(v, forKey: .value)

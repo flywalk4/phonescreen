@@ -82,6 +82,8 @@ import Testing
     @Test func layoutMessageRoundTrips() throws {
         let m = Message.layout(PhoneLayout(orientation: .landscapeIslandLeft, macSide: .left))
         #expect(try MessageCoder.decoder.decode(Message.self, from: MessageCoder.encoder.encode(m)) == m)
+        let o = Message.orientation(.upsideDown)
+        #expect(try MessageCoder.decoder.decode(Message.self, from: MessageCoder.encoder.encode(o)) == o)
     }
 }
 

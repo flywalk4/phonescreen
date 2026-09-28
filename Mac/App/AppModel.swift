@@ -383,6 +383,9 @@ final class AppModel: ObservableObject {
             widgets.action(id, action)
         case .pointerExit(let along):
             pointerLeftPhone(along: along)
+        case .orientation(let orientation):
+            Self.log.info("phone orientation \(orientation.rawValue, privacy: .public)")
+            setOrientation(orientation)
         case .textFocus(let focused):
             pointerCapture.phoneTextFocus = focused
             isTypingOnPhone = focused

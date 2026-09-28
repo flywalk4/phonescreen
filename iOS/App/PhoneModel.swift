@@ -59,6 +59,7 @@ final class PhoneModel: ObservableObject {
 
     let pointer = PointerController()
     let keyboard = KeyboardBridge()
+    private let motion = MotionOrientation()
     /// Bumped by touches and Mac pointer clicks/scrolls: restarts the pages' auto-advance.
     @Published var interactions = 0
     private let pool: ChannelPool
@@ -99,13 +100,15 @@ final class PhoneModel: ObservableObject {
             if self.overview, self.pointer.activateHovered() { return }
             self.setOverview(!self.overview)
         }
+        motion.onChange = { [weak self] in self?.phoneTurned(to: $0) }
         pool.onMessage = { [weak self] in self?.handle($0) }
         pool.onStatus = { [weak self] in self?.status = $0 }
         #if DEBUG
-        if !ProcessInfo.processInfo.arguments.contains("--demo") { listener.start(); bluetooth.start() }
+        if !ProcessInfo.processInfo.arguments.contains("--demo") { listener.start(); bluetooth.start(); motion.start() }
         #else
         listener.start()
         bluetooth.start()
+        motion.start()
         #endif
         #if DEBUG
         // `--demo [--page N]`: all pages without a Mac, for layout checks in the Simulator.
@@ -335,7 +338,12 @@ final class PhoneModel: ObservableObject {
             requestDataIfNeeded(for: currentPage)
         case .setPage(let index):
             applyRemotePage(index)
-        case .layout(let value):
+        case .layout(var value):
+            // Held up, the accelerometer wins over the arrangement; lying flat, the Mac decides.
+            if let held = motion.current, held != value.orientation {
+                value.orientation = held
+                pool.send(.orientation(held))
+            }
             withAnimation(.snappy) { layout = value }
         case .pointerEnter(let along):
             pointer.enter(along: along)
@@ -424,6 +432,14 @@ final class PhoneModel: ObservableObject {
             currentPage = target
             pointer.swipe.offset = 0
         }
+    }
+
+    /// The accelerometer saw the phone turned: redraw right away, and let the Mac turn its arrangement
+    /// (it answers with a `layout`, which keeps the pointer mapping in step).
+    private func phoneTurned(to orientation: PhoneOrientation) {
+        guard orientation != layout.orientation else { return }
+        withAnimation(.snappy) { layout.orientation = orientation }
+        pool.send(.orientation(orientation))
     }
 
     private static func savedTheme() -> Theme {

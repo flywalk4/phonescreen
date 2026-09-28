@@ -18,7 +18,8 @@ public enum ScreenEdge: String, Codable, CaseIterable, Sendable {
 }
 
 /// How the phone physically lies next to the Mac, named by where its Dynamic Island / top edge points.
-/// The phone renders its UI in this orientation itself — lying flat on a desk, the accelerometer can't tell.
+/// The phone renders its UI in this orientation itself. Held up, its accelerometer sets it; lying flat it can't tell,
+/// so the arrangement on the Mac does.
 public enum PhoneOrientation: String, Codable, CaseIterable, Sendable {
     case portrait, landscapeIslandRight, upsideDown, landscapeIslandLeft
 

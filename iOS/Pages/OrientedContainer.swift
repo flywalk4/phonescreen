@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Renders content upright for the orientation the phone lies in next to the Mac.
 /// The app itself is locked to portrait; this rotates the whole UI instead, so it works lying flat,
-/// supports upside-down on Face ID iPhones and never fights the accelerometer.
+/// supports upside-down on Face ID iPhones and never fights the system rotation (see MotionOrientation).
 struct OrientedContainer<Content: View>: View {
     let orientation: PhoneOrientation
     @ViewBuilder var content: (_ islandEdge: Edge) -> Content

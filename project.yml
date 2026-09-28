@@ -65,7 +65,8 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIRequiresFullScreen: YES
         INFOPLIST_KEY_UIStatusBarHidden: YES
-        # Orientation comes from the Mac arrangement, not the accelerometer (the phone usually lies flat).
+        # The app stays portrait; OrientedContainer rotates the UI itself — from the accelerometer when the phone
+        # is held up (MotionOrientation), from the Mac arrangement when it lies flat.
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen принимает подключение от Mac по Wi-Fi и напрямую."
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Запасной канал связи с Mac, когда нет кабеля и Wi-Fi."
