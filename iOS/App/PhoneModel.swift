@@ -62,6 +62,8 @@ final class PhoneModel: ObservableObject {
     /// SwiftUI and go straight to `displayDecoder`.
     @Published private(set) var displayStream: DisplayStreamInfo?
     let displayDecoder = DisplayDecoder()
+    /// The Mac stopped the second screen (it was disconnected there, or the page was left).
+    @Published var displayStopped = false
     /// The current page is the second screen: swipes drive the Mac's mouse, not the pager.
     var isOnSecondScreen: Bool {
         pages.indices.contains(currentPage) && pages[currentPage].contains(.display)
@@ -397,11 +399,13 @@ final class PhoneModel: ObservableObject {
             appPreviews[id] = image.isEmpty ? nil : UIImage(data: image)
         case .displayStart(let info):
             displayStream = info
+            displayStopped = false
             displayDecoder.reset()
         case .displayFrame(let data, let key):
             displayDecoder.decode(data, key: key)
         case .displayStop:
             displayStream = nil
+            displayStopped = true
         case .customWidget(let state):
             customWidgets[state.id] = state
         case .customWidgetRemoved(let id):

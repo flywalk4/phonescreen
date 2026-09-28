@@ -172,6 +172,7 @@ final class AppModel: ObservableObject {
 
     func refreshDisplays() {
         displays = DisplayInfo.current()
+        secondScreenDisplaysChanged()
     }
 
     private static let arrangementKey = "phoneArrangement"

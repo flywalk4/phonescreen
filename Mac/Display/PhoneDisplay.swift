@@ -31,6 +31,27 @@ final class PhoneDisplay {
 
     /// Where the display goes for a given size (it depends on the size: a display left of another ends at its edge).
     private var origin: ((CGSize) -> CGPoint)?
+    private var createdAt = Date.distantPast
+    /// macOS ended the display itself.
+    var onGone: (() -> Void)?
+
+    /// The display object exists but macOS no longer shows it: the user disconnected it (Control Center or
+    /// System Settings → Displays). Ignored for a moment after creation, while macOS is still setting it up.
+    var isGone: Bool {
+        guard display != nil, Date().timeIntervalSince(createdAt) > 2 else { return false }
+        return !isLive
+    }
+
+    private var isLive: Bool {
+        guard let id = displayID else { return false }
+        return CGDisplayIsOnline(id) != 0 && CGDisplayIsActive(id) != 0
+    }
+
+    /// Forgets a display macOS already took away (its windows have moved off it by then).
+    func discard() {
+        display = nil
+        size = .zero
+    }
 
     /// Creates the display (or resizes it) at `points` (a HiDPI mode: twice as many pixels) and moves it to
     /// `origin(size)` in global CG coordinates. Returns false if the private API is unavailable.
@@ -38,6 +59,11 @@ final class PhoneDisplay {
     func show(points requested: CGSize, millimeters: CGSize, origin: @escaping (CGSize) -> CGPoint) -> Bool {
         let points = CGSize(width: requested.width.rounded(), height: requested.height.rounded())
         self.origin = origin
+        // Disconnected on the Mac's side: the old object can't come back, so a fresh display replaces it.
+        if isGone {
+            AppModel.log.info("display: was disconnected, creating it again")
+            discard()
+        }
         if display == nil {
             let descriptor = CGVirtualDisplayDescriptor()
             descriptor.queue = .main
@@ -49,13 +75,16 @@ final class PhoneDisplay {
             descriptor.vendorID = Self.vendorID
             descriptor.productID = 0x0001
             descriptor.serialNum = 0x0001
-            descriptor.terminationHandler = { _, _ in }
+            descriptor.terminationHandler = { [weak self] _, _ in
+                MainActor.assumeIsolated { self?.onGone?() }
+            }
             guard let created = CGVirtualDisplay(descriptor: descriptor) else {
                 AppModel.log.error("display: CGVirtualDisplay refused")
                 return false
             }
             display = created
             size = .zero
+            createdAt = Date()
             AppModel.log.info("display: created \(created.displayID)")
         }
         guard let display else { return false }

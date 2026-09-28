@@ -24,13 +24,30 @@ struct DisplayPage: View {
                         .aspectRatio(model.displayStream.map { CGFloat($0.width) / CGFloat($0.height) }, contentMode: .fit)
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                     if model.displayStream == nil {
-                        Placeholder(symbol: "display.2", text: "Подключаю экран…").allowsHitTesting(false)
+                        if model.displayStopped {
+                            // Disconnected on the Mac (Control Center, System Settings): only back on request.
+                            VStack(spacing: 14) {
+                                Placeholder(symbol: "display.2", text: "Экран отключён на Mac").fixedSize()
+                                Button("Включить снова") {
+                                    model.displayStopped = false
+                                    model.sendDisplay(.displayVisible(true))
+                                }
+                                .buttonStyle(.borderedProminent)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.black)
+                        } else {
+                            Placeholder(symbol: "display.2", text: "Подключаю экран…").allowsHitTesting(false)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .onAppear { model.sendDisplay(.displayVisible(true)) }
+        .onAppear {
+            model.displayStopped = false
+            model.sendDisplay(.displayVisible(true))
+        }
         .onDisappear { model.sendDisplay(.displayVisible(false)) }
     }
 }

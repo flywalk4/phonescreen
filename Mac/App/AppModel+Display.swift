@@ -30,6 +30,23 @@ extension AppModel {
         }
     }
 
+    /// Displays changed on the Mac. If the user disconnected the second screen there, drop it and tell the phone,
+    /// which then offers to turn it back on (it isn't recreated behind the user's back).
+    func secondScreenDisplaysChanged() {
+        guard phoneDisplay.isGone else { return }
+        secondScreenLost()
+    }
+
+    private func secondScreenLost() {
+        guard phoneDisplay.display != nil else { return }
+        Self.log.info("display: disconnected on the Mac")
+        displayStreamer.stop()
+        phoneDisplay.discard()
+        isSecondScreenOn = false
+        edgeWatcher.isEnabled = true
+        pool.send(.displayStop)
+    }
+
     /// Keeps the display where the phone is after the arrangement or orientation changed.
     func placePhoneDisplay() {
         guard phoneDisplay.display != nil else { return }
@@ -77,7 +94,8 @@ extension AppModel {
 
     private func showPhoneDisplay() {
         releasePointer() // the cursor now reaches the phone as a real display
-        let isNew = phoneDisplay.display == nil
+        phoneDisplay.onGone = { [weak self] in self?.secondScreenLost() }
+        let isNew = phoneDisplay.display == nil || phoneDisplay.isGone
         guard showDisplayWhereThePhoneIs() else { return }
         isSecondScreenOn = true
         edgeWatcher.isEnabled = false
