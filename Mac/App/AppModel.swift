@@ -352,6 +352,8 @@ final class AppModel: ObservableObject {
             if kind == .apps { runningApps.resend(); capturePreviews() }
         case .appAction(let id, let action):
             runningApps.perform(action, id: id)
+            // Switching to an app means working in it: the cursor goes back to the Mac.
+            if action == .activate { releasePointer() }
         case .noteRequest(let id):
             notes.body(id: id)
         case .noteCreate(let text):
