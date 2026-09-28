@@ -148,7 +148,8 @@ private struct PinchablePagerContent: View {
     @GestureState private var touchScale: CGFloat = 1
 
     var body: some View {
-        Pager(count: model.pages.count, current: $model.currentPage, swipe: model.pointer.swipe, loops: model.loopsPages) { index in
+        Pager(count: model.pages.count, current: $model.currentPage, swipe: model.pointer.swipe, loops: model.loopsPages,
+              locked: model.isOnSecondScreen) { index in
             PageView(page: model.pages[index])
         }
         .scaleEffect(min(pinch.scale, touchScale))
@@ -169,6 +170,8 @@ struct Pager<Page: View>: View {
     @ObservedObject var swipe: PagerSwipe
     /// Swiping past either end goes round to the other.
     var loops = false
+    /// Finger swipes don't turn pages (the second screen uses them as a mouse); dots, the Mac and pinch still do.
+    var locked = false
     @ViewBuilder var page: (Int) -> Page
     @GestureState private var drag: CGFloat = 0
 
@@ -199,7 +202,8 @@ struct Pager<Page: View>: View {
                         let predicted = value.predictedEndTranslation.width
                         if predicted < -width / 3 { if current < count - 1 { current += 1 } else if loops { current = 0 } }
                         if predicted > width / 3 { if current > 0 { current -= 1 } else if loops { current = count - 1 } }
-                    }
+                    },
+                including: locked ? .subviews : .all
             )
             .animation(.interactiveSpring, value: drag)
         }

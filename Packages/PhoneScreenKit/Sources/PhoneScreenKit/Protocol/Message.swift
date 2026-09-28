@@ -94,6 +94,22 @@ public enum Message: Equatable, Sendable {
     case keyText(String)
     /// Mac → phone: an editing key.
     case key(SpecialKey)
+
+    // Second screen: the phone is a real (virtual) display of the Mac, streamed as H.264.
+    /// Mac → phone: a virtual display for the phone exists and frames of this size follow.
+    case displayStart(DisplayStreamInfo)
+    /// Mac → phone: one H.264 access unit in Annex B form; key frames carry SPS and PPS first.
+    case displayFrame(data: Data, key: Bool)
+    /// Mac → phone: the virtual display is gone.
+    case displayStop
+    /// Phone → Mac: the second-screen page appeared / disappeared.
+    case displayVisible(Bool)
+    /// Phone → Mac: the decoder needs a key frame (it just started, or lost one).
+    case displayKeyframe
+    /// Phone → Mac: a touch at `x`, `y` (0…1 across the picture).
+    case displayTouch(phase: DisplayTouchPhase, x: Double, y: Double)
+    /// Phone → Mac: two-finger scroll, in display points.
+    case displayScroll(dx: Double, dy: Double)
 }
 
 extension Message: Codable {
@@ -103,10 +119,11 @@ extension Message: Codable {
         case customWidget, customWidgetRemoved, customAction, theme, runningApps, appAction, appPreview, language
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit, textFocus, keyText, key
         case pointerPinch, pointerSmartZoom, orientation
+        case displayStart, displayFrame, displayStop, displayVisible, displayKeyframe, displayTouch, displayScroll
     }
 
     private enum Keys: String, CodingKey {
-        case t, hello, list, current, index, value, id, along, dx, dy, button, down, phase, text, magnification
+        case t, hello, list, current, index, value, id, along, dx, dy, button, down, phase, text, magnification, key, x, y
     }
 
     public init(from decoder: Decoder) throws {
@@ -158,6 +175,16 @@ extension Message: Codable {
         case .textFocus: self = .textFocus(try c.decode(Bool.self, forKey: .value))
         case .keyText: self = .keyText(try c.decode(String.self, forKey: .text))
         case .key: self = .key(try c.decode(SpecialKey.self, forKey: .value))
+        case .displayStart: self = .displayStart(try c.decode(DisplayStreamInfo.self, forKey: .value))
+        case .displayFrame: self = .displayFrame(data: try c.decode(Data.self, forKey: .value),
+                                                 key: try c.decode(Bool.self, forKey: .key))
+        case .displayStop: self = .displayStop
+        case .displayVisible: self = .displayVisible(try c.decode(Bool.self, forKey: .value))
+        case .displayKeyframe: self = .displayKeyframe
+        case .displayTouch: self = .displayTouch(phase: try c.decode(DisplayTouchPhase.self, forKey: .phase),
+                                                 x: try c.decode(Double.self, forKey: .x), y: try c.decode(Double.self, forKey: .y))
+        case .displayScroll: self = .displayScroll(dx: try c.decode(Double.self, forKey: .dx),
+                                                   dy: try c.decode(Double.self, forKey: .dy))
         }
     }
 
@@ -214,6 +241,17 @@ extension Message: Codable {
         case .textFocus(let v): try c.encode(Kind.textFocus, forKey: .t); try c.encode(v, forKey: .value)
         case .keyText(let v): try c.encode(Kind.keyText, forKey: .t); try c.encode(v, forKey: .text)
         case .key(let v): try c.encode(Kind.key, forKey: .t); try c.encode(v, forKey: .value)
+        case .displayStart(let v): try c.encode(Kind.displayStart, forKey: .t); try c.encode(v, forKey: .value)
+        case .displayFrame(let data, let key):
+            try c.encode(Kind.displayFrame, forKey: .t); try c.encode(data, forKey: .value); try c.encode(key, forKey: .key)
+        case .displayStop: try c.encode(Kind.displayStop, forKey: .t)
+        case .displayVisible(let v): try c.encode(Kind.displayVisible, forKey: .t); try c.encode(v, forKey: .value)
+        case .displayKeyframe: try c.encode(Kind.displayKeyframe, forKey: .t)
+        case .displayTouch(let phase, let x, let y):
+            try c.encode(Kind.displayTouch, forKey: .t); try c.encode(phase, forKey: .phase)
+            try c.encode(x, forKey: .x); try c.encode(y, forKey: .y)
+        case .displayScroll(let dx, let dy):
+            try c.encode(Kind.displayScroll, forKey: .t); try c.encode(dx, forKey: .dx); try c.encode(dy, forKey: .dy)
         }
     }
 }

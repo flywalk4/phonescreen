@@ -70,13 +70,21 @@ Three small files: a manifest, a declarative `view.json` and a sandboxed `provid
 
 </td>
 </tr>
+<tr>
+<td colspan="2" valign="top">
+
+### 🖥️ A real second screen
+Add the **Second screen** widget and macOS gets a new display right where the phone sits. Drag any window across the edge and it lands on the phone, sharp in HiDPI and streamed as hardware H.264 over USB or Wi-Fi. Tap to click, drag to drag, long-press to right-click, scroll with two fingers.
+
+</td>
+</tr>
 </table>
 
 ## 🧩 Widgets
 
 <p align="center"><img src="docs/images/widgets.png" alt="Catalog widgets" width="100%"></p>
 
-**Built in:** 🎵 Music (Apple Music and Spotify, with album art) · 📊 Mac monitor (CPU, GPU, RAM, network) · 📅 Calendar and Reminders (iCloud, straight on the phone) · 📝 Notes · ⛅ Weather · 🚀 Launcher for Dock apps, Shortcuts and system actions · 🖼️ Photo frame that slideshows your Favorites with a slow Ken Burns drift.
+**Built in:** 🎵 Music (Apple Music and Spotify, with album art) · 📊 Mac monitor (CPU, GPU, RAM, network) · 📅 Calendar and Reminders (iCloud, straight on the phone) · 📝 Notes · ⛅ Weather · 🚀 Launcher for Dock apps, Shortcuts and system actions · 🖼️ Photo frame that slideshows your Favorites with a slow Ken Burns drift · 🪟 Running apps with live window previews · 🖥️ Second screen: the phone becomes a real display of the Mac.
 
 **Catalog**, installed from the Mac app with one click:
 
@@ -150,6 +158,7 @@ open PhoneScreen.xcodeproj
 2. **iPhone:** run the `PhoneScreeniOS` scheme on your phone. Set your team in Xcode → Signing, or run `DEVELOPMENT_TEAM=XXXXXXXXXX xcodegen generate`. Allow **Local Network** access when iOS asks (USB works without it).
 3. **Place the phone:** menu bar → **Расположение iPhone…** (iPhone position). Drag the phone to any edge of any screen. The cursor crosses over the green segment. Press `R` to rotate it.
 4. **Add widgets and themes:** menu bar → **Виджеты…** / **Темы…** (Widgets / Themes).
+5. **Second screen (optional):** put the **Второй экран** (Second screen) widget on a single-widget page. The first time, macOS asks for **Screen Recording** (to stream the display) and **Accessibility** (to turn taps into clicks). The display appears while that page is on the phone and goes away 5 s after you leave it; windows on it move back and return next time.
 
 > [!NOTE]
 > The Mac interface is in Russian for now. With a free Apple ID the iPhone build lasts 7 days; after that, build again.
@@ -235,7 +244,7 @@ Mac (menu bar agent)                                   iPhone
 | Path | What's inside |
 | --- | --- |
 | [`Packages/PhoneScreenKit`](Packages/PhoneScreenKit) | The shared protocol (`Message`, length-prefixed JSON frames), channels, widget templates and themes |
-| [`Mac/`](Mac) | The menu bar agent: usbmuxd, Bonjour and BLE links, data providers, the widget runtime, pointer handoff and hotkeys |
+| [`Mac/`](Mac) | The menu bar agent: usbmuxd, Bonjour and BLE links, data providers, the widget runtime, pointer handoff and hotkeys. `Mac/Display` is the second screen: a virtual display (private `CGVirtualDisplay`), ScreenCaptureKit + VideoToolbox H.264, taps → mouse events |
 | [`iOS/`](iOS) | The phone app: the listener, pages, built-in widgets, the themed renderer for custom widgets, animated scenes |
 | [`catalog/`](catalog) | Widgets and themes with an `index.json` of SHA-256 hashes. The app refuses any file whose hash doesn't match |
 

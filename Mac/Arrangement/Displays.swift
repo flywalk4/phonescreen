@@ -26,6 +26,8 @@ struct DisplayInfo: Identifiable, Equatable {
         return ids.prefix(Int(count))
             // Mirrored displays show the same content; only the mirror source is a real surface.
             .filter { CGDisplayMirrorsDisplay($0) == kCGNullDirectDisplay }
+            // The phone's own virtual display (second screen) is the phone, not a display to attach it to.
+            .filter { CGDisplayVendorNumber($0) != PhoneDisplay.vendorID }
             .map { id in
                 let bounds = CGDisplayBounds(id)
                 let mm = CGDisplayScreenSize(id)

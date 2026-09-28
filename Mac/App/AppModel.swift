@@ -42,6 +42,12 @@ final class AppModel: ObservableObject {
     var captureEntry: CGPoint?
     var accessibilityPoll: Timer?
 
+    // Second screen (see AppModel+Display.swift)
+    @Published var isSecondScreenOn = false
+    let phoneDisplay = PhoneDisplay()
+    let displayStreamer = DisplayStreamer()
+    var phoneDisplayRemoval: Timer?
+
     /// The phone's pages, edited in Settings → Pages. Saved, and pushed to the phone on every change.
     @Published var pages: [PageInfo] = AppModel.loadPages() {
         didSet {
@@ -196,6 +202,7 @@ final class AppModel: ObservableObject {
         pool.onMessage = { [weak self] in self?.handle($0) }
         pool.onActiveChanged = { [weak self] active in
             if active != nil { self?.sendFullState() } else { self?.releasePointer() }
+            self?.updateSecondScreen()
         }
         pool.onPeerHello = { [weak self] hello in
             guard let screen = hello.screen else { return }
@@ -266,6 +273,7 @@ final class AppModel: ObservableObject {
         }
         #if DEBUG
         if CommandLine.arguments.contains("--notes-selftest") { notes.refresh(force: true) }
+        if CommandLine.arguments.contains("--display-selftest") { selfTestSecondScreen() }
         #endif
         notes.onBody = { [weak self] id, text in self?.pool.send(.noteBody(id: id, text: text)) }
         launcher.onItems = { [weak self] items in
@@ -309,6 +317,7 @@ final class AppModel: ObservableObject {
         if currentWidgets.contains(.notes) { notes.refresh() }
         if currentWidgets.contains(.launcher) { launcher.refresh() }
         if currentWidgets.contains(.apps) { capturePreviews() }
+        updateSecondScreen()
     }
 
     /// Window snapshots are big: never over Bluetooth, and only while the apps page is on screen.
@@ -389,6 +398,8 @@ final class AppModel: ObservableObject {
         case .textFocus(let focused):
             pointerCapture.phoneTextFocus = focused
             isTypingOnPhone = focused
+        case .displayVisible, .displayKeyframe, .displayTouch, .displayScroll:
+            handleSecondScreen(message)
         case .music(let command):
             music.perform(command)
         case .mediaAction(let action):

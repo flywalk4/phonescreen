@@ -71,6 +71,9 @@ import Testing
                           airPlay: [AirPlayDevice(name: "Колонки MacBook Pro", kind: "computer", selected: true)])),
         .music(.setPlayerVolume(0.7)), .music(.seek(61.5)), .music(.cycleRepeat), .music(.playQueueItem(2)),
         .music(.setAirPlay(["HomePod", "Колонки MacBook Pro"])),
+        .displayStart(DisplayStreamInfo(width: 1179, height: 2556, scale: 2)),
+        .displayFrame(data: Data([0, 0, 0, 1, 0x67]), key: true), .displayStop, .displayVisible(true), .displayKeyframe,
+        .displayTouch(phase: .moved, x: 0.25, y: 0.75), .displayScroll(dx: 0, dy: -12), .refresh(.display),
     ]
 
     @Test(arguments: all) func roundTrip(_ message: Message) throws {

@@ -38,7 +38,7 @@ public struct Hello: Codable, Equatable, Sendable {
 }
 
 public enum WidgetKind: String, Codable, CaseIterable, Sendable {
-    case music, monitor, notes, reminders, calendar, weather, launcher, photos, apps
+    case music, monitor, notes, reminders, calendar, weather, launcher, photos, apps, display
 
     public var title: String {
         switch self {
@@ -51,6 +51,7 @@ public enum WidgetKind: String, Codable, CaseIterable, Sendable {
         case .launcher: "Команды"
         case .photos: "Фото"
         case .apps: "Программы"
+        case .display: "Второй экран"
         }
     }
 
@@ -65,6 +66,7 @@ public enum WidgetKind: String, Codable, CaseIterable, Sendable {
         case .launcher: "square.grid.3x3.fill"
         case .photos: "photo.on.rectangle.angled"
         case .apps: "macwindow.on.rectangle"
+        case .display: "display.2"
         }
     }
 }
@@ -448,6 +450,34 @@ public struct RunningApp: Codable, Equatable, Identifiable, Sendable {
 /// Phone → Mac: what to do with a running app.
 public enum AppAction: String, Codable, Sendable {
     case activate, hide, quit
+}
+
+/// Mac → phone: the virtual display the phone shows ("second screen"), as the video stream's pixel size.
+public struct DisplayStreamInfo: Codable, Equatable, Sendable {
+    public var width: Int
+    public var height: Int
+    /// Pixels per display point (2 = HiDPI).
+    public var scale: Double
+
+    public init(width: Int, height: Int, scale: Double) {
+        self.width = width
+        self.height = height
+        self.scale = scale
+    }
+}
+
+/// Phone → Mac: a finger on the second screen, turned into mouse events on the virtual display.
+public enum DisplayTouchPhase: String, Codable, Sendable {
+    /// Finger down: move the cursor there and press the left button.
+    case began
+    /// Finger moved while down: drag.
+    case moved
+    /// Finger up: release the button.
+    case ended
+    /// Just move the cursor there (no button).
+    case hover
+    /// Long press: a right click at that spot.
+    case rightClick
 }
 
 public enum Protocol {

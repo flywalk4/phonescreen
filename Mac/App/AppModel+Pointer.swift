@@ -39,6 +39,7 @@ extension AppModel {
             return
         }
         edgeWatcher.portal = (display.bounds, arrangement.edge, segment)
+        placePhoneDisplay()
     }
 
     // MARK: - Crossing

@@ -285,6 +285,7 @@ struct WidgetView: View {
             case .weather: WeatherPage()
             case .photos: PhotosPage()
             case .apps: AppsPage()
+            case .display: DisplayPage()
             }
         case .custom(let id):
             CustomWidgetView(id: id)

@@ -58,6 +58,15 @@ final class PhoneModel: ObservableObject {
     }
 
     let pointer = PointerController()
+    /// Second screen: the stream's size while the Mac's virtual display streams here. Frames themselves bypass
+    /// SwiftUI and go straight to `displayDecoder`.
+    @Published private(set) var displayStream: DisplayStreamInfo?
+    let displayDecoder = DisplayDecoder()
+    /// The current page is the second screen: swipes drive the Mac's mouse, not the pager.
+    var isOnSecondScreen: Bool {
+        pages.indices.contains(currentPage) && pages[currentPage].contains(.display)
+    }
+    func sendDisplay(_ message: Message) { pool.send(message) }
     let keyboard = KeyboardBridge()
     private let motion = MotionOrientation()
     /// Bumped by touches and Mac pointer clicks/scrolls: restarts the pages' auto-advance.
@@ -89,6 +98,7 @@ final class PhoneModel: ObservableObject {
         }
         pointer.onEmptyClick = { [weak self] in self?.keyboard.endEditing() }
         keyboard.onFocusChange = { [weak self] focused in self?.pool.send(.textFocus(focused)) }
+        displayDecoder.requestKeyframe = { [weak self] in self?.pool.send(.displayKeyframe) }
         pointer.onSwipeEnd = { [weak self] step in self?.finishSwipe(step) }
         pointer.onPinch = { [weak self] pinchedIn in
             guard let self else { return }
@@ -385,6 +395,13 @@ final class PhoneModel: ObservableObject {
             appPreviews = appPreviews.filter { ids.contains($0.key) }
         case .appPreview(let id, let image):
             appPreviews[id] = image.isEmpty ? nil : UIImage(data: image)
+        case .displayStart(let info):
+            displayStream = info
+            displayDecoder.reset()
+        case .displayFrame(let data, let key):
+            displayDecoder.decode(data, key: key)
+        case .displayStop:
+            displayStream = nil
         case .customWidget(let state):
             customWidgets[state.id] = state
         case .customWidgetRemoved(let id):

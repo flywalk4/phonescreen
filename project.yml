@@ -35,6 +35,8 @@ targets:
         ENABLE_HARDENED_RUNTIME: NO
         # A real identity (not ad-hoc) keeps the Accessibility grant across rebuilds.
         CODE_SIGN_IDENTITY: "Apple Development"
+        # Private CGVirtualDisplay classes for the second screen.
+        SWIFT_OBJC_BRIDGING_HEADER: Mac/Display/CGVirtualDisplay.h
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
