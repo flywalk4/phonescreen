@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 REQUIRED = ["manifest.json", "view.json", "provider.js"]
+OPTIONAL = ["strings.json"]
 MAX_BYTES = 256 * 1024
 SIZES = {"full", "medium", "small"}
 NODES = {
@@ -22,7 +23,7 @@ NODES = {
     "hstack": {"spacing", "align", "children"},
     "text": {"text", "style", "color", "lines", "align", "size", "weight", "design"},
     "symbol": {"name", "color", "size"},
-    "gauge": {"value", "label", "color"},
+    "gauge": {"value", "label", "color", "text", "fill"},
     "progress": {"value", "color"},
     "chart": {"values", "color", "style", "height"},
     "button": {"title", "symbol", "action"},
@@ -41,6 +42,46 @@ CHART_STYLES = {"line", "area", "bar"}
 COMMON = {"type", "if"}
 STYLES = {"largeTitle", "title", "title2", "title3", "headline", "body", "callout", "subheadline", "footnote", "caption", "caption2"}
 BINDING = re.compile(r"\{\{\s*([^}]+?)\s*\}\}")
+
+
+LANG = re.compile(r"^[a-z]{2}(-[A-Za-z]{2,4})?$")
+PLURAL = {"zero", "one", "two", "few", "many", "other"}
+
+
+def check_strings(folder: Path, manifest: dict, files: dict) -> list[str]:
+    """strings.json: {"en": {"key": "text" | {"one": …, "other": …}}, …}; every key the view and script use exists."""
+    path = folder / "strings.json"
+    if not path.exists():
+        return []
+    errors = []
+    try:
+        strings = json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        return [f"strings.json: {e}"]
+    if not isinstance(strings, dict) or not strings:
+        return ["strings.json: объект {\"ru\": {…}, \"en\": {…}}"]
+    for lang, table in strings.items():
+        if not LANG.match(lang):
+            errors.append(f"strings.json: «{lang}» — код языка вида ru, en, pt-BR")
+        if not isinstance(table, dict):
+            errors.append(f"strings.json.{lang}: объект ключ → текст")
+            continue
+        for key, value in table.items():
+            if isinstance(value, dict):
+                if not value or not set(value) <= PLURAL or not all(isinstance(v, str) for v in value.values()):
+                    errors.append(f"strings.json.{lang}.{key}: формы — строки с ключами {', '.join(sorted(PLURAL))}")
+            elif not isinstance(value, str):
+                errors.append(f"strings.json.{lang}.{key}: строка или формы {{\"one\": …, \"other\": …}}")
+    # Keys used by view.json ({{t.key}}) and provider.js (t("key")) must exist in every language.
+    text = lambda name: files.get(name, b"").decode("utf-8", "replace")
+    used = set(re.findall(r"\{\{\s*t\.([\w.-]+)\s*\}\}", text("view.json")))
+    used |= set(re.findall(r"\bt\(\s*[\"']([\w.-]+)[\"']", text("provider.js")))
+    for lang, table in strings.items():
+        if isinstance(table, dict):
+            missing = sorted(k for k in used if k not in table)
+            if missing:
+                errors.append(f"strings.json.{lang}: нет ключей {', '.join(missing[:8])}{' …' if len(missing) > 8 else ''}")
+    return errors
 
 
 def validate(folder: Path) -> list[str]:
@@ -83,9 +124,29 @@ def validate(folder: Path) -> list[str]:
     setting_keys = [s.get("key") for s in m.get("settings") or []]
     if len(set(secret_keys)) != len(secret_keys) or len(set(setting_keys)) != len(setting_keys):
         errors.append("ключи secrets / settings повторяются")
+    for st in m.get("settings") or []:
+        key, kind = st.get("key"), st.get("type", "text")
+        if kind not in ("text", "choice", "toggle", "number"):
+            errors.append(f"settings.{key}: type — text, choice, toggle или number")
+        if st.get("default") is not None and not isinstance(st["default"], str):
+            errors.append(f"settings.{key}: default — строка (\"true\", \"5\")")
+        values = [o if isinstance(o, str) else (o or {}).get("value") for o in st.get("options") or []]
+        if kind == "choice":
+            if not values or not all(isinstance(v, str) for v in values):
+                errors.append(f"settings.{key}: для choice нужен options — строки или {{value, title}}")
+            elif st.get("default") is not None and st["default"] not in values:
+                errors.append(f"settings.{key}: default «{st['default']}» нет среди options")
+        if kind == "toggle" and st.get("default") not in (None, "true", "false"):
+            errors.append(f"settings.{key}: default у toggle — \"true\" или \"false\"")
+        if kind == "number":
+            lo, hi = st.get("min"), st.get("max")
+            if lo is not None and hi is not None and lo >= hi:
+                errors.append(f"settings.{key}: min должен быть меньше max")
     floor = 30 if perms.get("network") else 5
     if m.get("refresh") is not None and m["refresh"] < floor:
         errors.append(f"refresh меньше {floor} с будет поднят до {floor}")
+
+    errors += check_strings(folder, m, files)
 
     try:
         view = json.loads(files["view.json"])
@@ -129,6 +190,9 @@ def style_hints(node, path: str, size: str, out: list[str]) -> None:
     for key in ("color", "background"):
         if t != "sprite" and HEX.match(str(node.get(key, ""))):
             out.append(f"{path}.{key}: {node[key]} — темы не перекрасят hex; если это не фирменный цвет, лучше имя (accent, green…)")
+    kids = [k for k in node.get("children") or [] if isinstance(k, dict)]
+    if t == "box" and "if" not in node and kids and all(k.get("if") for k in kids):
+        out.append(f"{path}: всё содержимое box под if, а сам box — нет; когда условие ложно, останется пустая подложка — перенесите if на box")
     if t == "button" and size == "small":
         out.append(f"{path}: кнопка в small — тесно; лучше box с action (вся плитка нажимается)")
     for i, child in enumerate(node.get("children") or []):

@@ -1,0 +1,21 @@
+{
+ "description": "Всё отмечено: зелёное кольцо",
+ "now": "2026-09-28T19:00:00Z",
+ "timezone": "Europe/Moscow",
+ "settings": {
+  "habits": "Вода, Спорт"
+ },
+ "storage": {
+  "done": {
+   "2026-09-28": [
+    "Вода",
+    "Спорт"
+   ]
+  }
+ },
+ "expect": {
+  "ratio": "2/2",
+  "color": "green",
+  "summary": "/сделано/"
+ }
+}

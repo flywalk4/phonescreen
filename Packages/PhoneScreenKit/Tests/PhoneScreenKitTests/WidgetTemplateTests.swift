@@ -107,6 +107,48 @@ import Testing
         #expect(m.refreshInterval == 5) // local-only widgets may poll faster
     }
 
+    @Test func typedSettingsDecode() throws {
+        let json = #"""
+        {"id": "com.example.w", "name": "W", "version": "1.0.0", "author": "me", "settings": [
+          {"key": "style", "title": "Стиль", "type": "choice", "options": ["a", {"value": "b", "title": "Бэ"}], "default": "a"},
+          {"key": "clock", "title": "Часы", "type": "toggle", "default": "true"},
+          {"key": "speed", "title": "Скорость", "type": "number", "min": 0.2, "max": 3, "step": 0.1},
+          {"key": "city", "title": "Город"}
+        ]}
+        """#
+        let m = try JSONDecoder().decode(WidgetManifest.self, from: Data(json.utf8))
+        try m.validate()
+        let s = try #require(m.settings)
+        #expect(s[0].options == [.init(value: "a"), .init(value: "b", title: "Бэ")])
+        #expect(s[0].options?[1].label == "Бэ")
+        #expect(s[1].kind == .toggle && s[2].max == 3 && s[3].kind == .text)
+        #expect(WidgetManifest.Setting.isOn("yes") && WidgetManifest.Setting.isOn("true") && !WidgetManifest.Setting.isOn("no"))
+        var bad = m; bad.settings = [.init(key: "x", title: "X", type: .choice)]
+        #expect(throws: WidgetManifest.Invalid.self) { try bad.validate() }
+    }
+
+    @Test func stringsPickLanguageAndLocalizeManifest() throws {
+        let all: [String: Any] = [
+            "ru": ["manifest.name": "Курсы", "settings.target.title": "Валюта", "settings.target.options.RUB": "Рубль", "hello": "Привет"],
+            "en": ["manifest.name": "Rates", "settings.target.title": "Currency", "hello": "Hello", "only.en": "x"],
+        ]
+        #expect(WidgetStrings.language("de", available: ["ru", "en"]) == "en")
+        #expect(WidgetStrings.language("ru", available: ["ru", "en"]) == "ru")
+        #expect(WidgetStrings.language("fr", available: ["ru"]) == "ru")
+        #expect(WidgetStrings.language("fr", available: []) == "fr")
+        let (lang, table) = WidgetStrings.table(all, wanted: "ru")
+        #expect(lang == "ru")
+        #expect(table["hello"] as? String == "Привет")
+        #expect(table["only.en"] as? String == "x") // gaps fall back to English
+        var m = base
+        m.settings = [.init(key: "target", title: "Target", type: .choice, options: [.init(value: "RUB"), .init(value: "USD")])]
+        let local = m.localized(table)
+        #expect(local.name == "Курсы")
+        #expect(local.settings?[0].title == "Валюта")
+        #expect(local.settings?[0].options?.map(\.label) == ["Рубль", "USD"])
+        #expect(WidgetStrings.code("en-GB") == "en" && WidgetStrings.code("zh_Hans_CN") == "zh")
+    }
+
     @Test func fileAccessIsLimitedToDeclaredPaths() throws {
         var m = base
         m.permissions = .init(files: ["~/.claude/phonescreen/", "~/notes.txt"])
@@ -174,11 +216,11 @@ import Testing
         #expect(node == expected)
     }
 
-    @Test func gridUpToTwelveColumns() throws {
+    @Test func gridUpToSixteenColumns() throws {
         let node = try WidgetTemplate.resolve(json(#"{"type": "grid", "columns": 8, "children": []}"#), data: json("{}"))
         #expect(node == .grid(columns: 8, spacing: nil, children: []))
         let capped = try WidgetTemplate.resolve(json(#"{"type": "grid", "columns": 40, "children": []}"#), data: json("{}"))
-        #expect(capped == .grid(columns: 12, spacing: nil, children: []))
+        #expect(capped == .grid(columns: 16, spacing: nil, children: []))
     }
 
     @Test func boxAndGrid() throws {

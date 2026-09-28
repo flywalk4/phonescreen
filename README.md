@@ -4,16 +4,17 @@
 
 **Turn your iPhone into a side screen for your Mac.** Put it next to your display. It shows live widgets: music, system load, calendar, weather, crypto, your Claude Code limits, a photo frame, even small games. Move the Mac's cursor off the edge of your screen and it lands on the phone.
 
-<!-- <p align="center"><img src="docs/images/hero.png" alt="PhoneScreen in the dark, Liquid Glass, light and ASCII themes" width="100%"></p> (pictures come with the next Simulator screenshots) -->
+<p align="center"><img src="docs/images/hero.png" alt="PhoneScreen in the dark, Liquid Glass, light and ASCII themes" width="100%"></p>
 
 - **Native, not a mirror.** The iPhone draws every widget in SwiftUI. The Mac sends only data, so it stays sharp, smooth and light on battery.
 - **Any link that works.** USB, Wi-Fi, peer-to-peer Wi-Fi (AWDL) and Bluetooth LE all run at once, and traffic takes the best one. Pull the cable and the session carries on over Wi-Fi.
 - **Widgets anyone can write.** A widget is three small files: a manifest, a declarative `view.json` and a `provider.js` that runs on the Mac in a sandbox. There is a catalog, live reload and a Node toolkit that works without a Mac.
-- **Themes that restyle everything.** Dark, light, Liquid Glass (iOS 26), ASCII, and more from the catalog. Themes can have animated backgrounds: aurora, stars, Matrix rain, waves, bokeh, lava, snow, rain on glass, a drifting gradient.
+- **Edge to edge, any way up.** Pages use the whole screen. Lay the phone sideways and every layout reflows: a 2×2 grid becomes a row of four tiles, and a full-page widget flows into two or three columns by itself.
+- **Themes that restyle everything.** Dark, light, Liquid Glass (iOS 26), ASCII, and more from the catalog: Catppuccin, Dracula, Gruvbox, Nord, Tokyo Night, Solarized, Synthwave, a monochrome Graphite, pastel bento cards, amber and e-ink terminals, snow and rain scenes. Themes can have animated backgrounds: aurora, stars, Matrix rain, waves, bokeh, lava, snow, rain on glass, a drifting gradient.
 
 ## Widgets
 
-<!-- <p align="center"><img src="docs/images/widgets.png" alt="Catalog widgets" width="100%"></p> (pictures come with the next Simulator screenshots) -->
+<p align="center"><img src="docs/images/widgets.png" alt="Catalog widgets" width="100%"></p>
 
 **Built in:** Music (Apple Music and Spotify, with album art), Mac monitor (CPU, GPU, RAM, network), Calendar and Reminders (iCloud, straight on the phone), Notes, Weather, a Launcher for Dock apps, Shortcuts and system actions, and a **Photo frame** that slideshows your Favorites with a slow Ken Burns drift.
 
@@ -31,20 +32,31 @@
 | **Time** | Progress of the day, week, month and year, plus countdowns |
 | **Month** | A month calendar with today, weekends and Russian public holidays, and the working days left |
 | **Focus** | A Pomodoro timer with a daily tally |
+| **Habits** | Tap to check off habits, with streaks and the last seven days as dots |
 | **GitHub** | PRs waiting for your review, your open PRs and notifications |
 | **Hacker News** | Top stories |
 | **Live wallpaper** | Animated scenes with an optional clock |
 | **Games** | Tic-tac-toe against the Mac, 2048, Minesweeper and Memory, played by tapping the phone |
 
-Each widget has three layouts, `full` (a whole page), `medium` (half) and `small` (a quarter), so you can mix them on a page:
+Each widget has three layouts, `full` (a whole page), `medium` (half) and `small` (a tile), so you can mix them on a page. Pages come as one widget, two, one big and two small, a 2×2 grid, three stacked, or a 2×3 grid of six tiles:
 
-<!-- <p align="center"><img src="docs/images/pages.png" alt="Pages mixing several widgets" width="100%"></p> (pictures come with the next Simulator screenshots) -->
+<p align="center"><img src="docs/images/pages.png" alt="Pages mixing several widgets" width="100%"></p>
+
+## Lying sideways
+
+Put the phone on its side under or next to a display. Grids become a row of tiles, a trio becomes one half-width card and two tiles, and catalog widgets reflow their full-page layout into columns with no extra work from their authors.
+
+<p align="center"><img src="docs/images/landscape.png" alt="Pages in landscape" width="100%"></p>
 
 ## Themes
 
-<!-- <p align="center"><img src="docs/images/themes.png" alt="Catalog themes" width="100%"></p> (pictures come with the next Simulator screenshots) -->
+<p align="center"><img src="docs/images/themes.png" alt="Catalog themes" width="100%"></p>
 
 A theme is one `theme.json` with colours, font, corner radius, card style (`flat`, `glass` or `ascii`) and an optional animated background. It restyles built-in and catalog widgets alike. In the ASCII theme, bars become `[####....]`, rings become percentages, icons become characters and album art becomes ASCII art. Pick one in the Mac app under **Темы…** (Themes).
+
+**Make it yours.** Under the list of themes, **Тонкая настройка** (fine-tuning) adjusts whichever theme you picked: accent colour, card style (fill, glass, ASCII), font, corner radius, the animated background and its speed (or a blurred photo from the phone's Favorites), the gaps between cards, the page margins, the padding inside cards, card opacity (let the live background show through), a soft shadow under cards, text size, turning pages by themselves, a light vibration on taps, the time and date beside the Dynamic Island, and the page dots. Any page can also drop its cards so the widgets sit straight on the background. Themes can set the same through an optional `layout` block in `theme.json`.
+
+**Widget settings are real controls.** A widget's `manifest.json` declares each setting as `text`, `choice` (a drop-down), `toggle` (a switch) or `number` (a slider with `min`/`max`, or a stepper), with a short title and a hint. The Mac app draws them, and changes reach the phone at once.
 
 ## Getting started
 
@@ -88,6 +100,7 @@ async function refresh(ctx) {
 ```
 
 - 16 node types: stacks, grids, lists, boxes, text, SF Symbols, gauges, progress bars, line, area and bar charts, buttons, pixel sprites, layers and animated scenes. Every node follows the theme.
+- Settings are typed: `"type": "choice"` with `options`, `"toggle"`, `"number"` with `min`/`max`/`step`/`unit`, or plain text.
 - The sandbox gives you `fetch` (declared hosts only), Keychain secrets, settings, 64 KB of storage, read-only access to declared files, and number and date helpers in `format`.
 - JSON Schemas in [`schemas/`](schemas) give autocomplete for `view.json`, `manifest.json` and `theme.json` in VS Code.
 - In the Mac app, **Виджеты → Папка разработки…** (development folder) live-reloads a widget on the phone every time you save.

@@ -1,7 +1,7 @@
 {
   "id": "com.flywalk4.tictactoe",
   "name": "Крестики-нолики",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "author": "flywalk4",
   "description": "Крестики-нолики против Mac: ходишь пальцем или курсором, Mac отвечает. Три уровня сложности, счёт партий, ходите по очереди первыми.",
   "symbol": "number",
@@ -9,8 +9,23 @@
   "settings": [
     {
       "key": "level",
-      "title": "Сложность: easy, normal, hard",
-      "default": "normal"
+      "title": "Сложность",
+      "type": "choice",
+      "default": "normal",
+      "options": [
+        {
+          "value": "easy",
+          "title": "Лёгкая"
+        },
+        {
+          "value": "normal",
+          "title": "Обычная"
+        },
+        {
+          "value": "hard",
+          "title": "Непобедимая"
+        }
+      ]
     }
   ]
 }

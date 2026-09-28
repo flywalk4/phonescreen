@@ -1,0 +1,46 @@
+{
+  "ru": {
+    "manifest.name": "Привычки",
+    "manifest.description": "Трекер привычек: отмечай нажатием на телефоне, смотри серию дней подряд и последнюю неделю точками. Без сети.",
+    "settings.habits.title": "Привычки",
+    "settings.habits.hint": "Через запятую, до 8; эмодзи в начале — по желанию. Пусто — набор по умолчанию",
+    "title": "Привычки",
+    "header": "ПРИВЫЧКИ",
+    "week": "последние 7 дней →",
+    "defaults": "💧 Вода, 🏃 Спорт, 📖 Чтение, 🧘 Медитация",
+    "streak": {
+      "one": "серия {n} день",
+      "few": "серия {n} дня",
+      "many": "серия {n} дней",
+      "other": "серия {n} дня"
+    },
+    "noStreak": "серии пока нет",
+    "allDone": "Всё на сегодня сделано 🎉",
+    "left": {
+      "one": "ещё {n} привычка",
+      "few": "ещё {n} привычки",
+      "many": "ещё {n} привычек",
+      "other": "ещё {n} привычки"
+    }
+  },
+  "en": {
+    "manifest.name": "Habits",
+    "manifest.description": "A habit tracker: tap on the phone to check off, see your streak and the last week as dots. Works offline.",
+    "settings.habits.title": "Habits",
+    "settings.habits.hint": "Comma-separated, up to 8; an emoji in front is optional. Empty — the default set",
+    "title": "Habits",
+    "header": "HABITS",
+    "week": "last 7 days →",
+    "defaults": "💧 Water, 🏃 Workout, 📖 Reading, 🧘 Meditation",
+    "streak": {
+      "one": "{n}-day streak",
+      "other": "{n}-day streak"
+    },
+    "noStreak": "no streak yet",
+    "allDone": "All done for today 🎉",
+    "left": {
+      "one": "{n} habit to go",
+      "other": "{n} habits to go"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+ "description": "Понедельник 14:40 в Москве, города по умолчанию",
+ "now": "2026-09-28T11:40:00Z",
+ "timezone": "Europe/Moscow",
+ "expect": {
+  "local": "14:40",
+  "rows.0.time": "12:40",
+  "rows.0.status": "рабочий день",
+  "rows.3.time": "20:40",
+  "hasOverlap": true,
+  "bestWindow": "/^лучше всего \\d\\d:00–\\d\\d:00/"
+ }
+}

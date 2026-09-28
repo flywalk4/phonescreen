@@ -16,7 +16,6 @@ final class WidgetManager: ObservableObject {
     private var timers: [String: Timer] = [:]
     private var devWatch: Timer?
 
-    var names: [String: String] { Dictionary(uniqueKeysWithValues: installed.map { ($0.id, $0.manifest.name) }) }
 
     func start() {
         reloadAll()
@@ -77,7 +76,8 @@ final class WidgetManager: ObservableObject {
     private func start(_ widget: InstalledWidget) {
         stop(widget.id)
         let id = widget.id
-        let hooks = WidgetRuntime.Hooks(
+        let (language, table) = WidgetStrings.table(widget.strings, wanted: AppLanguage.current)
+        var hooks = WidgetRuntime.Hooks(
             secret: { key in WidgetSecrets.get(widget: id, key: key) },
             settings: { Self.settings(for: widget.manifest) },
             loadStorage: {
@@ -92,6 +92,8 @@ final class WidgetManager: ObservableObject {
             log: { [weak self] line in
                 DispatchQueue.main.async { MainActor.assumeIsolated { self?.appendLog(id, line) } }
             })
+        hooks.language = language
+        hooks.strings = table
         runtimes[id] = WidgetRuntime(manifest: widget.manifest, source: widget.source, hooks: hooks)
         refresh(id)
         timers[id] = Timer.scheduledTimer(withTimeInterval: widget.manifest.refreshInterval, repeats: true) { [weak self] _ in
@@ -107,14 +109,18 @@ final class WidgetManager: ObservableObject {
 
     private func apply(_ id: String, _ result: Result<Any, WidgetRuntime.Failure>) {
         guard let widget = installed.first(where: { $0.id == id }) else { return }
-        var state = CustomWidgetState(id: id, name: widget.manifest.name, symbol: widget.manifest.symbol ?? "puzzlepiece.extension",
+        let table = WidgetStrings.table(widget.strings, wanted: AppLanguage.current).table
+        var state = CustomWidgetState(id: id, name: widget.manifest.localized(table).name, symbol: widget.manifest.symbol ?? "puzzlepiece.extension",
                                       views: states[id]?.views ?? [:], error: nil, updated: Date())
         switch result {
         case .success(let data):
             var views: [WidgetSize: WidgetNode] = [:]
             do {
                 for size in [WidgetSize.full, .medium, .small] {
-                    if let template = widget.view[size.rawValue] { views[size] = try WidgetTemplate.resolve(template, data: data) }
+                    // `{{t.key}}` in view.json: the widget's strings next to the data.
+                    var scope = data
+                    if var dict = data as? [String: Any], !table.isEmpty { dict["t"] = table; scope = dict }
+                    if let template = widget.view[size.rawValue] { views[size] = try WidgetTemplate.resolve(template, data: scope) }
                 }
                 state.views = views
             } catch {
@@ -143,6 +149,13 @@ final class WidgetManager: ObservableObject {
             }
         }
     }
+
+    /// The manifest in the current language (name, description, setting titles…) — for Settings and the phone.
+    func localized(_ widget: InstalledWidget) -> WidgetManifest {
+        widget.manifest.localized(WidgetStrings.table(widget.strings, wanted: AppLanguage.current).table)
+    }
+
+    var names: [String: String] { Dictionary(uniqueKeysWithValues: installed.map { ($0.id, localized($0).name) }) }
 
     nonisolated static func settings(for manifest: WidgetManifest) -> [String: String] {
         let saved = UserDefaults.standard.dictionary(forKey: "widgetSettings.\(manifest.id)") as? [String: String] ?? [:]

@@ -38,7 +38,7 @@ public struct Hello: Codable, Equatable, Sendable {
 }
 
 public enum WidgetKind: String, Codable, CaseIterable, Sendable {
-    case music, monitor, notes, reminders, calendar, weather, launcher, photos
+    case music, monitor, notes, reminders, calendar, weather, launcher, photos, apps
 
     public var title: String {
         switch self {
@@ -50,6 +50,7 @@ public enum WidgetKind: String, Codable, CaseIterable, Sendable {
         case .weather: "Погода"
         case .launcher: "Команды"
         case .photos: "Фото"
+        case .apps: "Программы"
         }
     }
 
@@ -63,6 +64,7 @@ public enum WidgetKind: String, Codable, CaseIterable, Sendable {
         case .weather: "cloud.sun.fill"
         case .launcher: "square.grid.3x3.fill"
         case .photos: "photo.on.rectangle.angled"
+        case .apps: "macwindow.on.rectangle"
         }
     }
 }
@@ -77,6 +79,10 @@ public enum PageLayout: String, Codable, CaseIterable, Sendable {
     case trio
     /// Four small widgets, 2×2.
     case grid
+    /// Three half-page widgets: rows upright, columns sideways.
+    case stack
+    /// Six small widgets, 2×3 (3×2 sideways).
+    case six
 
     public var slots: Int {
         switch self {
@@ -84,6 +90,8 @@ public enum PageLayout: String, Codable, CaseIterable, Sendable {
         case .split: 2
         case .trio: 3
         case .grid: 4
+        case .stack: 3
+        case .six: 6
         }
     }
 
@@ -93,6 +101,8 @@ public enum PageLayout: String, Codable, CaseIterable, Sendable {
         case .split: "Два"
         case .trio: "Один + два"
         case .grid: "Сетка 2×2"
+        case .stack: "Три в столбик"
+        case .six: "Сетка 2×3"
         }
     }
 }
@@ -108,6 +118,8 @@ public enum WidgetSize: String, Codable, Sendable {
         case .split: [.medium, .medium]
         case .trio: [.medium, .small, .small]
         case .grid: [.small, .small, .small, .small]
+        case .stack: [.medium, .medium, .medium]
+        case .six: Array(repeating: .small, count: 6)
         }
     }
 }
@@ -167,6 +179,8 @@ public struct PageInfo: Codable, Equatable, Identifiable, Sendable {
     public var layout: PageLayout
     /// One per slot of `layout` (extra ones are ignored, missing ones are empty slots).
     public var widgets: [WidgetRef]
+    /// Widgets straight on the background, without card surfaces (live wallpapers, big clocks, photo backgrounds).
+    public var bare: Bool?
 
     public init(id: String = UUID().uuidString, layout: PageLayout, widgets: [WidgetRef]) {
         self.id = id
@@ -184,7 +198,9 @@ public struct PageInfo: Codable, Equatable, Identifiable, Sendable {
 
     /// A copy with another id and widgets (same layout).
     public func with(id: String, widgets: [WidgetRef]) -> PageInfo {
-        PageInfo(id: id, layout: layout, widgets: widgets)
+        var page = PageInfo(id: id, layout: layout, widgets: widgets)
+        page.bare = bare
+        return page
     }
 
     /// The widgets actually shown (as many as the layout has slots).
@@ -212,7 +228,7 @@ public struct PageInfo: Codable, Equatable, Identifiable, Sendable {
     public static let defaults: [PageInfo] = [
         PageInfo(id: "dashboard", layout: .grid, builtins: [.music, .weather, .calendar, .monitor]),
         PageInfo(.music), PageInfo(.calendar), PageInfo(.reminders), PageInfo(.notes),
-        PageInfo(.launcher), PageInfo(.monitor), PageInfo(.weather),
+        PageInfo(.apps), PageInfo(.launcher), PageInfo(.monitor), PageInfo(.weather),
     ]
 }
 
@@ -400,6 +416,31 @@ public struct LauncherItem: Codable, Equatable, Identifiable, Sendable {
         self.symbol = symbol
         self.icon = icon
     }
+}
+
+/// An app running on the Mac (the ones with a Dock icon), for switching to it from the phone.
+public struct RunningApp: Codable, Equatable, Identifiable, Sendable {
+    /// Bundle id, or `pid:<n>` for an app without one.
+    public var id: String
+    public var name: String
+    /// Frontmost on the Mac.
+    public var active: Bool
+    public var hidden: Bool
+    /// PNG icon. Sent only the first time an app appears on a connection; the phone keeps it.
+    public var icon: Data?
+
+    public init(id: String, name: String, active: Bool = false, hidden: Bool = false, icon: Data? = nil) {
+        self.id = id
+        self.name = name
+        self.active = active
+        self.hidden = hidden
+        self.icon = icon
+    }
+}
+
+/// Phone → Mac: what to do with a running app.
+public enum AppAction: String, Codable, Sendable {
+    case activate, hide, quit
 }
 
 public enum Protocol {

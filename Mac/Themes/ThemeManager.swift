@@ -18,6 +18,15 @@ final class ThemeManager: ObservableObject {
         }
     }
 
+    /// The user's adjustments on top of whichever theme is selected (Settings → Themes → Fine-tuning).
+    @Published var tweaks: ThemeTweaks = ThemeTweaks.saved() {
+        didSet {
+            guard tweaks != oldValue else { return }
+            tweaks.save()
+            sendCurrent()
+        }
+    }
+
     /// Sends to the phone (the pool).
     var send: ((Message) -> Void)?
 
@@ -25,7 +34,9 @@ final class ThemeManager: ObservableObject {
     private var devSources: [String: (url: URL, modified: Date?)] = [:]
 
     var all: [Theme] { Theme.builtin + installed }
-    var current: Theme { all.first { $0.id == selectedID } ?? .dark }
+    /// The selected theme as chosen, before `tweaks`.
+    var selected: Theme { all.first { $0.id == selectedID } ?? .dark }
+    var current: Theme { tweaks.apply(to: selected) }
 
     func start() {
         reload()
@@ -92,5 +103,50 @@ final class ThemeManager: ObservableObject {
         for (_, source) in devSources where ThemeStore.modified(source.url) != source.modified {
             return reload()
         }
+    }
+}
+
+/// What the user changed on top of a theme; nil fields keep the theme's own value.
+struct ThemeTweaks: Codable, Equatable {
+    var accent: String?
+    var style: Theme.Style?
+    var font: Theme.FontDesign?
+    var radius: Double?
+    /// A background animation, or "none" for a still background.
+    var animation: String?
+    var speed: Double?
+    var layout = Theme.Layout()
+
+    var isEmpty: Bool { self == ThemeTweaks() }
+
+    func apply(to theme: Theme) -> Theme {
+        var t = theme
+        if let accent { t.colors.accent = accent }
+        if let style { t.style = style }
+        if let font { t.font = font }
+        if let radius { t.radius = radius }
+        if let animation { t.background.animation = animation == "none" ? nil : animation }
+        if let speed { t.background.speed = speed }
+        var l = t.layout ?? Theme.Layout()
+        if let v = layout.gap { l.gap = v }
+        if let v = layout.margin { l.margin = v }
+        if let v = layout.padding { l.padding = v }
+        if let v = layout.dots { l.dots = v }
+        if let v = layout.cardOpacity { l.cardOpacity = v }
+        if let v = layout.textSize { l.textSize = v }
+        if let v = layout.status { l.status = v }
+        if let v = layout.shadow { l.shadow = v }
+        if let v = layout.autoPage { l.autoPage = v }
+        if let v = layout.haptics { l.haptics = v }
+        t.layout = l == Theme.Layout() ? nil : l
+        return t
+    }
+
+    static func saved() -> ThemeTweaks {
+        UserDefaults.standard.data(forKey: "themeTweaks").flatMap { try? JSONDecoder().decode(ThemeTweaks.self, from: $0) } ?? ThemeTweaks()
+    }
+
+    func save() {
+        UserDefaults.standard.set(try? JSONEncoder().encode(self), forKey: "themeTweaks")
     }
 }

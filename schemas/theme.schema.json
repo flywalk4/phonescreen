@@ -92,8 +92,10 @@
       "lava",
       "snow",
       "rain",
-      "gradient"
-     ]
+      "gradient",
+      "photo"
+     ],
+     "description": "Animated background, or photo: a Favorites photo from the phone, blurred"
     },
     "tints": {
      "type": "array",
@@ -145,6 +147,68 @@
       "type": "string",
       "pattern": "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
      }
+    }
+   }
+  },
+  "layout": {
+   "type": "object",
+   "additionalProperties": false,
+   "description": "Page layout around the cards (all optional)",
+   "properties": {
+    "gap": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 24,
+     "description": "Between cards, pt"
+    },
+    "margin": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 24,
+     "description": "Around the page, pt"
+    },
+    "padding": {
+     "type": "number",
+     "minimum": 6,
+     "maximum": 24,
+     "description": "Inside cards, pt"
+    },
+    "dots": {
+     "type": "boolean",
+     "description": "Page dots under the cards"
+    },
+    "cardOpacity": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 1,
+     "description": "Card fill opacity (flat)"
+    },
+    "textSize": {
+     "enum": [
+      "small",
+      "medium",
+      "large",
+      "xlarge"
+     ],
+     "description": "Text size (Dynamic Type)"
+    },
+    "status": {
+     "type": "boolean",
+     "description": "Time and date beside the Dynamic Island (default true)"
+    },
+    "shadow": {
+     "type": "boolean",
+     "description": "Soft shadow under cards"
+    },
+    "autoPage": {
+     "type": "number",
+     "minimum": 0,
+     "maximum": 600,
+     "description": "Turn pages by themselves every N seconds (0 = off)"
+    },
+    "haptics": {
+     "type": "boolean",
+     "description": "Light vibration on taps (default true)"
     }
    }
   }

@@ -1,7 +1,7 @@
 {
   "id": "com.flywalk4.synthwave",
   "name": "Synthwave",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "flywalk4",
   "description": "Стекло на неоновом закате: фиолетовый, розовый, оранжевый.",
   "style": "glass",
@@ -35,7 +35,12 @@
       "green": "#72F1B8",
       "blue": "#36F9F6",
       "cyan": "#36F9F6",
-      "yellow": "#FEDE5D"
+      "yellow": "#FEDE5D",
+      "red": "#FF3864",
+      "orange": "#FF8B39",
+      "purple": "#B967FF",
+      "pink": "#FF71CE",
+      "teal": "#01CDFE"
     }
   }
 }

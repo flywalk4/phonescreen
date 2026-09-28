@@ -33,6 +33,16 @@ final class PointerController: ObservableObject {
     @Published private(set) var pressed: UUID?
     let swipe = PagerSwipe()
     let pinch = PinchState()
+    /// Called on a click or the start of a scroll (restarts the pages' auto-advance).
+    var onActivity: () -> Void = {}
+    /// True while an action runs because of a Mac click (no haptic tick: nobody's finger is on the phone).
+    private(set) static var clicking = false
+
+    private func fromPointer(_ action: () -> Void) {
+        Self.clicking = true
+        defer { Self.clicking = false }
+        action()
+    }
     private var pinchTotal: Double = 0
 
     private(set) var isVisible = false
@@ -94,6 +104,7 @@ final class PointerController: ObservableObject {
     func button(_ button: PointerButton, down: Bool) {
         guard isVisible, button == .left else { return }
         if down {
+            onActivity()
             if let id = draggers.filter({ $0.value.frame.contains(model.position) }).first?.key {
                 activeDrag = id
                 drag(id)
@@ -108,7 +119,7 @@ final class PointerController: ObservableObject {
                 return
             }
             // Like a real button: fires when released over the same control it was pressed on.
-            if let id = pressed, hit(model.position) == id { targets[id]?.action() }
+            if let id = pressed, hit(model.position) == id { fromPointer { targets[id]?.action() } }
             if pressed == nil, hit(model.position) == nil { onEmptyClick?() }
             pressed = nil
         }
@@ -118,6 +129,7 @@ final class PointerController: ObservableObject {
     func scroll(dx: Double, dy: Double, phase: PhoneScreenKit.ScrollPhase) {
         guard isVisible else { return }
         if phase == .began {
+            onActivity()
             gestureAxis = nil
             gestureScroller = nil
             swipeVelocity = 0
@@ -184,7 +196,7 @@ final class PointerController: ObservableObject {
     @discardableResult
     func activateHovered() -> Bool {
         guard isVisible, let id = hit(model.position), let target = targets[id] else { return false }
-        target.action()
+        fromPointer { target.action() }
         return true
     }
 

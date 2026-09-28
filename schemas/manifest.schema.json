@@ -89,15 +89,73 @@
      "key",
      "title"
     ],
+    "additionalProperties": false,
     "properties": {
      "key": {
-      "type": "string"
+      "type": "string",
+      "description": "ctx.settings.<key>"
      },
      "title": {
-      "type": "string"
+      "type": "string",
+      "description": "Short label in Settings"
      },
      "default": {
-      "type": "string"
+      "type": "string",
+      "description": "Values are always strings; toggle: \"true\" / \"false\""
+     },
+     "type": {
+      "enum": [
+       "text",
+       "choice",
+       "toggle",
+       "number"
+      ],
+      "description": "Control in Settings (default text): choice → drop-down, toggle → switch, number → slider (min+max) or stepper"
+     },
+     "hint": {
+      "type": "string",
+      "description": "Grey line under the control: format, examples"
+     },
+     "options": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "object",
+         "required": [
+          "value"
+         ],
+         "additionalProperties": false,
+         "properties": {
+          "value": {
+           "type": "string"
+          },
+          "title": {
+           "type": "string"
+          }
+         }
+        }
+       ]
+      },
+      "description": "For choice: \"value\" or {\"value\", \"title\"}"
+     },
+     "min": {
+      "type": "number"
+     },
+     "max": {
+      "type": "number"
+     },
+     "step": {
+      "type": "number",
+      "exclusiveMinimum": 0
+     },
+     "unit": {
+      "type": "string",
+      "description": "Shown after a number: мин, %"
      }
     }
    }

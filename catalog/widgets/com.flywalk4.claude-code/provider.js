@@ -47,7 +47,16 @@ async function refresh(ctx) {
     five, week,
     note,
     noteShort,
+    ...activity(now),
   };
+}
+
+// Токены по часам за последние сутки — столбики на странице.
+function activity(now) {
+  const top = Math.floor(now / HOUR) * HOUR;
+  const values = Array.from({ length: 24 }, (_, i) => scan.hours[top - (23 - i) * HOUR] || 0);
+  const total = values.reduce((a, b) => a + b, 0);
+  return { activity: values, hasActivity: total > 0, activityTotal: format.compact(total) };
 }
 
 function readJSON(path) {

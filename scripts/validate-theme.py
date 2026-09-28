@@ -84,6 +84,16 @@ def validate(path: Path) -> list:
             errors.append(f"{key}: одно из {', '.join(sorted(allowed))}")
     if not isinstance(t["radius"], (int, float)) or not 0 <= t["radius"] <= 40:
         errors.append("radius: число от 0 до 40")
+    layout = t.get("layout") or {}
+    for key, lo, hi in (("gap", 0, 24), ("margin", 0, 24), ("padding", 6, 24), ("cardOpacity", 0, 1), ("autoPage", 0, 600)):
+        v = layout.get(key)
+        if v is not None and (not isinstance(v, (int, float)) or not lo <= v <= hi):
+            errors.append(f"layout.{key}: число от {lo} до {hi}")
+    if layout.get("textSize") not in (None, "small", "medium", "large", "xlarge"):
+        errors.append("layout.textSize: small, medium, large или xlarge")
+    for key in ("dots", "status", "shadow", "haptics"):
+        if key in layout and not isinstance(layout[key], bool):
+            errors.append(f"layout.{key}: true или false")
     colors = []
     bg = t["background"]
     if not isinstance(bg, dict) or not isinstance(bg.get("colors"), list) or not 1 <= len(bg["colors"]) <= 4:
@@ -91,8 +101,8 @@ def validate(path: Path) -> list:
     else:
         colors += [("background.colors", c) for c in bg["colors"]]
         colors += [("background.tints", c) for c in bg.get("tints") or []]
-        if "animation" in bg and bg["animation"] not in ANIMATIONS:
-            errors.append(f"background.animation: одна из {', '.join(ANIMATIONS)}")
+        if "animation" in bg and bg["animation"] not in ANIMATIONS + ["photo"]:
+            errors.append(f"background.animation: одна из {', '.join(ANIMATIONS)} или photo (фото из «Избранного» iPhone)")
         if "speed" in bg and not (isinstance(bg["speed"], (int, float)) and 0.1 <= bg["speed"] <= 5):
             errors.append("background.speed: число от 0.1 до 5")
         if len(bg.get("tints") or []) > 6:
@@ -116,9 +126,30 @@ def validate(path: Path) -> list:
     return errors
 
 
+# Colour names widgets use; one the palette lacks falls back along RELATIVES (like the app), else the system colour.
+WIDGET_COLORS = ["red", "orange", "yellow", "green", "mint", "teal", "cyan", "blue", "indigo", "purple", "pink"]
+RELATIVES = {"mint": "green", "teal": "cyan", "cyan": "blue", "indigo": "blue", "pink": "purple", "brown": "orange", "grey": "gray"}
+
+
+def palette_warnings(t: dict) -> list:
+    """Widget colours the palette doesn't cover: they stay the bright system colour and may clash with the theme."""
+    palette = (t.get("colors") or {}).get("palette") or {}
+    if not palette:
+        return []  # no palette at all: the theme deliberately keeps system colours
+    missing = []
+    for name in WIDGET_COLORS:
+        key = name
+        while key and key not in palette:
+            key = RELATIVES.get(key)
+        if not key:
+            missing.append(name)
+    return [f"палитра не задаёт {', '.join(missing)} — эти цвета останутся системными (яркими)"] if missing else []
+
+
 def warnings(path: Path) -> list:
     file = path / "theme.json" if path.is_dir() else path
-    return contrast_warnings(json.loads(file.read_text()))
+    t = json.loads(file.read_text())
+    return contrast_warnings(t) + palette_warnings(t)
 
 
 if __name__ == "__main__":

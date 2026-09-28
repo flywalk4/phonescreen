@@ -38,6 +38,29 @@ async function refresh(ctx) {
     rest: rows.slice(1, 4),
     working: rows.filter((r) => r.status === STATUS.work.text).length,
     total: rows.length,
+    ...overlap(zones, now, here, workFrom, workTo),
+  };
+}
+
+// Сколько городов в рабочих часах в каждый час твоего сегодняшнего дня и лучшее окно для созвона.
+function overlap(zones, now, here, workFrom, workTo) {
+  const offsets = zones.map(({ zone }) => Math.round((parts(now, zone).stamp - here.stamp) / 3600000));
+  const counts = Array.from({ length: 24 }, (_, h) =>
+    offsets.filter((o) => { const t = (((h + o) % 24) + 24) % 24; return t >= workFrom && t < workTo; }).length);
+  const best = Math.max(...counts);
+  let start = -1, end = -1;
+  for (let h = 0; h < 24; h++) {
+    if (counts[h] !== best) continue;
+    if (start < 0) start = h;
+    if (end < 0 || end === h) end = h + 1;
+  }
+  return {
+    overlap: counts,
+    hasOverlap: best > 0,
+    bestWindow: best > 0
+      ? `лучше всего ${pad(start)}:00–${pad(end % 24)}:00 — работают ${best} из ${zones.length}`
+      : "общих рабочих часов нет",
+    nowHour: here.hour,
   };
 }
 

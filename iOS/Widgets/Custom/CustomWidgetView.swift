@@ -13,6 +13,8 @@ struct CustomWidgetView: View {
             if let state = model.customWidgets[id] {
                 if let node = state.view(for: size) {
                     content(node)
+                        // New data animates in: numbers roll, rings and bars glide, rows slide.
+                        .animation(.smooth(duration: 0.5), value: node)
                         .overlay(alignment: .topTrailing) {
                             if let error = state.error {
                                 Image(systemName: "exclamationmark.triangle.fill")
@@ -36,7 +38,32 @@ struct CustomWidgetView: View {
 
     @ViewBuilder
     private func content(_ node: WidgetNode) -> some View {
-        if size == .full {
+        if size == .full, case .vstack(let spacing, let align, let children) = node {
+            // A whole page: the column fills the height (spacers spread it out), and lying sideways it
+            // flows into two columns. Too tall even so → it scrolls.
+            GeometryReader { geo in
+                let aspect = geo.size.width / max(geo.size.height, 1)
+                let columns = aspect > 2.1 ? 3 : aspect > 1.25 ? 2 : 1
+                ViewThatFits(in: .vertical) {
+                    fullFlow(children: children, spacing: spacing, align: align, columns: columns, size: geo.size)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    // Too much even in columns → the same layout a little smaller, before falling back to scrolling.
+                    ForEach([0.85, 0.72], id: \.self) { k in
+                        let big = CGSize(width: geo.size.width / k, height: geo.size.height / k)
+                        fullFlow(children: children, spacing: spacing, align: align, columns: columns, size: big)
+                            .frame(width: big.width)
+                            .scaleEffect(k, anchor: .topLeading)
+                            .modifier(ScaledHeight(k: k, width: geo.size.width))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    }
+                    ScrollView {
+                        NodeView(node: node, widgetID: id).frame(maxWidth: .infinity, alignment: .topLeading)
+                    }
+                    .pointerScrollable()
+                }
+            }
+            .widgetPadding()
+        } else if size == .full {
             // Fits on the page → it gets the whole height (so `spacer`s spread the layout out); too tall → it scrolls.
             ViewThatFits(in: .vertical) {
                 NodeView(node: node, widgetID: id)
@@ -47,10 +74,65 @@ struct CustomWidgetView: View {
                 .pointerScrollable()
             }
             .widgetPadding()
+        } else if case .vstack(let spacing, let align, let children) = node {
+            // A card: the same column, so spare height in tall tiles goes to charts before empty space.
+            // Too much for a short tile even with charts squeezed → the whole card scales down a little, not cut off.
+            GeometryReader { geo in
+                // A game board in a wide, short tile: a board is as tall as it is wide, so the column narrows to
+                // the tile's height (centred) — otherwise the board runs off the bottom.
+                let board = geo.size.width > geo.size.height && children.contains(where: \.hasBoard)
+                let width = board ? min(geo.size.width, max(geo.size.height - 64, 90)) : geo.size.width
+                ViewThatFits(in: .vertical) {
+                    cardColumn(spacing: spacing, align: align, children: children, size: CGSize(width: width, height: geo.size.height))
+                        .frame(width: width)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: board ? .top : .topLeading)
+                    let box = CGSize(width: width, height: geo.size.height)
+                    scaled(0.8, spacing: spacing, align: align, children: children, size: box)
+                        .frame(width: width)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: board ? .top : .topLeading)
+                    scaled(0.66, spacing: spacing, align: align, children: children, size: box)
+                        .frame(width: width, height: geo.size.height, alignment: .topLeading)
+                        .frame(maxWidth: .infinity, alignment: board ? .center : .leading)
+                }
+            }
+            .clipped()
         } else {
+            // A row (picture beside text) sits in the middle of the card's height rather than at its top.
+            let isRow: Bool = { if case .hstack = node { return true } else { return false } }()
             NodeView(node: node, widgetID: id)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isRow ? .leading : .topLeading)
                 .clipped()
+        }
+    }
+
+    private func fullFlow(children: [WidgetNode], spacing: Double?, align: String?, columns: Int, size: CGSize) -> some View {
+        FlowColumns(columns: columns, spacing: CGFloat(spacing ?? 8), align: align, width: size.width, height: size.height) {
+            ForEach(children.indices, id: \.self) { i in
+                NodeView(node: children[i], widgetID: id)
+                    .layoutValue(key: FlowSpan.self, value: columns > 1 && i == 0 && children[i].isHeader)
+                    .layoutValue(key: FlowGrows.self, value: children[i].grows)
+                    .layoutValue(key: FlowSpacer.self, value: children[i] == .spacer)
+            }
+        }
+    }
+
+    /// The card column laid out `1/k` larger and drawn at `k`: reports its real (scaled) height, so `ViewThatFits`
+    /// can tell whether it fits.
+    private func scaled(_ k: CGFloat, spacing: Double?, align: String?, children: [WidgetNode], size: CGSize) -> some View {
+        let big = CGSize(width: size.width / k, height: size.height / k)
+        return cardColumn(spacing: spacing, align: align, children: children, size: big)
+            .frame(width: big.width)
+            .scaleEffect(k, anchor: .topLeading)
+            .modifier(ScaledHeight(k: k, width: size.width))
+    }
+
+    private func cardColumn(spacing: Double?, align: String?, children: [WidgetNode], size: CGSize) -> some View {
+        FlowColumns(columns: 1, spacing: CGFloat(spacing ?? 8), align: align, width: size.width, height: size.height) {
+            ForEach(children.indices, id: \.self) { i in
+                NodeView(node: children[i], widgetID: id)
+                    .layoutValue(key: FlowGrows.self, value: children[i].grows)
+                    .layoutValue(key: FlowSpacer.self, value: children[i] == .spacer)
+            }
         }
     }
 
@@ -70,6 +152,7 @@ struct NodeView: View {
     let widgetID: String
     @EnvironmentObject private var model: PhoneModel
     @Environment(\.theme) private var theme
+    @Environment(\.innerRadius) private var innerRadius
     private var ascii: Bool { theme.style == .ascii }
 
     var body: some View {
@@ -84,7 +167,9 @@ struct NodeView: View {
             }
         case .text(let text, let style, let color, let lines, let align, let custom):
             Text(text)
+                .contentTransition(.numericText())
                 .font(font(style, custom))
+                .minimumScaleFactor(lines == 1 ? 0.5 : 1) // a one-line number shrinks rather than turning into "25:…"
                 .foregroundStyle(WidgetColor.style(color, theme: theme))
                 .lineLimit(lines)
                 .multilineTextAlignment(align == "center" ? .center : align == "trailing" ? .trailing : .leading)
@@ -92,21 +177,24 @@ struct NodeView: View {
             Glyph(name)
                 .font(size.map { .system(size: CGFloat($0)) } ?? .body)
                 .foregroundStyle(WidgetColor.style(color, theme: theme))
-        case .gauge(let value, let label, let color) where ascii:
+        case .gauge(let value, let label, let color, let text, _) where ascii:
             VStack(alignment: .leading, spacing: 2) {
-                Text([label, "\(Int((value * 100).rounded()))%"].compactMap { $0 }.joined(separator: " ")).font(Ascii.font)
+                Text([label, text ?? "\(Int((value * 100).rounded()))%"].compactMap { $0 }.joined(separator: " ")).font(Ascii.font)
                 AsciiBar(value: value, color: tint(color))
             }
-        case .gauge(let value, let label, let color):
+        case .gauge(let value, let label, let color, let text, let fill):
             VStack(spacing: 4) {
-                ZStack {
-                    Circle().stroke(theme.text.opacity(0.12), lineWidth: 6)
-                    Circle().trim(from: 0, to: value)
-                        .stroke(tint(color), style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                    Text("\(Int((value * 100).rounded()))%").font(.caption.monospacedDigit().weight(.semibold))
+                if fill == true {
+                    // As big as the room allows, with the line and the centre text scaled to it.
+                    GeometryReader { geo in
+                        let d = max(34, min(geo.size.width, geo.size.height))
+                        ring(value: value, color: color, text: text, diameter: d)
+                            .frame(width: geo.size.width, height: geo.size.height)
+                    }
+                    .frame(minWidth: 40, maxWidth: .infinity, minHeight: 40, maxHeight: .infinity)
+                } else {
+                    ring(value: value, color: color, text: text, diameter: 56)
                 }
-                .frame(width: 56, height: 56)
                 if let label { Text(label).font(.caption2).foregroundStyle(.secondary) }
             }
         case .progress(let value, let color) where ascii:
@@ -117,23 +205,39 @@ struct NodeView: View {
             AsciiChart(values: values, color: tint(color))
                 .frame(height: height.map { CGFloat($0) })
         case .chart(let values, let color, let style, let height):
+            // `height` is what it needs; with room to spare (tall tiles, whole pages) it grows up to 3×.
             WidgetChart(values: values, color: tint(color), style: style ?? "line")
-                .frame(minHeight: height.map { CGFloat($0) } ?? 60, maxHeight: height.map { CGFloat($0) } ?? 120)
-        case .button(let title, _, let action) where ascii:
-            Button { model.customAction(widgetID, action) } label: { Text("[ \(title) ]").font(Ascii.font) }
+                .frame(minHeight: height.map { CGFloat($0) } ?? 60, maxHeight: height.map { CGFloat($0) * 3 } ?? 240)
+        case .button(let title, let symbol, let action) where ascii:
+            Button { model.customAction(widgetID, action) } label: {
+                Text("[ \(title.isEmpty ? AsciiGlyphs.text(for: symbol ?? "") : title) ]").font(Ascii.font)
+            }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.accent)
                 .pointerTarget { model.customAction(widgetID, action) }
         case .button(let title, let symbol, let action):
             Button { model.customAction(widgetID, action) } label: {
-                if let symbol { Label(title, systemImage: symbol) } else { Text(title) }
+                // One line, shrinking a little rather than breaking a word in half.
+                Group {
+                    if let symbol, title.isEmpty { Image(systemName: symbol).frame(minWidth: 14) } // icon-only button
+                    // No room for the title (narrow cards) → just the icon, rather than "▶ С…".
+                    else if let symbol {
+                        ViewThatFits(in: .horizontal) {
+                            Label(title, systemImage: symbol).fixedSize()
+                            Image(systemName: symbol).frame(minWidth: 14)
+                        }
+                    }
+                    else { Text(title) }
+                }
+                    .lineLimit(1).minimumScaleFactor(0.7)
             }
             .buttonStyle(.bordered)
+            .controlSize(title.isEmpty ? .small : .regular) // icon buttons sit in tight rows (game arrows)
             .pointerTarget { model.customAction(widgetID, action) }
         case .sprite(let frames, let palette, let fps):
             SpriteView(frames: frames, palette: palette, fps: fps ?? 4)
         case .spacer:
-            Spacer(minLength: 0)
+            Spacer(minLength: 0).layoutValue(key: FlowSpacer.self, value: true)
         case .box(let spacing, let align, let padding, let background, let opacity, let radius, let fit, let action, let aspect, let children):
             let panel = VStack(alignment: horizontal(align), spacing: spacing.map { CGFloat($0) } ?? 6) {
                 ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
@@ -166,12 +270,27 @@ struct NodeView: View {
             let moving = (tints ?? theme.background.tints ?? [theme.colors.accent]).map { Color(hex: $0, fallback: theme.accent) }
             SceneView(kind: SceneView.Kind(rawValue: kind) ?? .aurora, base: base, tints: moving, speed: speed ?? 1)
                 .frame(minWidth: 40, maxWidth: .infinity, minHeight: 40, maxHeight: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: max(0, min(CGFloat(theme.radius) - 6, 18)), style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: innerRadius ?? max(0, min(CGFloat(theme.radius) - 6, 18)), style: .continuous))
         case .divider where ascii:
             AsciiRule(color: theme.secondaryText)
         case .divider:
             Divider()
         }
+    }
+
+    private func ring(value: Double, color: String?, text: String?, diameter d: CGFloat) -> some View {
+        let line = max(6, d * 0.08)
+        return ZStack {
+            Circle().stroke(theme.text.opacity(0.12), lineWidth: line)
+            Circle().trim(from: 0, to: value)
+                .stroke(tint(color), style: StrokeStyle(lineWidth: line, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Text(text ?? "\(Int((value * 100).rounded()))%")
+                .font(.system(size: max(12, d * (text == nil ? 0.22 : 0.24)), weight: .semibold, design: .rounded).monospacedDigit())
+                .minimumScaleFactor(0.5).lineLimit(1)
+                .padding(.horizontal, line * 1.5)
+        }
+        .frame(width: d - line, height: d - line)
     }
 
     private func tint(_ name: String?) -> Color { WidgetColor.color(name, theme: theme) ?? theme.accent }
@@ -254,6 +373,233 @@ struct NodeView: View {
         case "caption2": .caption2
         default: .body
         }
+    }
+}
+
+extension WidgetNode {
+    /// A title row (an `hstack` without anything tall in it): spans both columns when the page flows sideways.
+    var isHeader: Bool {
+        guard case .hstack(_, _, let children) = self else { return false }
+        return !children.contains { node in
+            switch node {
+            case .chart, .box, .grid, .gauge, .sprite, .scene, .vstack, .layers: true
+            default: false
+            }
+        }
+    }
+}
+
+/// Marks what may take spare height in `FlowColumns`: charts, filling gauges, scenes (or panels holding them).
+/// Everything else keeps its natural height, so a game board stays centred between its spacers.
+struct FlowGrows: LayoutValueKey {
+    static let defaultValue = false
+}
+
+extension WidgetNode {
+    /// A game board: a grid of square cells (it grows with the width, never shrinks with the height).
+    var hasBoard: Bool {
+        switch self {
+        case .grid(_, _, let c): c.contains { if case .box(_, _, _, _, _, _, _, _, let aspect, _) = $0 { aspect != nil } else { false } }
+        case .vstack(_, _, let c), .hstack(_, _, let c), .layers(_, let c): c.contains(where: \.hasBoard)
+        case .box(_, _, _, _, _, _, _, _, _, let c): c.contains(where: \.hasBoard)
+        default: false
+        }
+    }
+
+    var grows: Bool {
+        switch self {
+        case .chart, .scene: true
+        case .gauge(_, _, _, _, let fill): fill == true
+        case .vstack(_, _, let c), .hstack(_, _, let c), .layers(_, let c), .grid(_, _, let c): c.contains(where: \.grows)
+        case .box(_, _, _, _, _, _, _, _, let aspect, let c): aspect == nil && c.contains(where: \.grows)
+        default: false
+        }
+    }
+}
+
+/// Marks a `spacer`: `FlowColumns` gives it only the room nothing else wants.
+struct FlowSpacer: LayoutValueKey {
+    static let defaultValue = false
+}
+
+/// Marks a child of `FlowColumns` that runs across all columns (placed first).
+struct FlowSpan: LayoutValueKey {
+    static let defaultValue = false
+}
+
+/// A column of children — like a `VStack` that fills its height — which, with `columns: 2`, splits into two balanced
+/// columns. Within a column every child gets its ideal height; spare height goes to what can grow (spacers, charts,
+/// boards), and when there isn't enough, whatever can shrink (charts, square boards) gives way first.
+struct FlowColumns: Layout {
+    var columns: Int
+    var spacing: CGFloat
+    var align: String?
+    /// The size it will get: `ViewThatFits` asks for the ideal size without one.
+    var width: CGFloat
+    var height: CGFloat
+    var columnGap: CGFloat = 20
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? self.width
+        let plan = self.plan(width: width, height: proposal.height ?? height, subviews: subviews)
+        return CGSize(width: width, height: max(proposal.height ?? 0, plan.needed))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let plan = self.plan(width: bounds.width, height: bounds.height, subviews: subviews)
+        for item in plan.items {
+            let x: CGFloat
+            switch align {
+            case "center": x = bounds.minX + item.frame.midX
+            case "trailing": x = bounds.minX + item.frame.maxX
+            default: x = bounds.minX + item.frame.minX
+            }
+            let anchor: UnitPoint = align == "center" ? .top : align == "trailing" ? .topTrailing : .topLeading
+            subviews[item.index].place(at: CGPoint(x: x, y: bounds.minY + item.frame.minY), anchor: anchor,
+                                       proposal: ProposedViewSize(width: item.frame.width, height: item.frame.height))
+        }
+    }
+
+    private struct Planned { let index: Int; let frame: CGRect }
+
+    /// `columns` is the most it may use: it takes the fewest that fit, so nothing gets squeezed narrower than needed.
+    private func plan(width: CGFloat, height: CGFloat?, subviews: Subviews) -> (items: [Planned], needed: CGFloat) {
+        guard let height, columns > 1 else { return plan(width: width, height: height, columns: columns, subviews: subviews) }
+        // "Fits" means at natural heights — squeezing charts flat to save a column doesn't count.
+        let count = (1...columns).first { plan(width: width, height: nil, columns: $0, subviews: subviews).needed <= height + 0.5 } ?? columns
+        return plan(width: width, height: height, columns: count, subviews: subviews)
+    }
+
+    private func plan(width: CGFloat, height: CGFloat?, columns: Int, subviews: Subviews) -> (items: [Planned], needed: CGFloat) {
+        var items: [Planned] = []
+        var top: CGFloat = 0
+        let spanned = subviews.indices.filter { subviews[$0][FlowSpan.self] }
+        for i in spanned {
+            let h = subviews[i].sizeThatFits(ProposedViewSize(width: width, height: nil)).height
+            items.append(Planned(index: i, frame: CGRect(x: 0, y: top, width: width, height: h)))
+            top += h + spacing
+        }
+        let rest = subviews.indices.filter { !subviews[$0][FlowSpan.self] }
+        let count = max(1, min(columns, rest.count))
+        let columnWidth = (width - columnGap * CGFloat(count - 1)) / CGFloat(count)
+        let ideal = rest.map { subviews[$0].sizeThatFits(ProposedViewSize(width: columnWidth, height: nil)).height }
+
+        let cuts = Self.partition(ideal, into: count, spacing: spacing)
+
+        var needed = top
+        var start = 0
+        for (column, end) in cuts.enumerated() {
+            let run = Array(start..<end)
+            start = end
+            let available = height.map { $0 - top - spacing * CGFloat(max(0, run.count - 1)) }
+            let heights = allocate(run.map { rest[$0] }, ideal: run.map { ideal[$0] }, width: columnWidth,
+                                   available: available, subviews: subviews)
+            var y = top
+            for (k, index) in run.enumerated() {
+                items.append(Planned(index: rest[index],
+                                     frame: CGRect(x: CGFloat(column) * (columnWidth + columnGap), y: y,
+                                                   width: columnWidth, height: heights[k])))
+                y += heights[k] + spacing
+            }
+            needed = max(needed, y - spacing)
+        }
+        return (items, needed)
+    }
+
+    /// Where to cut `heights` into `parts` runs (children keep their order) so the tallest run is as short as
+    /// possible; returns each run's end index. Spacers weigh nothing, so they never decide a split.
+    static func partition(_ heights: [CGFloat], into parts: Int, spacing: CGFloat) -> [Int] {
+        let n = heights.count
+        guard parts > 1, n > 1 else { return [n] }
+        let k = min(parts, n)
+        func run(_ a: Int, _ b: Int) -> CGFloat { // children a..<b stacked
+            heights[a..<b].reduce(0, +) + spacing * CGFloat(max(0, b - a - 1))
+        }
+        // best[j][i]: the tallest run when the first i children fill j runs; cut[j][i]: where run j starts.
+        var best = Array(repeating: Array(repeating: CGFloat.infinity, count: n + 1), count: k + 1)
+        var cut = Array(repeating: Array(repeating: 0, count: n + 1), count: k + 1)
+        best[0][0] = 0
+        for j in 1...k {
+            for i in j...n {
+                for start in (j - 1)..<i where best[j - 1][start] < .infinity {
+                    let tallest = max(best[j - 1][start], run(start, i))
+                    if tallest < best[j][i] { best[j][i] = tallest; cut[j][i] = start }
+                }
+            }
+        }
+        var ends: [Int] = []
+        var i = n
+        for j in stride(from: k, through: 1, by: -1) { ends.append(i); i = cut[j][i] }
+        return ends.reversed()
+    }
+
+    /// Heights for one column: ideal sizes, plus spare room for what grows, or minus a shortfall from what shrinks.
+    private func allocate(_ indices: [Int], ideal: [CGFloat], width: CGFloat, available: CGFloat?,
+                          subviews: Subviews) -> [CGFloat] {
+        guard let available else { return ideal }
+        let total = ideal.reduce(0, +)
+        if total <= available {
+            // A Spacer only stretches inside SwiftUI's own stacks; here it may take whatever is left.
+            let most = indices.map { i in
+                subviews[i][FlowSpacer.self] ? available
+                    : min(subviews[i].sizeThatFits(ProposedViewSize(width: width, height: available)).height, available)
+            }
+            let growable = indices.indices.filter {
+                (subviews[indices[$0]][FlowGrows.self] || subviews[indices[$0]][FlowSpacer.self]) && most[$0] > ideal[$0] + 0.5
+            }
+            guard !growable.isEmpty else { return ideal }
+            var heights = ideal
+            var spare = available - total
+            // Hand out the spare evenly, capped at what each child can take: content first (charts, boards),
+            // then spacers get what's left.
+            let isSpacer = { (k: Int) in subviews[indices[k]][FlowSpacer.self] }
+            for round in [growable.filter { !isSpacer($0) }, growable.filter(isSpacer)] {
+            var open = round
+            while spare > 0.5, !open.isEmpty {
+                let share = spare / CGFloat(open.count)
+                var next: [Int] = []
+                for k in open {
+                    let add = min(share, most[k] - heights[k])
+                    heights[k] += add
+                    spare -= add
+                    if most[k] - heights[k] > 0.5 { next.append(k) }
+                }
+                open = next
+            }
+            }
+            return heights
+        }
+        let least = indices.map { subviews[$0].sizeThatFits(ProposedViewSize(width: width, height: 0)).height }
+        let give = zip(ideal, least).map { max(0, $0 - $1) }
+        let givable = give.reduce(0, +)
+        guard givable > 0 else { return ideal }
+        let shortfall = min(total - available, givable)
+        return ideal.indices.map { ideal[$0] - give[$0] * shortfall / givable }
+    }
+}
+
+/// Reports a view drawn with `scaleEffect(k)` at its scaled size (scaleEffect alone keeps the unscaled one).
+private struct ScaledHeight: ViewModifier {
+    let k: CGFloat
+    let width: CGFloat
+
+    func body(content: Content) -> some View {
+        ScaledLayout(k: k, width: width) { content }
+    }
+}
+
+private struct ScaledLayout: Layout {
+    let k: CGFloat
+    let width: CGFloat
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let inner = subviews.first?.sizeThatFits(ProposedViewSize(width: width / k, height: proposal.height.map { $0 / k })) ?? .zero
+        return CGSize(width: width, height: inner.height * k)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        subviews.first?.place(at: bounds.origin, anchor: .topLeading,
+                              proposal: ProposedViewSize(width: width / k, height: bounds.height / k))
     }
 }
 

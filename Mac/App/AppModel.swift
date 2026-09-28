@@ -52,6 +52,8 @@ final class AppModel: ObservableObject {
     }
     /// Which Settings tab to show.
     @Published var settingsTab = SettingsTab.pages
+    /// "system" or a language code (see AppLanguage).
+    @Published private(set) var languageChoice = AppLanguage.choice
 
     enum SettingsTab: Hashable { case pages, widgets, themes, arrangement }
 
@@ -87,6 +89,10 @@ final class AppModel: ObservableObject {
     private let notes = NotesProvider()
     private let launcher = LauncherProvider()
     private var launcherItems: [LauncherItem] = []
+    private let runningApps = RunningAppsProvider()
+    private var apps: [RunningApp] = []
+    /// Apps whose icon the phone already has on this connection.
+    private var appIconsSent: Set<String> = []
     private var notesTimer: Timer?
     private var musicExtrasTimer: Timer?
 
@@ -260,6 +266,11 @@ final class AppModel: ObservableObject {
             self?.sendLauncher()
         }
         launcher.refresh()
+        runningApps.onApps = { [weak self] list in
+            self?.apps = list
+            self?.sendApps()
+        }
+        runningApps.start()
         widgets.send = { [weak self] in self?.pool.send($0) }
         widgets.start()
         themes.send = { [weak self] in self?.pool.send($0) }
@@ -284,6 +295,17 @@ final class AppModel: ObservableObject {
         pool.send(.launcher(items))
     }
 
+    /// Always sent (small, and only on app launch/quit/switch), so the list is current the moment its page is shown.
+    private func sendApps() {
+        let list = apps.map { app in
+            var app = app
+            if pool.isLowBandwidth || appIconsSent.contains(app.id) { app.icon = nil }
+            return app
+        }
+        if !pool.isLowBandwidth { appIconsSent.formUnion(apps.map(\.id)) }
+        pool.send(.runningApps(list))
+    }
+
     func show(page index: Int) {
         currentPage = index
         pool.send(.setPage(index: index))
@@ -302,6 +324,9 @@ final class AppModel: ObservableObject {
         case .refresh(let kind):
             if kind == .notes { notes.refresh(force: true) }
             if kind == .launcher { launcher.refresh() }
+            if kind == .apps { runningApps.refresh() }
+        case .appAction(let id, let action):
+            runningApps.perform(action, id: id)
         case .noteRequest(let id):
             notes.body(id: id)
         case .noteCreate(let text):
@@ -328,12 +353,23 @@ final class AppModel: ObservableObject {
     }
 
     /// Sent on every (re)connection and transport switch, so the phone never shows stale state.
+    /// A new language for the whole product: widgets restart in it, the phone switches, the Mac UI after relaunch.
+    func setLanguage(_ choice: String) {
+        AppLanguage.choice = choice
+        languageChoice = choice
+        widgets.reloadAll()
+        pool.send(.language(AppLanguage.current))
+    }
+
     private func sendFullState() {
         pool.send(.layout(arrangement.layout))
+        pool.send(.language(AppLanguage.current))
         themes.sendCurrent()
         pool.send(.pages(list: pages, current: currentPage))
         sendNowPlaying()
         sendLauncher()
+        appIconsSent = [] // a new connection may be a phone that has never seen them
+        sendApps()
         widgets.sendAll()
         // Notes are fetched only when their page is shown: asking Notes launches the app.
         if currentWidgets.contains(.notes) { notes.refresh(force: true) }

@@ -32,6 +32,11 @@ async function refresh(ctx) {
     events,
     hasEvents: events.length > 0,
     first: events[0] || null,
+    weeks: Array.from({ length: 52 }, (_, i) => {
+      const week = Math.min(51, Math.floor((dayOfYear - 1) / 7));
+      return i < week ? { color: "blue", opacity: 0.9 } : i === week ? { color: "orange", opacity: 1 } : { color: "gray", opacity: 0.22 };
+    }),
+    weekOfYear: `неделя ${Math.min(52, Math.floor((dayOfYear - 1) / 7) + 1)} из 52`,
   };
 }
 

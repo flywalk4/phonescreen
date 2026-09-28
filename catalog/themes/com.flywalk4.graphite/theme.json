@@ -1,0 +1,33 @@
+{
+  "id": "com.flywalk4.graphite",
+  "name": "Графит",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Чёрный и белый, моноширинный шрифт и один красный акцент — только там, где нужно внимание. Цвета виджетов сведены к оттенкам серого.",
+  "style": "flat",
+  "appearance": "dark",
+  "font": "monospaced",
+  "radius": 20,
+  "background": { "colors": ["#000000"] },
+  "colors": {
+    "text": "#F2F2F2",
+    "secondary": "#8C8C8C",
+    "accent": "#D71921",
+    "card": "#111111",
+    "border": "#FFFFFF14",
+    "palette": {
+      "green": "#F2F2F2",
+      "mint": "#F2F2F2",
+      "teal": "#D9D9D9",
+      "cyan": "#D9D9D9",
+      "blue": "#BFBFBF",
+      "indigo": "#BFBFBF",
+      "purple": "#A6A6A6",
+      "pink": "#A6A6A6",
+      "yellow": "#E6E6E6",
+      "orange": "#D71921",
+      "red": "#D71921"
+    }
+  },
+  "layout": { "gap": 8, "margin": 8 }
+}

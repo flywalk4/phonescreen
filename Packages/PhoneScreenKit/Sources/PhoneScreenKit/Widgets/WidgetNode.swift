@@ -10,8 +10,8 @@ public indirect enum WidgetNode: Codable, Equatable, Sendable {
     case text(String, style: String?, color: String?, lines: Int?, align: String?, font: WidgetFont? = nil)
     /// An SF Symbol.
     case symbol(String, color: String?, size: Double?)
-    /// Ring, value 0…1.
-    case gauge(value: Double, label: String?, color: String?)
+    /// Ring, value 0…1. `text` replaces the percentage in the middle; `fill` grows the ring to the room it gets.
+    case gauge(value: Double, label: String?, color: String?, text: String? = nil, fill: Bool? = nil)
     /// Bar, value 0…1.
     case progress(value: Double, color: String?)
     /// Chart of the values. `style`: `line` (default), `area` (line with a gradient under it), `bar`.
@@ -134,7 +134,8 @@ public enum WidgetTemplate {
         case "symbol":
             return .symbol(str("name") ?? "questionmark", color: str("color"), size: num("size"))
         case "gauge":
-            return .gauge(value: clamp01(num("value")), label: str("label"), color: str("color"))
+            return .gauge(value: clamp01(num("value")), label: str("label"), color: str("color"), text: str("text"),
+                          fill: t["fill"].map { truthy(value($0, scope)) })
         case "progress":
             return .progress(value: clamp01(num("value")), color: str("color"))
         case "chart":
@@ -273,5 +274,5 @@ public enum WidgetTemplate {
     }
 
     private static func clamp01(_ v: Double?) -> Double { min(max(v ?? 0, 0), 1) }
-    private static func columns(_ v: Double?) -> Int { min(max(Int(v ?? 2), 1), 12) }
+    private static func columns(_ v: Double?) -> Int { min(max(Int(v ?? 2), 1), 16) }
 }

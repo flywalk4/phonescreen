@@ -3,10 +3,12 @@
 #   widgets/<id>.png          every catalog widget full screen (dark theme)
 #   pages/<theme>-<n>.png     mixed pages (grid, trio, split, games, built-ins) in each built-in theme
 #   catalog-themes/<id>.png   each catalog theme on a grid page
+#   landscape/<theme>-<n>.png mixed pages lying sideways
 # Needs Xcode, xcodegen and Node. Usage: scripts/screenshots.sh [out-dir]
 set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT=${1:-screenshots}
+ORIENT=${ORIENT:-portrait}
 BUNDLE_ID=com.flywalk4.phonescreen.ios
 mkdir -p "$OUT/widgets" "$OUT/pages" "$OUT/catalog-themes" build
 
@@ -38,7 +40,7 @@ cat build/bundle.txt
 mkdir -p "$OUT/crashes"
 shot() { # shot <file> <launch args…>
   local file=$1; shift
-  xcrun simctl launch --terminate-running-process "$DEV" "$BUNDLE_ID" --demo "$@" >/dev/null
+  xcrun simctl launch --terminate-running-process "$DEV" "$BUNDLE_ID" --demo --demo-orientation "$ORIENT" "$@" >/dev/null
   sleep 6
   xcrun simctl io "$DEV" screenshot "$file" >/dev/null 2>&1
   # The app hides the status bar; if it is gone from the process list, it crashed — keep the report.
@@ -58,14 +60,21 @@ done
 
 # Layout debug overlay (page and card frames with sizes) on the mixed pages.
 mkdir -p "$OUT/debug"
-for n in $(grep -E '^  [0-9]+: (grid|trio|split)' build/bundle.txt | sed -E 's/^ *([0-9]+):.*/\1/'); do
+for n in $(grep -E '^  [0-9]+: (grid|trio|split|stack|six)' build/bundle.txt | sed -E 's/^ *([0-9]+):.*/\1/'); do
   shot "$OUT/debug/layout-$n.png" --demo-bundle "$DATA/Documents/demo.json" --demo-theme builtin.dark --page "$n" --debug-layout
 done
 
 # Mixed pages in each built-in theme.
-MIXED=$(grep -E '^  [0-9]+: (grid|trio|split)' build/bundle.txt | sed -E 's/^ *([0-9]+):.*/\1/')
+MIXED=$(grep -E '^  [0-9]+: (grid|trio|split|stack|six)' build/bundle.txt | sed -E 's/^ *([0-9]+):.*/\1/')
 for theme in dark light glass ascii; do
   for n in $MIXED; do shot "$OUT/pages/$theme-$n.png" --demo-bundle "$DATA/Documents/demo.json" --demo-theme "builtin.$theme" --page "$n"; done
+done
+
+# Lying sideways: the mixed pages in landscape (dark and glass).
+mkdir -p "$OUT/landscape"
+for n in $MIXED; do
+  theme=$([ $((n % 2)) -eq 0 ] && echo dark || echo glass)
+  ORIENT=landscapeIslandLeft shot "$OUT/landscape/$theme-$n.png" --demo-bundle "$DATA/Documents/demo.json" --demo-theme "builtin.$theme" --page "$n"
 done
 
 # Catalog themes on the first mixed page.

@@ -1,140 +1,140 @@
 {
- "full": {
-  "type": "layers",
-  "align": "bottomLeading",
-  "children": [
-   {
-    "type": "scene",
-    "kind": "{{kind}}",
-    "colors": "{{colors}}",
-    "tints": "{{tints}}",
-    "speed": "{{speed}}"
-   },
-   {
-    "type": "box",
-    "fit": true,
-    "padding": 24,
-    "background": "#000000",
-    "opacity": 0.25,
+  "full": {
+    "type": "layers",
+    "align": "bottomLeading",
     "children": [
-     {
-      "type": "vstack",
-      "spacing": 2,
-      "align": "leading",
-      "if": "{{clock}}",
-      "children": [
-       {
-        "type": "text",
-        "text": "{{time}}",
-        "size": 96,
-        "weight": "bold",
-        "design": "rounded",
-        "color": "white"
-       },
-       {
-        "type": "text",
-        "text": "{{date}}",
-        "size": 20,
-        "weight": "semibold",
-        "color": "white",
-        "lines": 1
-       }
-      ]
-     }
+      {
+        "type": "scene",
+        "kind": "{{kind}}",
+        "colors": "{{colors}}",
+        "tints": "{{tints}}",
+        "speed": "{{speed}}"
+      },
+      {
+        "type": "box",
+        "fit": true,
+        "padding": 24,
+        "background": "#000000",
+        "opacity": 0.25,
+        "children": [
+          {
+            "type": "vstack",
+            "spacing": 2,
+            "align": "leading",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{time}}",
+                "size": 96,
+                "weight": "bold",
+                "design": "rounded",
+                "color": "white"
+              },
+              {
+                "type": "text",
+                "text": "{{date}}",
+                "size": 20,
+                "weight": "semibold",
+                "color": "white",
+                "lines": 1
+              }
+            ]
+          }
+        ],
+        "if": "{{clock}}"
+      }
     ]
-   }
-  ]
- },
- "medium": {
-  "type": "layers",
-  "align": "bottomLeading",
-  "children": [
-   {
-    "type": "scene",
-    "kind": "{{kind}}",
-    "colors": "{{colors}}",
-    "tints": "{{tints}}",
-    "speed": "{{speed}}"
-   },
-   {
-    "type": "box",
-    "fit": true,
-    "padding": 16,
-    "background": "#000000",
-    "opacity": 0.25,
+  },
+  "medium": {
+    "type": "layers",
+    "align": "bottomLeading",
     "children": [
-     {
-      "type": "vstack",
-      "spacing": 2,
-      "align": "leading",
-      "if": "{{clock}}",
-      "children": [
-       {
-        "type": "text",
-        "text": "{{time}}",
-        "size": 56,
-        "weight": "bold",
-        "design": "rounded",
-        "color": "white"
-       },
-       {
-        "type": "text",
-        "text": "{{date}}",
-        "size": 15,
-        "weight": "semibold",
-        "color": "white",
-        "lines": 1
-       }
-      ]
-     }
+      {
+        "type": "scene",
+        "kind": "{{kind}}",
+        "colors": "{{colors}}",
+        "tints": "{{tints}}",
+        "speed": "{{speed}}"
+      },
+      {
+        "type": "box",
+        "fit": true,
+        "padding": 16,
+        "background": "#000000",
+        "opacity": 0.25,
+        "children": [
+          {
+            "type": "vstack",
+            "spacing": 2,
+            "align": "leading",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{time}}",
+                "size": 56,
+                "weight": "bold",
+                "design": "rounded",
+                "color": "white"
+              },
+              {
+                "type": "text",
+                "text": "{{date}}",
+                "size": 15,
+                "weight": "semibold",
+                "color": "white",
+                "lines": 1
+              }
+            ]
+          }
+        ],
+        "if": "{{clock}}"
+      }
     ]
-   }
-  ]
- },
- "small": {
-  "type": "layers",
-  "align": "bottomLeading",
-  "children": [
-   {
-    "type": "scene",
-    "kind": "{{kind}}",
-    "colors": "{{colors}}",
-    "tints": "{{tints}}",
-    "speed": "{{speed}}"
-   },
-   {
-    "type": "box",
-    "fit": true,
-    "padding": 12,
-    "background": "#000000",
-    "opacity": 0.25,
+  },
+  "small": {
+    "type": "layers",
+    "align": "bottomLeading",
     "children": [
-     {
-      "type": "vstack",
-      "spacing": 2,
-      "align": "leading",
-      "if": "{{clock}}",
-      "children": [
-       {
-        "type": "text",
-        "text": "{{time}}",
-        "size": 34,
-        "weight": "bold",
-        "design": "rounded",
-        "color": "white"
-       },
-       {
-        "type": "text",
-        "text": "{{date}}",
-        "size": 11,
-        "weight": "semibold",
-        "color": "white",
-        "lines": 1
-       }
-      ]
-     }
+      {
+        "type": "scene",
+        "kind": "{{kind}}",
+        "colors": "{{colors}}",
+        "tints": "{{tints}}",
+        "speed": "{{speed}}"
+      },
+      {
+        "type": "box",
+        "fit": true,
+        "padding": 12,
+        "background": "#000000",
+        "opacity": 0.25,
+        "children": [
+          {
+            "type": "vstack",
+            "spacing": 2,
+            "align": "leading",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{time}}",
+                "size": 34,
+                "weight": "bold",
+                "design": "rounded",
+                "color": "white"
+              },
+              {
+                "type": "text",
+                "text": "{{date}}",
+                "size": 11,
+                "weight": "semibold",
+                "color": "white",
+                "lines": 1
+              }
+            ]
+          }
+        ],
+        "if": "{{clock}}"
+      }
     ]
-   }
-  ]
- }
+  }
 }

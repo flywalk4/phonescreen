@@ -24,6 +24,9 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         var log: @Sendable (String) -> Void
         /// Home folder `~/` resolves to (the real one; overridable in `--widget-test`).
         var home: String = NSHomeDirectory()
+        /// The widget's language ("ru", "en"…) and its strings table (`t()`, `format`), see WidgetStrings.
+        var language: String = "ru"
+        var strings: [String: Any] = [:]
     }
 
     enum Failure: Error, CustomStringConvertible {
@@ -88,7 +91,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
             // Overall deadline, network included.
             queue.asyncAfter(deadline: .now() + 20) { finish(.failure(.timeout)) }
 
-            let ctx = JSValue(object: ["settings": hooks.settings()], in: context)!
+            let ctx = JSValue(object: ["settings": hooks.settings(), "lang": hooks.language], in: context)!
             lastError = nil
             let result = fn.call(withArguments: arguments + [ctx])
             if let error = lastError { return finish(.failure(.script(error))) }
@@ -125,6 +128,8 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         JSContextGroupSetExecutionTimeLimit(JSContextGetGroup(context.jsGlobalContextRef), 2, nil, nil)
         storage = hooks.loadStorage()
         install(into: context)
+        context.setObject(hooks.language, forKeyedSubscript: "__lang" as NSString)
+        context.setObject(hooks.strings, forKeyedSubscript: "__strings" as NSString)
         // `format` helpers shared with scripts/widget-dev.mjs (Mac/Widgets/prelude.js, bundled as a resource).
         if let url = Bundle.main.url(forResource: "prelude", withExtension: "js"),
            let prelude = try? String(contentsOf: url, encoding: .utf8) {

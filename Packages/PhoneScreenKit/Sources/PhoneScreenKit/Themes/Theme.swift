@@ -41,6 +41,8 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
 
     /// Animated backgrounds the phone can draw (`background.animation`, and the `scene` widget node).
     public static let animations = ["aurora", "stars", "matrix", "waves", "bokeh", "lava", "snow", "rain", "gradient"]
+    /// `background.animation` value for a photo from the phone's Favorites (blurred and dimmed) instead of colours.
+    public static let photoBackground = "photo"
 
     /// Colours as `#RRGGBB` or `#RRGGBBAA`.
     public struct Colors: Codable, Equatable, Sendable {
@@ -65,6 +67,46 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         }
     }
 
+    /// How the page is laid out around the cards; everything optional (the phone's defaults otherwise).
+    public struct Layout: Codable, Equatable, Sendable {
+        /// Between cards, 0…24 pt.
+        public var gap: Double?
+        /// Around the page (the Dynamic Island's edge always keeps clear of it), 0…24 pt.
+        public var margin: Double?
+        /// Inside cards, 6…24 pt.
+        public var padding: Double?
+        /// Page dots under the cards.
+        public var dots: Bool?
+        /// Card fill opacity 0…1 (flat style): lower lets an animated background show through.
+        public var cardOpacity: Double?
+        /// Text size: "small", "medium" (default), "large", "xlarge".
+        public var textSize: String?
+        /// Time and date beside the Dynamic Island (default on).
+        public var status: Bool?
+        /// A soft shadow under cards (lifts them off light and gradient backgrounds).
+        public var shadow: Bool?
+        /// Turn to the next page by itself every N seconds (10…600; nil or 0 — off). Touching the phone restarts the count.
+        public var autoPage: Double?
+        /// A light vibration on taps (default on).
+        public var haptics: Bool?
+
+        public static let textSizes = ["small", "medium", "large", "xlarge"]
+
+        public init(gap: Double? = nil, margin: Double? = nil, padding: Double? = nil, dots: Bool? = nil, cardOpacity: Double? = nil,
+                    textSize: String? = nil, status: Bool? = nil, shadow: Bool? = nil, autoPage: Double? = nil, haptics: Bool? = nil) {
+            self.gap = gap
+            self.margin = margin
+            self.padding = padding
+            self.dots = dots
+            self.cardOpacity = cardOpacity
+            self.textSize = textSize
+            self.status = status
+            self.shadow = shadow
+            self.autoPage = autoPage
+            self.haptics = haptics
+        }
+    }
+
     /// Reverse-DNS, lowercase: `com.author.theme`.
     public var id: String
     public var name: String
@@ -78,10 +120,11 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
     public var radius: Double
     public var background: Background
     public var colors: Colors
+    public var layout: Layout?
 
     public init(id: String, name: String, version: String = "1.0.0", author: String, description: String? = nil,
                 style: Style, appearance: Appearance, font: FontDesign, radius: Double,
-                background: Background, colors: Colors) {
+                background: Background, colors: Colors, layout: Layout? = nil) {
         self.id = id
         self.name = name
         self.version = version
@@ -93,6 +136,7 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         self.radius = radius
         self.background = background
         self.colors = colors
+        self.layout = layout
     }
 
     public struct Invalid: Error, Equatable, CustomStringConvertible {
@@ -105,10 +149,21 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         }
         guard !name.isEmpty, name.count <= 40 else { throw Invalid(description: "name: от 1 до 40 символов") }
         guard (0...40).contains(radius) else { throw Invalid(description: "radius: от 0 до 40") }
+        if let size = layout?.textSize, !Layout.textSizes.contains(size) {
+            throw Invalid(description: "layout.textSize: small, medium, large или xlarge")
+        }
+        if let l = layout {
+            for (name, value, range) in [("gap", l.gap, 0.0...24), ("margin", l.margin, 0...24), ("padding", l.padding, 6...24),
+                                         ("cardOpacity", l.cardOpacity, 0...1), ("autoPage", l.autoPage, 0...600)] {
+                if let value, !range.contains(value) {
+                    throw Invalid(description: "layout.\(name): от \(range.lowerBound.formatted()) до \(range.upperBound.formatted())")
+                }
+            }
+        }
         guard (1...4).contains(background.colors.count) else {
             throw Invalid(description: "background.colors: от 1 до 4 цветов")
         }
-        if let a = background.animation, !Self.animations.contains(a) {
+        if let a = background.animation, !Self.animations.contains(a), a != Self.photoBackground {
             throw Invalid(description: "background.animation: «\(a)» — одна из \(Self.animations.joined(separator: ", "))")
         }
         if let s = background.speed, !(0.1...5).contains(s) { throw Invalid(description: "background.speed: от 0.1 до 5") }

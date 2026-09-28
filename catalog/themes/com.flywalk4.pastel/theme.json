@@ -1,0 +1,52 @@
+{
+  "id": "com.flywalk4.pastel",
+  "name": "Пастель",
+  "version": "1.1.0",
+  "author": "flywalk4",
+  "description": "Светлые бенто-карточки на медленно плывущем пастельном градиенте: персик, лаванда и мята. Карточки полупрозрачные, углы мягкие.",
+  "style": "flat",
+  "appearance": "light",
+  "font": "rounded",
+  "radius": 28,
+  "background": {
+    "colors": [
+      "#FDE7DA",
+      "#E9E3FB",
+      "#DDF4EC"
+    ],
+    "angle": 160,
+    "animation": "gradient",
+    "tints": [
+      "#FFD3C2",
+      "#D8CCFA",
+      "#C4EEDF"
+    ],
+    "speed": 0.5
+  },
+  "colors": {
+    "text": "#2B2640",
+    "secondary": "#7C7494",
+    "accent": "#7B61FF",
+    "card": "#FFFFFF",
+    "border": "#FFFFFF",
+    "palette": {
+      "green": "#2FA37A",
+      "mint": "#2FA37A",
+      "teal": "#2B9AA8",
+      "cyan": "#3B9BD6",
+      "blue": "#5B7CFA",
+      "purple": "#8A5CF6",
+      "pink": "#E0568F",
+      "orange": "#F0833A",
+      "yellow": "#D9A21B",
+      "red": "#E5484D"
+    }
+  },
+  "layout": {
+    "gap": 12,
+    "margin": 12,
+    "padding": 16,
+    "cardOpacity": 0.72,
+    "shadow": true
+  }
+}

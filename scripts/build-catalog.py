@@ -32,12 +32,19 @@ def build() -> dict:
                 print("   ", p)
             continue
         m = json.loads((folder / "manifest.json").read_text())
-        entries.append({
+        names = [n for n in validate.REQUIRED + validate.OPTIONAL if (folder / n).exists()]
+        entry = {
             "id": m["id"], "name": m["name"], "version": m["version"], "author": m["author"],
             "description": m.get("description"), "symbol": m.get("symbol"),
             "path": f"widgets/{folder.name}",
-            "files": {n: hashlib.sha256((folder / n).read_bytes()).hexdigest() for n in validate.REQUIRED},
-        })
+            "files": {n: hashlib.sha256((folder / n).read_bytes()).hexdigest() for n in names},
+        }
+        # Name and description per language, so the catalog shows them translated before installing.
+        if (folder / "strings.json").exists():
+            strings = json.loads((folder / "strings.json").read_text())
+            entry["localized"] = {lang: {k: table[f"manifest.{k}"] for k in ("name", "description") if f"manifest.{k}" in table}
+                                  for lang, table in sorted(strings.items())}
+        entries.append(entry)
         print(f"✓ {m['id']} {m['version']}")
     themes = []
     for folder in sorted(p for p in (ROOT / "themes").iterdir() if p.is_dir()) if (ROOT / "themes").exists() else []:

@@ -7,9 +7,17 @@ struct PagesEditor: View {
     @State private var selection: String?
 
     var body: some View {
-        HSplitView {
-            sidebar.frame(minWidth: 230, idealWidth: 250, maxWidth: 320)
-            detail.frame(minWidth: 380, maxWidth: .infinity, maxHeight: .infinity)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Страницы").font(.system(size: 26, weight: .bold))
+                Text("Что показывает iPhone: страницы листаются свайпом, трекпадом или ⌃⌥← →.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 12)
+            HSplitView {
+                sidebar.frame(minWidth: 230, idealWidth: 250, maxWidth: 320)
+                detail.frame(minWidth: 380, maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
         .onAppear { if selection == nil { selection = model.pages.first?.id } }
     }
@@ -76,14 +84,33 @@ struct PagesEditor: View {
             let page = model.pages[index]
             VStack(alignment: .leading, spacing: 18) {
                 Text(page.title(customNames: model.widgets.names)).font(.title2.weight(.semibold)).lineLimit(1)
-                Picker("Раскладка", selection: Binding(get: { page.layout }, set: { model.pages[index].setLayout($0) })) {
+                // Layout thumbnails, wrapping when the pane is narrow (a segmented control of six didn't fit).
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: 8)], alignment: .leading, spacing: 8) {
                     ForEach(PageLayout.allCases, id: \.self) { layout in
-                        Text(layout.title).tag(layout)
+                        let selected = layout == page.layout
+                        Button { model.pages[index].setLayout(layout) } label: {
+                            VStack(spacing: 6) {
+                                LayoutGlyph(layout: layout).frame(width: 24, height: 34)
+                                Text(layout.title).font(.caption).lineLimit(1).minimumScaleFactor(0.8)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(RoundedRectangle(cornerRadius: 8)
+                                .fill(selected ? Color.accentColor.opacity(0.25) : Color.secondary.opacity(0.08)))
+                            .overlay(RoundedRectangle(cornerRadius: 8)
+                                .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 1.5))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .help(layout.title)
                     }
                 }
-                .pickerStyle(.segmented)
+                Toggle("Без карточек — виджеты прямо на фоне", isOn: Binding(
+                    get: { page.bare == true },
+                    set: { model.pages[index].bare = $0 ? true : nil }))
+                    .toggleStyle(.switch).controlSize(.small)
                 PagePreview(page: page, landscape: model.arrangement.orientation.isLandscape,
-                            custom: model.widgets.installed.map { ($0.id, $0.manifest.name, $0.manifest.symbol) }) { slot, kind in
+                            custom: model.widgets.installed.map { ($0.id, model.widgets.localized($0).name, $0.manifest.symbol) }) { slot, kind in
                     var widgets = model.pages[index].widgets
                     while widgets.count <= slot { widgets.append(kind) }
                     widgets[slot] = kind
@@ -133,16 +160,37 @@ private struct PagePreview: View {
         case .split:
             let layout = landscape ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 8))
             layout { slot(0); slot(1) }
+        // The same arrangement the phone uses: lying sideways, cards line up in a row.
         case .trio:
             if landscape {
-                HStack(spacing: 8) { slot(0); VStack(spacing: 8) { slot(1); slot(2) } }
+                GeometryReader { geo in
+                    HStack(spacing: 8) {
+                        slot(0)
+                        slot(1).frame(width: (geo.size.width - 16) / 4)
+                        slot(2).frame(width: (geo.size.width - 16) / 4)
+                    }
+                }
             } else {
                 VStack(spacing: 8) { slot(0); HStack(spacing: 8) { slot(1); slot(2) } }
             }
         case .grid:
+            if landscape {
+                HStack(spacing: 8) { slot(0); slot(1); slot(2); slot(3) }
+            } else {
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) { slot(0); slot(1) }
+                    HStack(spacing: 8) { slot(2); slot(3) }
+                }
+            }
+        case .stack:
+            let layout = landscape ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 8))
+            layout { slot(0); slot(1); slot(2) }
+        case .six:
+            let (rows, columns) = landscape ? (2, 3) : (3, 2)
             VStack(spacing: 8) {
-                HStack(spacing: 8) { slot(0); slot(1) }
-                HStack(spacing: 8) { slot(2); slot(3) }
+                ForEach(0..<rows, id: \.self) { r in
+                    HStack(spacing: 8) { ForEach(0..<columns, id: \.self) { c in slot(r * columns + c) } }
+                }
             }
         }
     }
@@ -169,7 +217,14 @@ private struct PagePreview: View {
             }
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.35)))
+            // A bare page shows its slots as outlines: the widgets sit on the background, with no card.
+            .background {
+                if page.bare == true {
+                    RoundedRectangle(cornerRadius: 10).strokeBorder(Color.accentColor.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                } else {
+                    RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.35))
+                }
+            }
             .contentShape(Rectangle())
         }
         .menuStyle(.button)
@@ -197,6 +252,8 @@ struct LayoutGlyph: View {
                 case .split: VStack(spacing: 2) { cell; cell }
                 case .trio: VStack(spacing: 2) { cell; HStack(spacing: 2) { cell; cell } }
                 case .grid: VStack(spacing: 2) { HStack(spacing: 2) { cell; cell }; HStack(spacing: 2) { cell; cell } }
+                case .stack: VStack(spacing: 2) { cell; cell; cell }
+                case .six: VStack(spacing: 2) { ForEach(0..<3, id: \.self) { _ in HStack(spacing: 2) { cell; cell } } }
                 }
             }
             .padding(3)
@@ -204,17 +261,136 @@ struct LayoutGlyph: View {
     }
 }
 
-/// Settings window: pages and the phone's physical placement.
+/// Settings window: a sidebar of sections (like System Settings) and the section on the right.
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
 
+    private struct Section: Identifiable {
+        let id: AppModel.SettingsTab
+        let title: String
+        let symbol: String
+        let tint: Color
+    }
+
+    private let sections: [Section] = [
+        Section(id: .pages, title: "Страницы", symbol: "rectangle.grid.2x2.fill", tint: .blue),
+        Section(id: .widgets, title: "Виджеты", symbol: "puzzlepiece.extension.fill", tint: .purple),
+        Section(id: .themes, title: "Темы", symbol: "paintpalette.fill", tint: .pink),
+        Section(id: .arrangement, title: "Расположение", symbol: "iphone.gen3", tint: .orange),
+    ]
+
     var body: some View {
-        TabView(selection: $model.settingsTab) {
-            PagesEditor().tabItem { Label("Страницы", systemImage: "rectangle.grid.2x2") }.tag(AppModel.SettingsTab.pages)
-            WidgetsSettings(widgets: model.widgets).tabItem { Label("Виджеты", systemImage: "puzzlepiece.extension") }.tag(AppModel.SettingsTab.widgets)
-            ThemesSettings(themes: model.themes).tabItem { Label("Темы", systemImage: "paintpalette") }.tag(AppModel.SettingsTab.themes)
-            ArrangementView().tabItem { Label("Расположение", systemImage: "iphone.gen3") }.tag(AppModel.SettingsTab.arrangement)
+        HStack(spacing: 0) {
+            // Our own sidebar column (solid, gallery-app style) rather than NavigationSplitView's translucent one.
+            VStack(alignment: .leading, spacing: 4) {
+                SidebarHeader().padding(.horizontal, 12).padding(.top, 14).padding(.bottom, 18)
+                ForEach(sections) { section in
+                    SidebarRow(title: section.title, symbol: section.symbol, tint: section.tint,
+                               selected: model.settingsTab == section.id) {
+                        withAnimation(.snappy(duration: 0.2)) { model.settingsTab = section.id }
+                    }
+                }
+                Spacer()
+                LanguagePicker().padding(.horizontal, 8).padding(.bottom, 14)
+            }
+            .padding(.horizontal, 10)
+            .frame(width: 230)
+            .frame(maxHeight: .infinity)
+            .background(Color.black.opacity(0.22))
+            Divider()
+            Group {
+                switch model.settingsTab {
+                case .pages: PagesEditor()
+                case .widgets: WidgetsSettings(widgets: model.widgets)
+                case .themes: ThemesSettings(themes: model.themes)
+                case .arrangement: ArrangementView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 680, minHeight: 520)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .frame(minWidth: 900, minHeight: 600)
+    }
+}
+
+private struct SidebarRow: View {
+    let title: String
+    let symbol: String
+    let tint: Color
+    let selected: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: symbol)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 26, height: 26)
+                    .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(tint.gradient))
+                Text(title).font(.system(size: 14, weight: selected ? .semibold : .regular))
+                Spacer()
+            }
+            .padding(.horizontal, 8).padding(.vertical, 6)
+            .background(RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(selected ? Color.white.opacity(0.12) : hovering ? Color.white.opacity(0.05) : .clear))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+    }
+}
+
+/// The product's language at the foot of the sidebar: widgets and the phone switch at once, the Mac after relaunch.
+private struct LanguagePicker: View {
+    @EnvironmentObject private var model: AppModel
+    @State private var launchedWith = AppLanguage.choice
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label("Язык", systemImage: "globe").font(.caption.weight(.medium)).foregroundStyle(.secondary)
+            Picker("", selection: Binding(get: { model.languageChoice }, set: { model.setLanguage($0) })) {
+                Text("Как в системе").tag("system")
+                ForEach(AppLanguage.supported, id: \.code) { Text($0.name).tag($0.code) }
+            }
+            .labelsHidden()
+            if model.languageChoice != launchedWith {
+                Button("Перезапустить") { relaunch() }.controlSize(.small)
+                Text("Окна Mac сменят язык после перезапуска").font(.caption2).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func relaunch() {
+        let url = Bundle.main.bundleURL
+        let config = NSWorkspace.OpenConfiguration()
+        config.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        }
+    }
+}
+
+/// App icon, name and whether the phone is connected — on top of the sidebar.
+private struct SidebarHeader: View {
+    @EnvironmentObject private var model: AppModel
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "iphone.gen3.radiowaves.left.and.right")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 38, height: 38)
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(LinearGradient(colors: [.indigo, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("PhoneScreen").font(.headline)
+                HStack(spacing: 5) {
+                    Circle().fill(model.status.active == nil ? Color.orange : Color.green).frame(width: 6, height: 6)
+                    Text(model.status.active.map { "iPhone · \($0.label)" } ?? "iPhone не подключён").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,41 @@
+{
+  "id": "com.flywalk4.catppuccin",
+  "name": "Catppuccin Mocha",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Пастельная палитра Catppuccin (Mocha, MIT): мягкий фиолетовый акцент, тёплые пастельные цвета виджетов, медленные огоньки на тёмно-синем.",
+  "style": "flat",
+  "appearance": "dark",
+  "font": "rounded",
+  "radius": 24,
+  "background": {
+    "colors": ["#11111B", "#1E1E2E"],
+    "angle": 170,
+    "animation": "bokeh",
+    "tints": ["#CBA6F7", "#89B4FA", "#F5C2E7", "#94E2D5"],
+    "speed": 0.4
+  },
+  "colors": {
+    "text": "#CDD6F4",
+    "secondary": "#A6ADC8",
+    "accent": "#CBA6F7",
+    "card": "#1E1E2E",
+    "border": "#313244",
+    "palette": {
+      "red": "#F38BA8",
+      "orange": "#FAB387",
+      "yellow": "#F9E2AF",
+      "green": "#A6E3A1",
+      "mint": "#A6E3A1",
+      "teal": "#94E2D5",
+      "cyan": "#89DCEB",
+      "blue": "#89B4FA",
+      "indigo": "#B4BEFE",
+      "purple": "#CBA6F7",
+      "pink": "#F5C2E7",
+      "brown": "#F5E0DC",
+      "gray": "#6C7086"
+    }
+  },
+  "layout": { "cardOpacity": 0.88, "shadow": true }
+}

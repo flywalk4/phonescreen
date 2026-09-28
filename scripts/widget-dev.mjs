@@ -8,6 +8,7 @@
 //                                            [--now 2026-09-27T14:40:00Z] [--home DIR] [--views]
 //   node scripts/widget-dev.mjs preview <widget> out.png [--theme dark|light|glass|ascii|all|catalog/themes/<id>] [--fixture NAME]
 //   node scripts/widget-dev.mjs test [<widget>…]        # every fixtures/*.json of every widget (default: catalog/widgets/*)
+//   --lang en with run / preview / watch / bundle: the widget in that language (strings.json); a fixture may set "lang"
 //   node scripts/widget-dev.mjs bundle demo.json [--theme catalog/themes/<id>]  # all widgets + pages for the phone's
 //                                                        # `--demo --demo-bundle demo.json` (screenshots of the real UI)
 //
@@ -36,9 +37,23 @@ const MAX_NODES = 500, MAX_TEXT = 2000;
 
 // ---------------------------------------------------------------- sandbox
 
+/**
+ * A widget's strings.json ({"ru": {…}, "en": {…}}) for `wanted`: that language if the widget has it, else English,
+ * else its first language; the fallback language's keys fill any gaps. Mirrors WidgetStrings.swift.
+ */
+export function strings(dir, wanted = "ru") {
+  const file = path.join(dir, "strings.json");
+  const all = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+  const langs = Object.keys(all);
+  const lang = langs.includes(wanted) ? wanted : langs.includes("en") ? "en" : langs[0] || wanted;
+  const fallback = langs.includes("en") ? "en" : langs[0];
+  return { lang: langs.length ? lang : wanted, table: { ...(all[fallback] || {}), ...(all[lang] || {}) }, all };
+}
+
 /** Loads a widget into a fresh sandbox. Everything the script can touch comes from `options`. */
 export function sandbox(dir, options = {}) {
   const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8"));
+  const { lang, table } = strings(dir, options.lang || "ru");
   const perms = manifest.permissions || {};
   const logs = [];
   const log = (line) => { logs.push(line); if (options.verbose) console.error("log:", line); };
@@ -138,6 +153,8 @@ export function sandbox(dir, options = {}) {
     setTimeout: (fn, ms) => setTimeout(fn, Math.max(0, Math.min(Number(ms) || 0, 60000))),
     sleep: (ms) => new Promise((r) => setTimeout(r, Math.max(0, Math.min(Number(ms) || 0, 60000)))),
     Date: FakeDate,
+    __lang: lang,
+    __strings: table,
   });
   vm.runInContext(fs.readFileSync(path.join(ROOT, "Mac/Widgets/prelude.js"), "utf8"), context, { filename: "prelude.js" });
   vm.runInContext(fs.readFileSync(path.join(dir, "provider.js"), "utf8"), context, { filename: "provider.js", timeout: 2000 });
@@ -148,7 +165,7 @@ export function sandbox(dir, options = {}) {
     if (typeof context[fn] !== "function") { if (fn === "refresh") throw new Error("В provider.js нет функции refresh()"); return null; }
     const started = RealDate.now();
     const value = await Promise.race([
-      Promise.resolve(context[fn](...args, { settings })),
+      Promise.resolve(context[fn](...args, { settings, lang })),
       new Promise((_, reject) => setTimeout(() => reject(new Error("Скрипт не ответил за 20 с")), 20000).unref()),
     ]);
     const took = RealDate.now() - started;
@@ -156,7 +173,7 @@ export function sandbox(dir, options = {}) {
     return JSON.parse(JSON.stringify(value ?? null));
   };
   return {
-    manifest, settings, logs, fetched, home,
+    manifest, settings, logs, fetched, home, lang, strings: table,
     get storage() { return store; },
     refresh: () => call("refresh", []),
     action: (name) => call("action", [name]),
@@ -202,7 +219,7 @@ function node(t, scope, budget) {
   const str = (k) => (k in t ? text(value(t[k], scope)) : undefined);
   const num = (k) => (k in t ? number(value(t[k], scope)) ?? undefined : undefined);
   const children = () => (t.children || []).map((c) => node(c, scope, budget)).filter(Boolean);
-  const columns = (v) => clamp(Math.trunc(v ?? 2), 1, 12);
+  const columns = (v) => clamp(Math.trunc(v ?? 2), 1, 16);
   switch (t.type) {
     case "vstack": case "hstack": return { type: t.type, spacing: num("spacing"), align: str("align"), children: children() };
     case "text": {
@@ -211,7 +228,7 @@ function node(t, scope, budget) {
       return { type: "text", text: (str("text") ?? "").slice(0, MAX_TEXT), style: str("style"), color: str("color"), lines: num("lines"), align: str("align"), font };
     }
     case "symbol": return { type: "symbol", name: str("name") ?? "questionmark", color: str("color"), size: num("size") };
-    case "gauge": return { type: "gauge", value: clamp(num("value") ?? 0, 0, 1), label: str("label"), color: str("color") };
+    case "gauge": return { type: "gauge", value: clamp(num("value") ?? 0, 0, 1), label: str("label"), color: str("color"), text: str("text"), fill: "fill" in t ? truthy(value(t.fill, scope)) : undefined };
     case "progress": return { type: "progress", value: clamp(num("value") ?? 0, 0, 1), color: str("color") };
     case "chart": {
       const values = (Array.isArray(value(t.values, scope)) ? value(t.values, scope) : []).map(number).filter((v) => v !== null).slice(-200);
@@ -255,13 +272,18 @@ function node(t, scope, budget) {
   }
 }
 
+/** The data view.json sees: refresh()'s result plus `t` — the widget's strings — for `{{t.key}}` (like the app). */
+export function withStrings(data, table) {
+  return data && typeof data === "object" && !Array.isArray(data) && table && Object.keys(table).length ? { ...data, t: table } : data;
+}
+
 /** Resolved views for every size present in view.json. */
-export function views(dir, data) {
+export function views(dir, data, table = {}) {
   const view = JSON.parse(fs.readFileSync(path.join(dir, "view.json"), "utf8"));
   const out = {};
   for (const size of ["full", "medium", "small"]) {
     if (!view[size]) continue;
-    try { out[size] = resolve(view[size], data); } catch (e) { throw new Error(`view.json (${size}): ${e.message}`); }
+    try { out[size] = resolve(view[size], withStrings(data, table)); } catch (e) { throw new Error(`view.json (${size}): ${e.message}`); }
   }
   return out;
 }
@@ -283,7 +305,7 @@ export async function scenario(dir, fx = {}, extra = {}) {
   try {
     for (const a of fx.actions || []) await box.action(a);
     const data = await box.refresh();
-    return { data, views: views(dir, data), box };
+    return { data, views: views(dir, data, box.strings), box };
   } catch (e) {
     return { error: e.message, box };
   } finally {
@@ -323,7 +345,8 @@ const SYSTEM = { red: "#FF453A", orange: "#FF9F0A", yellow: "#FFD60A", green: "#
 const STYLES = { largeTitle: [34, 600], title: [28, 600], title2: [22, 600], title3: [20, 600], headline: [17, 600], body: [17, 400], callout: [16, 400], subheadline: [15, 400], footnote: [13, 400], caption: [12, 400], caption2: [11, 400] };
 const WEIGHTS = { ultraLight: 200, thin: 250, light: 300, regular: 400, medium: 500, semibold: 600, bold: 700, heavy: 800, black: 900 };
 // SF Symbols aren't available off Apple platforms: a few common ones as emoji, the rest as a dot.
-const SYMBOLS = { "sun.max.fill": "☀️", "cloud.rain.fill": "🌧️", "cloud.snow.fill": "🌨️", "location.fill": "📍", globe: "🌐", "briefcase.fill": "💼", "moon.zzz.fill": "🌙", "moon.fill": "🌙", "sunset.fill": "🌇", "cup.and.saucer.fill": "☕", "chart.line.uptrend.xyaxis": "📈", "arrow.clockwise": "↻", sparkles: "✨", "dollarsign.arrow.circlepath": "💱", timer: "⏱️", "play.fill": "▶", "pause.fill": "⏸", "forward.fill": "⏭", "arrow.uturn.backward": "↩", "flame.fill": "🔥", "leaf.fill": "🍃", "aqi.medium": "🌫️", "sun.horizon.fill": "🌅", "newspaper.fill": "📰", hourglass: "⏳", "arrow.triangle.pull": "🔀", "flag.fill": "🚩", "hand.tap.fill": "👆", "exclamationmark.triangle.fill": "⚠️" };
+const RELATIVES = { mint: "green", teal: "cyan", cyan: "blue", indigo: "blue", pink: "purple", brown: "orange", grey: "gray" };
+const SYMBOLS = { "sun.max.fill": "☀️", "cloud.rain.fill": "🌧️", "cloud.snow.fill": "🌨️", "location.fill": "📍", globe: "🌐", "briefcase.fill": "💼", "moon.zzz.fill": "🌙", "moon.fill": "🌙", "sunset.fill": "🌇", "cup.and.saucer.fill": "☕", "chart.line.uptrend.xyaxis": "📈", "arrow.clockwise": "↻", sparkles: "✨", "dollarsign.arrow.circlepath": "💱", timer: "⏱️", "play.fill": "▶", "pause.fill": "⏸", "forward.fill": "⏭", "arrow.uturn.backward": "↩", "arrow.left": "←", "arrow.right": "→", "arrow.up": "↑", "arrow.down": "↓", "flame.fill": "🔥", "leaf.fill": "🍃", "aqi.medium": "🌫️", "sun.horizon.fill": "🌅", "newspaper.fill": "📰", hourglass: "⏳", "arrow.triangle.pull": "🔀", "flag.fill": "🚩", "hand.tap.fill": "👆", "exclamationmark.triangle.fill": "⚠️" };
 
 /** A theme.json (folder or file) as the preview's colours. */
 function themeFromFile(p) {
@@ -347,7 +370,8 @@ function renderHTML(tree, themeName) {
   const color = (n) => {
     if (!n) return null;
     const l = String(n).toLowerCase();
-    if (T.palette?.[l]) return T.palette[l];
+    // Like the app: a missing name falls back to its nearest relative in the palette (mint → green, teal → cyan…).
+    for (let k = l; k; k = RELATIVES[k]) if (T.palette?.[k]) return T.palette[k];
     if (l === "clear" || l === "none") return "transparent";
     if (l === "primary") return T.text;
     if (l === "secondary" || l === "tertiary") return T.sec;
@@ -368,7 +392,7 @@ function renderHTML(tree, themeName) {
         return `<div class="t" style="font-size:${n.font?.size ?? size}px;font-weight:${WEIGHTS[n.font?.weight] ?? weight};font-family:${fam};color:${color(n.color) || T.text};text-align:${({ center: "center", trailing: "right" })[n.align] || "left"};${clamp}">${esc(n.text)}</div>`;
       }
       case "symbol": return `<span style="font-size:${n.size ?? 17}px;line-height:1;color:${color(n.color) || T.text}">${SYMBOLS[n.name] || "●"}</span>`;
-      case "gauge": return `<div class="v" style="gap:4px;align-items:center"><svg width="56" height="56"><circle cx="28" cy="28" r="25" fill="none" stroke="${T.text}" stroke-opacity=".12" stroke-width="6"/><circle cx="28" cy="28" r="25" fill="none" stroke="${color(n.color) || T.accent}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${157 * n.value} 999" transform="rotate(-90 28 28)"/><text x="28" y="32" text-anchor="middle" font-size="12" font-weight="600" fill="${T.text}">${Math.round(n.value * 100)}%</text></svg>${n.label ? `<div class="t" style="font-size:11px;color:${T.sec}">${esc(n.label)}</div>` : ""}</div>`;
+      case "gauge": return `<div class="v" style="gap:4px;align-items:center${n.fill ? ";flex:1;justify-content:center" : ""}"><svg viewBox="0 0 56 56" width="${n.fill ? 110 : 56}" height="${n.fill ? 110 : 56}"><circle cx="28" cy="28" r="25" fill="none" stroke="${T.text}" stroke-opacity=".12" stroke-width="6"/><circle cx="28" cy="28" r="25" fill="none" stroke="${color(n.color) || T.accent}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${157 * n.value} 999" transform="rotate(-90 28 28)"/><text x="28" y="32" text-anchor="middle" font-size="12" font-weight="600" fill="${T.text}">${esc(n.text ?? `${Math.round(n.value * 100)}%`)}</text></svg>${n.label ? `<div class="t" style="font-size:11px;color:${T.sec}">${esc(n.label)}</div>` : ""}</div>`;
       case "progress": {
         const c = color(n.color) || T.accent;
         if (T.style === "ascii") { // like AsciiBar: as many cells as fit the width
@@ -378,7 +402,7 @@ function renderHTML(tree, themeName) {
         return `<div class="track"><div style="width:${n.value * 100}%;height:100%;border-radius:2px;background:${c}"></div></div>`;
       }
       case "chart": return chart(n.values, color(n.color) || T.accent, n.style || "line", n.height, T);
-      case "button": return `<div class="button" style="color:${T.accent}">${SYMBOLS[n.symbol] ? SYMBOLS[n.symbol] + " " : ""}${esc(T.style === "ascii" ? `[ ${n.title} ]` : n.title)}</div>`;
+      case "button": return `<div class="button" style="color:${T.accent}">${SYMBOLS[n.symbol] ? SYMBOLS[n.symbol] + " " : ""}${esc(T.style === "ascii" ? `[ ${n.title || SYMBOLS[n.symbol] || ""} ]` : n.title)}</div>`;
       case "sprite": {
         const f = n.frames[0], cols = Math.max(...f.map((row) => row.length)), cell = 6;
         let px = "";
@@ -466,7 +490,11 @@ async function screenshot(html, out) {
   let playwright;
   try {
     const require = createRequire(import.meta.url);
-    try { playwright = require("playwright"); } catch { playwright = require(path.join(execSync("npm root -g").toString().trim(), "playwright")); }
+    const root = execSync("npm root -g").toString().trim();
+    // Local install, `npm i -g playwright`, or the copy inside `@playwright/cli`.
+    const places = ["playwright", path.join(root, "playwright"), path.join(root, "@playwright/cli/node_modules/playwright")];
+    for (const place of places) { try { playwright = require(place); break; } catch {} }
+    if (!playwright) throw new Error("no playwright");
   } catch {
     throw new Error("Для preview нужен Playwright с Chromium: npm i -g playwright && npx playwright install chromium");
   }
@@ -514,6 +542,7 @@ function fixtureFor(dir, args) {
     secrets: { ...(fx.secrets || {}), ...args.secret },
     actions: [...(fx.actions || []), ...args.action],
     now: args.now || fx.now,
+    lang: args.lang || fx.lang,
     home: args.home,
     verbose: args.verbose,
   };
@@ -528,7 +557,7 @@ function scaffold(dir, id, name) {
     $schema: schema("manifest"), id, name, version: "1.0.0", author: id.split(".")[1] || "me",
     description: "Счётчик с целью на день — стартовый шаблон: настройки, storage, кнопки и все три размера.",
     symbol: "sparkles", refresh: 60,
-    settings: [{ key: "goal", title: "Цель на день", default: "8" }],
+    settings: [{ key: "goal", title: "Цель на день", type: "number", min: 1, max: 20, default: "8" }],
   }));
   const face = (big, extra = [], compact = false) => ({
     type: "vstack", spacing: 10, children: [
@@ -675,10 +704,11 @@ async function main() {
     for (const dir of dirs) {
       const list = fixtures(dir).filter((f) => !f.error);
       const fx = list.find((f) => f.name === "ok") || list[0] || {};
-      const result = await scenario(dir, fx);
+      const result = await scenario(dir, { ...fx, lang: args.lang || fx.lang });
       if (result.error) { console.error(`✗ ${path.basename(dir)}: ${result.error}`); continue; }
       const m = result.box.manifest;
-      widgets.push({ id: m.id, name: m.name, symbol: m.symbol, view: JSON.parse(fs.readFileSync(path.join(dir, "view.json"), "utf8")), data: result.data });
+      widgets.push({ id: m.id, name: result.box.strings["manifest.name"] || m.name, symbol: m.symbol,
+                     view: JSON.parse(fs.readFileSync(path.join(dir, "view.json"), "utf8")), data: withStrings(result.data, result.box.strings) });
     }
     const ids = new Set(widgets.map((w) => w.id));
     const ref = (id) => (ids.has(`com.flywalk4.${id}`) ? `custom:com.flywalk4.${id}` : id);
@@ -691,6 +721,13 @@ async function main() {
       { layout: "grid", widgets: ["music", "weather", "calendar", "monitor"] },
       { layout: "trio", widgets: ["wallpaper", "photos", "worldclock"].map((id) => (id === "photos" ? id : ref(id))) },
       { layout: "single", widgets: ["photos"] },
+      ...["music", "weather", "calendar", "monitor", "reminders", "notes", "launcher"].map((id) => ({ layout: "single", widgets: [id] })),
+      { layout: "split", widgets: ["music", "calendar"] },
+      { layout: "six", widgets: ["time", "focus", "sky", "rates", "air", "worldclock"].map(ref) },
+      { layout: "trio", widgets: ["habits", "time", "focus"].map(ref) },
+      { layout: "split", bare: true, widgets: ["worldclock", "time"].map(ref) },
+      { layout: "trio", widgets: ["reminders", "notes", "launcher"] },
+      { layout: "stack", widgets: ["music", "weather", "monitor"] },
     ];
     const bundle = { widgets, pages };
     if (args.theme) {

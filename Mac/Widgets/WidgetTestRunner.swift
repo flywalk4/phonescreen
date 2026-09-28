@@ -13,7 +13,10 @@ enum WidgetTestRunner {
             fail("пакет: \(error)")
         }
         let manifest = widget.manifest
-        let hooks = WidgetRuntime.Hooks(
+        // WIDGET_LANG=en: the widget in that language (default: the app's).
+        let (language, table) = WidgetStrings.table(widget.strings,
+                                                    wanted: ProcessInfo.processInfo.environment["WIDGET_LANG"] ?? AppLanguage.current)
+        var hooks = WidgetRuntime.Hooks(
             secret: { key in ProcessInfo.processInfo.environment["WIDGET_SECRET_\(key.uppercased())"] },
             settings: {
                 var s = WidgetManager.settings(for: manifest)
@@ -25,6 +28,8 @@ enum WidgetTestRunner {
             loadStorage: { [:] }, saveStorage: { _ in },
             log: { line in FileHandle.standardError.write(Data("log: \(line)\n".utf8)) },
             home: ProcessInfo.processInfo.environment["WIDGET_HOME"] ?? NSHomeDirectory())
+        hooks.language = language
+        hooks.strings = table
         let runtime = WidgetRuntime(manifest: manifest, source: widget.source, hooks: hooks)
         runtime.refresh { result in
             switch result {
@@ -36,7 +41,9 @@ enum WidgetTestRunner {
                 for size in [WidgetSize.full, .medium, .small] {
                     guard let template = widget.view[size.rawValue] else { continue }
                     do {
-                        let node = try WidgetTemplate.resolve(template, data: data)
+                        var scope = data
+                        if var dict = data as? [String: Any], !table.isEmpty { dict["t"] = table; scope = dict }
+                        let node = try WidgetTemplate.resolve(template, data: scope)
                         views[size.rawValue] = try JSONSerialization.jsonObject(with: JSONEncoder().encode(node))
                     } catch {
                         fail("view.json (\(size.rawValue)): \(error)")

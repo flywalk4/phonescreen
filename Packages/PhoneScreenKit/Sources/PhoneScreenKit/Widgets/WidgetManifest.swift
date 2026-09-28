@@ -14,15 +14,83 @@ public struct WidgetManifest: Codable, Equatable, Sendable {
         }
     }
 
+    /// A user setting. Values reach the script as strings (`ctx.settings.<key>`) whatever the control:
+    /// `choice` → the option's value, `toggle` → "true" / "false", `number` → the number as text.
     public struct Setting: Codable, Equatable, Sendable {
+        public enum Kind: String, Codable, Sendable, CaseIterable {
+            case text, choice, toggle, number
+        }
+
+        /// One entry of a `choice`: `"value"` or `{"value": "…", "title": "…"}` in JSON.
+        public struct Option: Codable, Equatable, Sendable {
+            public var value: String
+            public var title: String?
+
+            public init(value: String, title: String? = nil) {
+                self.value = value
+                self.title = title
+            }
+
+            public var label: String { title ?? value }
+
+            private enum CodingKeys: String, CodingKey { case value, title }
+
+            public init(from decoder: Decoder) throws {
+                if let plain = try? decoder.singleValueContainer().decode(String.self) {
+                    self.init(value: plain)
+                } else {
+                    let c = try decoder.container(keyedBy: CodingKeys.self)
+                    self.init(value: try c.decode(String.self, forKey: .value), title: try c.decodeIfPresent(String.self, forKey: .title))
+                }
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                if let title {
+                    var c = encoder.container(keyedBy: CodingKeys.self)
+                    try c.encode(value, forKey: .value)
+                    try c.encode(title, forKey: .title)
+                } else {
+                    var c = encoder.singleValueContainer()
+                    try c.encode(value)
+                }
+            }
+        }
+
         public var key: String
         public var title: String
         public var `default`: String?
+        /// Control in Settings; `text` when absent.
+        public var type: Kind?
+        /// Small grey line under the control (format, examples).
+        public var hint: String?
+        /// For `choice`.
+        public var options: [Option]?
+        /// For `number`: a slider when both `min` and `max` are set, otherwise a stepper field.
+        public var min: Double?
+        public var max: Double?
+        public var step: Double?
+        /// Unit after a `number` ("мин", "%").
+        public var unit: String?
 
-        public init(key: String, title: String, default value: String? = nil) {
+        public init(key: String, title: String, default value: String? = nil, type: Kind? = nil, hint: String? = nil,
+                    options: [Option]? = nil, min: Double? = nil, max: Double? = nil, step: Double? = nil, unit: String? = nil) {
             self.key = key
             self.title = title
             self.default = value
+            self.type = type
+            self.hint = hint
+            self.options = options
+            self.min = min
+            self.max = max
+            self.step = step
+            self.unit = unit
+        }
+
+        public var kind: Kind { type ?? .text }
+
+        /// How a toggle reads a stored string (older widgets used yes / no).
+        public static func isOn(_ value: String) -> Bool {
+            ["true", "yes", "1", "on", "да"].contains(value.trimmingCharacters(in: .whitespaces).lowercased())
         }
     }
 
@@ -105,6 +173,20 @@ public struct WidgetManifest: Codable, Equatable, Sendable {
         guard Set(secretKeys).count == secretKeys.count, Set(settingKeys).count == settingKeys.count else {
             throw Invalid(description: "ключи secrets и settings не должны повторяться")
         }
+        for s in settings ?? [] {
+            switch s.kind {
+            case .choice:
+                guard let options = s.options, !options.isEmpty else {
+                    throw Invalid(description: "settings.\(s.key): для choice нужен непустой options")
+                }
+            case .number:
+                if let min = s.min, let max = s.max, min >= max {
+                    throw Invalid(description: "settings.\(s.key): min должен быть меньше max")
+                }
+            case .text, .toggle:
+                break
+            }
+        }
     }
 
     /// Whether a path (as the script wrote it, `~/…`) is inside a declared `files` entry.
@@ -145,6 +227,14 @@ public struct WidgetCatalog: Codable, Equatable, Sendable {
         public var path: String
         /// SHA-256 (hex) of each file of the package, checked on install.
         public var files: [String: String]
+        /// Name and description per language (`{"en": {"name": …, "description": …}}`), from its strings.json.
+        public var localized: [String: [String: String]]?
+
+        /// Name and description in `language` (falling back to English, then the entry's own).
+        public func text(in language: String) -> (name: String, description: String?) {
+            let table = localized?[language] ?? localized?["en"]
+            return (table?["name"] ?? name, table?["description"] ?? description)
+        }
 
         public init(id: String, name: String, version: String, author: String, description: String?,
                     symbol: String?, path: String, files: [String: String]) {

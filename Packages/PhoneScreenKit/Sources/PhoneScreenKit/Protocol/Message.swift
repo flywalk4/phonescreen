@@ -34,6 +34,12 @@ public enum Message: Equatable, Sendable {
     /// Mac → phone: what can be launched.
     case launcher([LauncherItem])
 
+    // Running apps
+    /// Mac → phone: apps running on the Mac, in launch order.
+    case runningApps([RunningApp])
+    /// Phone → Mac: switch to, hide or quit a running app.
+    case appAction(id: String, action: AppAction)
+
     /// Phone → Mac: a page became visible; send fresh data for it now.
     case refresh(WidgetKind)
 
@@ -47,6 +53,8 @@ public enum Message: Equatable, Sendable {
 
     /// Mac → phone: the look of every page and widget.
     case theme(Theme)
+    /// Mac → phone: the language the product is in ("ru", "en"…); the phone's own texts follow it.
+    case language(String)
 
     /// Mac → phone: tracks coming up.
     case musicQueue(MusicQueue)
@@ -88,7 +96,7 @@ extension Message: Codable {
     private enum Kind: String, Codable {
         case hello, ping, pong, pages, setPage, pageChanged, layout, nowPlaying, stats, mediaAction, command
         case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh, musicQueue, audio, music
-        case customWidget, customWidgetRemoved, customAction, theme
+        case customWidget, customWidgetRemoved, customAction, theme, runningApps, appAction, language
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit, textFocus, keyText, key
         case pointerPinch, pointerSmartZoom
     }
@@ -118,11 +126,14 @@ extension Message: Codable {
         case .noteCreate: self = .noteCreate(text: try c.decode(String.self, forKey: .text))
         case .noteShowOnMac: self = .noteShowOnMac(id: try c.decode(String.self, forKey: .id))
         case .launcher: self = .launcher(try c.decode([LauncherItem].self, forKey: .list))
+        case .runningApps: self = .runningApps(try c.decode([RunningApp].self, forKey: .list))
+        case .appAction: self = .appAction(id: try c.decode(String.self, forKey: .id), action: try c.decode(AppAction.self, forKey: .value))
         case .refresh: self = .refresh(try c.decode(WidgetKind.self, forKey: .value))
         case .customWidget: self = .customWidget(try c.decode(CustomWidgetState.self, forKey: .value))
         case .customWidgetRemoved: self = .customWidgetRemoved(id: try c.decode(String.self, forKey: .id))
         case .customAction: self = .customAction(id: try c.decode(String.self, forKey: .id), action: try c.decode(String.self, forKey: .text))
         case .theme: self = .theme(try c.decode(Theme.self, forKey: .value))
+        case .language: self = .language(try c.decode(String.self, forKey: .text))
         case .musicQueue: self = .musicQueue(try c.decode(MusicQueue.self, forKey: .value))
         case .audio: self = .audio(try c.decode(AudioState.self, forKey: .value))
         case .music: self = .music(try c.decode(MusicCommand.self, forKey: .value))
@@ -166,12 +177,16 @@ extension Message: Codable {
         case .noteCreate(let text): try c.encode(Kind.noteCreate, forKey: .t); try c.encode(text, forKey: .text)
         case .noteShowOnMac(let id): try c.encode(Kind.noteShowOnMac, forKey: .t); try c.encode(id, forKey: .id)
         case .launcher(let v): try c.encode(Kind.launcher, forKey: .t); try c.encode(v, forKey: .list)
+        case .runningApps(let v): try c.encode(Kind.runningApps, forKey: .t); try c.encode(v, forKey: .list)
+        case .appAction(let id, let action):
+            try c.encode(Kind.appAction, forKey: .t); try c.encode(id, forKey: .id); try c.encode(action, forKey: .value)
         case .refresh(let v): try c.encode(Kind.refresh, forKey: .t); try c.encode(v, forKey: .value)
         case .customWidget(let v): try c.encode(Kind.customWidget, forKey: .t); try c.encode(v, forKey: .value)
         case .customWidgetRemoved(let id): try c.encode(Kind.customWidgetRemoved, forKey: .t); try c.encode(id, forKey: .id)
         case .customAction(let id, let action):
             try c.encode(Kind.customAction, forKey: .t); try c.encode(id, forKey: .id); try c.encode(action, forKey: .text)
         case .theme(let v): try c.encode(Kind.theme, forKey: .t); try c.encode(v, forKey: .value)
+        case .language(let v): try c.encode(Kind.language, forKey: .t); try c.encode(v, forKey: .text)
         case .musicQueue(let v): try c.encode(Kind.musicQueue, forKey: .t); try c.encode(v, forKey: .value)
         case .audio(let v): try c.encode(Kind.audio, forKey: .t); try c.encode(v, forKey: .value)
         case .music(let v): try c.encode(Kind.music, forKey: .t); try c.encode(v, forKey: .value)

@@ -1,7 +1,7 @@
 {
   "id": "com.flywalk4.rates",
   "name": "Курсы валют",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "flywalk4",
   "description": "Курсы валют к рублю (или другой валюте) по данным open.er-api.com, с графиком изменений.",
   "symbol": "dollarsign.arrow.circlepath",
@@ -14,13 +14,25 @@
   "settings": [
     {
       "key": "target",
-      "title": "В какой валюте показывать",
-      "default": "RUB"
+      "title": "Показывать в",
+      "type": "choice",
+      "default": "RUB",
+      "options": [
+        "RUB",
+        "USD",
+        "EUR",
+        "CNY",
+        "KZT",
+        "GBP",
+        "TRY",
+        "JPY"
+      ]
     },
     {
       "key": "codes",
-      "title": "Валюты через запятую",
-      "default": "USD,EUR,CNY"
+      "title": "Валюты",
+      "default": "USD,EUR,CNY",
+      "hint": "Коды через запятую: USD, EUR, CNY"
     }
   ]
 }

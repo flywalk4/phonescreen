@@ -10,6 +10,8 @@ struct InstalledWidget: Identifiable {
     /// Parsed `view.json`: `{"full": node, "medium": node, "small": node}` (at least one size).
     let view: [String: Any]
     let source: String
+    /// Parsed `strings.json` (`{"en": {…}, "ru": {…}}`), empty when the widget has none.
+    let strings: [String: Any]
     /// Where the files are read from (the installed copy, or the author's folder in development mode).
     let folder: URL
     let isDevelopment: Bool
@@ -21,6 +23,8 @@ struct InstalledWidget: Identifiable {
 /// which is re-read whenever its files change.
 enum WidgetStore {
     static let requiredFiles = ["manifest.json", "view.json", "provider.js"]
+    /// Copied and downloaded along when present.
+    static let optionalFiles = ["strings.json"]
     static let maxFileBytes = 256 * 1024
 
     struct Failure: Error, CustomStringConvertible {
@@ -76,7 +80,18 @@ enum WidgetStore {
         guard let source = String(data: files["provider.js"]!, encoding: .utf8) else {
             throw Failure(description: "provider.js не в UTF-8")
         }
-        return InstalledWidget(manifest: manifest, view: view, source: source, folder: folder,
+        var strings: [String: Any] = [:]
+        let stringsURL = folder.appendingPathComponent("strings.json")
+        if let data = try? Data(contentsOf: stringsURL) {
+            guard data.count <= maxFileBytes, let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw Failure(description: "strings.json: объект {\"ru\": {…}, \"en\": {…}}, до 256 КБ")
+            }
+            strings = parsed
+            if let date = try? stringsURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate {
+                modified = max(modified, date)
+            }
+        }
+        return InstalledWidget(manifest: manifest, view: view, source: source, strings: strings, folder: folder,
                                isDevelopment: development, modified: modified)
     }
 
@@ -95,6 +110,9 @@ enum WidgetStore {
             for name in requiredFiles {
                 try FileManager.default.copyItem(at: folder.appendingPathComponent(name), to: target.appendingPathComponent(name))
             }
+            for name in optionalFiles where FileManager.default.fileExists(atPath: folder.appendingPathComponent(name).path) {
+                try FileManager.default.copyItem(at: folder.appendingPathComponent(name), to: target.appendingPathComponent(name))
+            }
         }
         return try load(installFolder: target)
     }
@@ -105,7 +123,7 @@ enum WidgetStore {
         let base = indexURL.deletingLastPathComponent().appendingPathComponent(entry.path, isDirectory: true)
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent("phonescreen-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: temp, withIntermediateDirectories: true)
-        for name in requiredFiles {
+        for name in requiredFiles + optionalFiles.filter({ entry.files[$0] != nil }) {
             guard let expected = entry.files[name]?.lowercased() else { throw Failure(description: "В каталоге нет хеша для \(name)") }
             let data = try await fetch(base.appendingPathComponent(name))
             let actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()

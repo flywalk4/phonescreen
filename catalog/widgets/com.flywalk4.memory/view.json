@@ -1,266 +1,269 @@
 {
- "full": {
-  "type": "vstack",
-  "spacing": 14,
-  "align": "leading",
-  "children": [
-   {
-    "type": "hstack",
-    "spacing": 8,
+  "full": {
+    "type": "vstack",
+    "spacing": 14,
+    "align": "leading",
     "children": [
-     {
-      "type": "text",
-      "text": "🧠",
-      "size": 14
-     },
-     {
-      "type": "text",
-      "text": "ПАМЯТЬ",
-      "style": "caption",
-      "weight": "semibold",
-      "color": "secondary"
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "text",
-      "text": "рекорд: {{best}}",
-      "style": "caption",
-      "color": "secondary"
-     }
-    ]
-   },
-   {
-    "type": "hstack",
-    "spacing": 10,
-    "children": [
-     {
-      "type": "box",
-      "padding": 10,
-      "spacing": 0,
-      "align": "center",
-      "children": [
-       {
-        "type": "text",
-        "text": "{{moves}}",
-        "size": 26,
-        "weight": "bold",
-        "design": "rounded"
-       },
-       {
-        "type": "text",
-        "text": "ходов",
-        "style": "caption2",
-        "color": "secondary"
-       }
-      ]
-     },
-     {
-      "type": "box",
-      "padding": 10,
-      "spacing": 0,
-      "align": "center",
-      "children": [
-       {
-        "type": "text",
-        "text": "{{pairs}}",
-        "size": 26,
-        "weight": "bold",
-        "design": "rounded",
-        "color": "green"
-       },
-       {
-        "type": "text",
-        "text": "пар",
-        "style": "caption2",
-        "color": "secondary"
-       }
-      ]
-     }
-    ]
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "list",
-    "items": "{{cards}}",
-    "columns": 4,
-    "spacing": 8,
-    "template": {
-     "type": "box",
-     "aspect": 1,
-     "padding": 0,
-     "radius": 14,
-     "background": "{{item.bg}}",
-     "opacity": "{{item.opacity}}",
-     "action": "{{item.action}}",
-     "children": [
       {
-       "type": "text",
-       "text": "{{item.face}}",
-       "size": 40,
-       "weight": "bold",
-       "design": "rounded",
-       "color": "{{item.faceColor}}"
-      }
-     ]
-    }
-   },
-   {
-    "type": "hstack",
-    "children": [
-     {
-      "type": "text",
-      "text": "{{status}}",
-      "style": "headline",
-      "color": "{{statusColor}}"
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "button",
-      "title": "Заново",
-      "symbol": "arrow.clockwise",
-      "action": "new"
-     }
-    ]
-   },
-   {
-    "type": "spacer"
-   }
-  ]
- },
- "medium": {
-  "type": "vstack",
-  "spacing": 0,
-  "children": [
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "hstack",
-    "spacing": 12,
-    "children": [
-     {
-      "type": "vstack",
-      "spacing": 0,
-      "children": [
-       {
+        "type": "hstack",
+        "spacing": 8,
+        "children": [
+          {
+            "type": "text",
+            "text": "🧠",
+            "size": 14
+          },
+          {
+            "type": "text",
+            "text": "ПАМЯТЬ",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "рекорд: {{best}}",
+            "style": "caption",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "hstack",
+        "spacing": 10,
+        "children": [
+          {
+            "type": "box",
+            "padding": 10,
+            "spacing": 0,
+            "align": "center",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{moves}}",
+                "size": 26,
+                "weight": "bold",
+                "design": "rounded"
+              },
+              {
+                "type": "text",
+                "text": "ходов",
+                "style": "caption2",
+                "color": "secondary"
+              }
+            ]
+          },
+          {
+            "type": "box",
+            "padding": 10,
+            "spacing": 0,
+            "align": "center",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{pairs}}",
+                "size": 26,
+                "weight": "bold",
+                "design": "rounded",
+                "color": "green"
+              },
+              {
+                "type": "text",
+                "text": "пар",
+                "style": "caption2",
+                "color": "secondary"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "spacer"
+      },
+      {
         "type": "list",
         "items": "{{cards}}",
         "columns": 4,
-        "spacing": 5,
+        "spacing": 8,
         "template": {
-         "type": "box",
-         "aspect": 1,
-         "padding": 0,
-         "radius": 8,
-         "background": "{{item.bg}}",
-         "opacity": "{{item.opacity}}",
-         "action": "{{item.action}}",
-         "children": [
-          {
-           "type": "text",
-           "text": "{{item.face}}",
-           "size": 24,
-           "weight": "bold",
-           "design": "rounded",
-           "color": "{{item.faceColor}}"
-          }
-         ]
+          "type": "box",
+          "aspect": 1,
+          "padding": 0,
+          "radius": 14,
+          "background": "{{item.bg}}",
+          "opacity": "{{item.opacity}}",
+          "action": "{{item.action}}",
+          "children": [
+            {
+              "type": "text",
+              "text": "{{item.face}}",
+              "size": 40,
+              "weight": "bold",
+              "design": "rounded",
+              "color": "{{item.faceColor}}"
+            }
+          ]
         }
-       }
-      ]
-     },
-     {
-      "type": "vstack",
-      "spacing": 6,
-      "align": "leading",
-      "children": [
-       {
-        "type": "text",
-        "text": "{{moves}}",
-        "size": 30,
-        "weight": "bold",
-        "design": "rounded"
-       },
-       {
-        "type": "text",
-        "text": "ходов",
-        "style": "caption",
-        "color": "secondary"
-       },
-       {
-        "type": "text",
-        "text": "{{pairs}}",
-        "style": "subheadline",
-        "weight": "semibold",
-        "color": "green"
-       },
-       {
+      },
+      {
+        "type": "hstack",
+        "children": [
+          {
+            "type": "text",
+            "text": "{{status}}",
+            "style": "headline",
+            "color": "{{statusColor}}"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "button",
+            "title": "Заново",
+            "symbol": "arrow.clockwise",
+            "action": "new"
+          }
+        ]
+      },
+      {
         "type": "spacer"
-       },
-       {
+      }
+    ]
+  },
+  "medium": {
+    "type": "vstack",
+    "spacing": 0,
+    "children": [
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "hstack",
+        "spacing": 12,
+        "children": [
+          {
+            "type": "vstack",
+            "spacing": 0,
+            "children": [
+              {
+                "type": "list",
+                "items": "{{cards}}",
+                "columns": 4,
+                "spacing": 5,
+                "template": {
+                  "type": "box",
+                  "aspect": 1,
+                  "padding": 0,
+                  "radius": 8,
+                  "background": "{{item.bg}}",
+                  "opacity": "{{item.opacity}}",
+                  "action": "{{item.action}}",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "{{item.face}}",
+                      "size": 24,
+                      "weight": "bold",
+                      "design": "rounded",
+                      "color": "{{item.faceColor}}"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "type": "vstack",
+            "spacing": 6,
+            "align": "leading",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{moves}}",
+                "size": 30,
+                "weight": "bold",
+                "design": "rounded"
+              },
+              {
+                "type": "text",
+                "text": "ходов",
+                "style": "caption",
+                "color": "secondary"
+              },
+              {
+                "type": "text",
+                "text": "{{pairs}}",
+                "style": "subheadline",
+                "weight": "semibold",
+                "color": "green"
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "button",
+                "title": "Заново",
+                "action": "new"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "spacer"
+      }
+    ]
+  },
+  "small": {
+    "type": "vstack",
+    "spacing": 6,
+    "align": "leading",
+    "children": [
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "list",
+        "items": "{{cards}}",
+        "columns": 4,
+        "spacing": 3,
+        "template": {
+          "type": "box",
+          "aspect": 1,
+          "padding": 0,
+          "radius": 5,
+          "background": "{{item.bg}}",
+          "opacity": "{{item.opacity}}",
+          "action": "{{item.action}}",
+          "children": [
+            {
+              "type": "text",
+              "text": "{{item.face}}",
+              "size": 14,
+              "weight": "bold",
+              "design": "rounded",
+              "color": "{{item.faceColor}}"
+            }
+          ]
+        }
+      },
+      {
+        "type": "text",
+        "text": "{{moves}} ходов · {{pairs}}",
+        "style": "caption",
+        "weight": "semibold"
+      },
+      {
+        "type": "spacer"
+      },
+      {
         "type": "button",
         "title": "Заново",
         "action": "new"
-       }
-      ]
-     }
-    ]
-   },
-   {
-    "type": "spacer"
-   }
-  ]
- },
- "small": {
-  "type": "vstack",
-  "spacing": 6,
-  "align": "leading",
-  "children": [
-   {
-    "type": "list",
-    "items": "{{cards}}",
-    "columns": 4,
-    "spacing": 3,
-    "template": {
-     "type": "box",
-     "aspect": 1,
-     "padding": 0,
-     "radius": 5,
-     "background": "{{item.bg}}",
-     "opacity": "{{item.opacity}}",
-     "action": "{{item.action}}",
-     "children": [
-      {
-       "type": "text",
-       "text": "{{item.face}}",
-       "size": 14,
-       "weight": "bold",
-       "design": "rounded",
-       "color": "{{item.faceColor}}"
       }
-     ]
-    }
-   },
-   {
-    "type": "text",
-    "text": "{{moves}} ходов · {{pairs}}",
-    "style": "caption",
-    "weight": "semibold"
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "button",
-    "title": "Заново",
-    "action": "new"
-   }
-  ]
- }
+    ]
+  }
 }

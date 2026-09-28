@@ -1,14 +1,52 @@
 {
   "id": "com.flywalk4.hackernews",
   "name": "Hacker News",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": "flywalk4",
   "description": "Главные истории Hacker News: заголовок, сайт, очки и комментарии, свежие отмечены. Без ключа.",
   "symbol": "newspaper.fill",
   "refresh": 900,
-  "permissions": { "network": ["hacker-news.firebaseio.com"] },
+  "permissions": {
+    "network": [
+      "hacker-news.firebaseio.com"
+    ]
+  },
   "settings": [
-    { "key": "list", "title": "Лента: top, best, new, ask, show", "default": "top" },
-    { "key": "count", "title": "Сколько историй (до 12)", "default": "8" }
+    {
+      "key": "list",
+      "title": "Лента",
+      "type": "choice",
+      "default": "top",
+      "options": [
+        {
+          "value": "top",
+          "title": "Топ"
+        },
+        {
+          "value": "best",
+          "title": "Лучшее"
+        },
+        {
+          "value": "new",
+          "title": "Новое"
+        },
+        {
+          "value": "ask",
+          "title": "Ask HN"
+        },
+        {
+          "value": "show",
+          "title": "Show HN"
+        }
+      ]
+    },
+    {
+      "key": "count",
+      "title": "Сколько историй",
+      "type": "number",
+      "default": "8",
+      "min": 1,
+      "max": 12
+    }
   ]
 }

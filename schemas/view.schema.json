@@ -277,7 +277,21 @@
         "#FF6600"
        ]
       },
+      "fill": {
+       "anyOf": [
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "string",
+         "pattern": "\\{\\{.+\\}\\}"
+        }
+       ]
+      },
       "label": {
+       "type": "string"
+      },
+      "text": {
        "type": "string"
       },
       "value": {

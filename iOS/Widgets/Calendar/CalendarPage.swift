@@ -32,7 +32,11 @@ struct CalendarPage: View {
         Group {
             if kit.eventsAccess == .fullAccess {
                 TimelineView(.everyMinute) { context in
-                    if size == .full { content(now: context.date) } else { compact(now: context.date) }
+                    if size == .full {
+                        GeometryReader { geo in content(now: context.date, tall: geo.size.height > geo.size.width) }
+                    } else {
+                        compact(now: context.date)
+                    }
                 }
             } else {
                 AccessPrompt(symbol: "calendar", title: "Календарь", status: kit.eventsAccess) {
@@ -49,10 +53,11 @@ struct CalendarPage: View {
     private func compact(now: Date) -> some View {
         let upcoming = model.today.filter { $0.isAllDay || $0.endDate > now }
         return VStack(alignment: .leading, spacing: 8) {
-            WidgetHeader(title: now.formatted(.dateTime.weekday(.abbreviated).day()).capitalized, symbol: "calendar")
+            WidgetHeader(title: now.formatted(.dateTime.weekday(.abbreviated).day()).capitalizedFirst, symbol: "calendar")
             if upcoming.isEmpty {
-                Text(model.tomorrow.isEmpty ? "Сегодня встреч нет" : "Сегодня всё. Завтра: \(model.tomorrow[0].title ?? "")")
+                Text(model.tomorrow.isEmpty ? "Свободный день" : "Сегодня всё. Завтра: \(model.tomorrow[0].title ?? "")")
                     .font(.caption).foregroundStyle(.secondary)
+                MonthGrid(now: now, compact: true).frame(maxHeight: .infinity, alignment: .center)
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
@@ -74,9 +79,9 @@ struct CalendarPage: View {
         }
     }
 
-    private func content(now: Date) -> some View {
+    private func content(now: Date, tall: Bool) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            WidgetHeader(title: now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalized,
+            WidgetHeader(title: now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalizedFirst,
                          symbol: "calendar")
             if let next = model.today.first(where: { !$0.isAllDay && $0.startDate > now }) {
                 NextUp(event: next, now: now)
@@ -87,7 +92,11 @@ struct CalendarPage: View {
                     ForEach(allDay, id: \.eventIdentifier) { EventRow(event: $0, now: now) }
                     let timed = model.today.filter { !$0.isAllDay }
                     if timed.isEmpty && allDay.isEmpty {
-                        Text("Сегодня встреч нет").foregroundStyle(.secondary).padding(.vertical, 20)
+                        Label("Сегодня встреч нет — свободный день", systemImage: "sun.max")
+                            .foregroundStyle(.secondary).padding(.vertical, 8)
+                        MonthGrid(now: now, compact: false, roomy: tall)
+                            .padding(16)
+                            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.primary.opacity(0.05)))
                     }
                     ForEach(Array(timed.enumerated()), id: \.element.eventIdentifier) { index, event in
                         // The "now" line sits before the first event that hasn't started yet.
@@ -164,5 +173,58 @@ private struct NowLine: View {
         }
         .foregroundStyle(.red)
         .padding(.vertical, 2)
+    }
+}
+
+/// This month as a grid, weeks from Monday, today in the accent colour, weekends dimmed.
+struct MonthGrid: View {
+    let now: Date
+    var compact = false
+    /// Big rows for an upright whole page; lying sideways the grid must fit the short height.
+    var roomy = true
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        var cal = Calendar(identifier: .gregorian)
+        cal.locale = Locale(identifier: "ru_RU")
+        cal.firstWeekday = 2
+        let month = cal.dateInterval(of: .month, for: now)!
+        let days = cal.range(of: .day, in: .month, for: now)!.count
+        let lead = (cal.component(.weekday, from: month.start) - cal.firstWeekday + 7) % 7
+        let today = cal.component(.day, from: now)
+        let cells = Array(repeating: 0, count: lead) + Array(1...days)
+        let symbols = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+        let font: Font = compact ? .caption : roomy ? .title3 : .callout
+        return VStack(alignment: .leading, spacing: compact ? 4 : 10) {
+            if !compact {
+                Text(now.formatted(.dateTime.month(.wide).year()).capitalizedFirst).font(.headline)
+            }
+            Grid(horizontalSpacing: 0, verticalSpacing: compact ? 2 : roomy ? 8 : 2) {
+                GridRow {
+                    ForEach(symbols.indices, id: \.self) { i in
+                        Text(compact ? String(symbols[i].prefix(1)) : symbols[i])
+                            .font(font.weight(.semibold)).foregroundStyle(i >= 5 ? .tertiary : .secondary)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                ForEach(0..<(cells.count + 6) / 7, id: \.self) { week in
+                    GridRow {
+                        ForEach(0..<7, id: \.self) { d in
+                            let i = week * 7 + d
+                            let day = i < cells.count ? cells[i] : 0
+                            Text(day == 0 ? "" : "\(day)")
+                                .font(font.monospacedDigit().weight(day == today ? .bold : .regular))
+                                .foregroundStyle(day == today ? AnyShapeStyle(.white) : d >= 5 ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.primary))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, compact ? 4 : roomy ? 12 : 2)
+                                .background {
+                                    if day == today { Circle().fill(theme.accent).aspectRatio(1, contentMode: .fit) }
+                                }
+                                .opacity(day != 0 && day < today ? 0.5 : 1)
+                        }
+                    }
+                }
+            }
+        }
     }
 }

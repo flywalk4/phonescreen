@@ -1,0 +1,35 @@
+{
+  "id": "com.flywalk4.gruvbox",
+  "name": "Gruvbox",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Тёплая ретро-палитра Gruvbox Dark (MIT): кремовый текст на тёмно-коричневом, оранжевый акцент, приглушённые зелёный, жёлтый и голубой.",
+  "style": "flat",
+  "appearance": "dark",
+  "font": "monospaced",
+  "radius": 14,
+  "background": { "colors": ["#1D2021"] },
+  "colors": {
+    "text": "#EBDBB2",
+    "secondary": "#A89984",
+    "accent": "#FE8019",
+    "card": "#282828",
+    "border": "#3C3836",
+    "palette": {
+      "red": "#FB4934",
+      "orange": "#FE8019",
+      "yellow": "#FABD2F",
+      "green": "#B8BB26",
+      "mint": "#B8BB26",
+      "teal": "#8EC07C",
+      "cyan": "#8EC07C",
+      "blue": "#83A598",
+      "indigo": "#83A598",
+      "purple": "#D3869B",
+      "pink": "#D3869B",
+      "brown": "#D65D0E",
+      "gray": "#928374"
+    }
+  },
+  "layout": { "gap": 8, "margin": 8 }
+}

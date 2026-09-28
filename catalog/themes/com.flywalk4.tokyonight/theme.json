@@ -1,0 +1,38 @@
+{
+  "id": "com.flywalk4.tokyonight",
+  "name": "Tokyo Night",
+  "version": "1.0.0",
+  "author": "flywalk4",
+  "description": "Палитра Tokyo Night (MIT): глубокий ночной синий, неоновые голубой и фиолетовый, редкие звёзды на фоне.",
+  "style": "flat",
+  "appearance": "dark",
+  "font": "rounded",
+  "radius": 22,
+  "background": {
+    "colors": ["#16161E", "#1A1B26"],
+    "angle": 180,
+    "animation": "stars",
+    "tints": ["#C0CAF5", "#7AA2F7", "#BB9AF7"],
+    "speed": 0.5
+  },
+  "colors": {
+    "text": "#C0CAF5",
+    "secondary": "#7982A9",
+    "accent": "#7AA2F7",
+    "card": "#1F2335",
+    "border": "#292E42",
+    "palette": {
+      "red": "#F7768E",
+      "orange": "#FF9E64",
+      "yellow": "#E0AF68",
+      "green": "#9ECE6A",
+      "teal": "#73DACA",
+      "cyan": "#7DCFFF",
+      "blue": "#7AA2F7",
+      "indigo": "#7AA2F7",
+      "purple": "#BB9AF7",
+      "gray": "#565F89"
+    }
+  },
+  "layout": { "cardOpacity": 0.92 }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
+  "id": "com.flywalk4.habits",
+  "name": "Привычки",
+  "version": "1.1.0",
+  "author": "flywalk4",
+  "description": "Трекер привычек: отмечай нажатием на телефоне, смотри серию дней подряд и последнюю неделю точками. Без сети.",
+  "symbol": "checklist.checked",
+  "refresh": 60,
+  "settings": [
+    {
+      "key": "habits",
+      "title": "Привычки",
+      "default": "",
+      "hint": "Через запятую, до 8; эмодзи в начале — по желанию"
+    }
+  ]
+}

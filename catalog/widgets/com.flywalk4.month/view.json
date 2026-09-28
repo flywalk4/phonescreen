@@ -1,332 +1,361 @@
 {
- "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
- "full": {
-  "type": "vstack",
-  "spacing": 14,
-  "align": "leading",
-  "children": [
-   {
-    "type": "hstack",
-    "spacing": 8,
+  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
+  "full": {
+    "type": "vstack",
+    "spacing": 14,
+    "align": "leading",
     "children": [
-     {
-      "type": "symbol",
-      "name": "calendar",
-      "color": "accent",
-      "size": 15
-     },
-     {
-      "type": "text",
-      "text": "МЕСЯЦ",
-      "style": "caption",
-      "weight": "semibold",
-      "color": "secondary"
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "text",
-      "text": "{{week}}",
-      "style": "caption",
-      "weight": "semibold",
-      "color": "secondary"
-     }
+      {
+        "type": "hstack",
+        "spacing": 8,
+        "children": [
+          {
+            "type": "symbol",
+            "name": "calendar",
+            "color": "accent",
+            "size": 15
+          },
+          {
+            "type": "text",
+            "text": "МЕСЯЦ",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{week}}",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "hstack",
+        "align": "bottom",
+        "spacing": 12,
+        "children": [
+          {
+            "type": "text",
+            "text": "{{day}}",
+            "size": 64,
+            "weight": "bold",
+            "design": "rounded",
+            "color": "accent",
+            "lines": 1
+          },
+          {
+            "type": "vstack",
+            "spacing": 2,
+            "align": "leading",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{weekday}}",
+                "style": "title3",
+                "weight": "semibold"
+              },
+              {
+                "type": "text",
+                "text": "{{title}}",
+                "style": "subheadline",
+                "color": "secondary"
+              }
+            ]
+          },
+          {
+            "type": "spacer"
+          }
+        ]
+      },
+      {
+        "type": "box",
+        "padding": 14,
+        "children": [
+          {
+            "type": "vstack",
+            "spacing": 6,
+            "children": [
+              {
+                "type": "list",
+                "items": "{{weekdays}}",
+                "columns": 7,
+                "spacing": 0,
+                "template": {
+                  "type": "text",
+                  "text": "{{item.d}}",
+                  "style": "caption2",
+                  "weight": "semibold",
+                  "color": "{{item.color}}",
+                  "align": "center"
+                }
+              },
+              {
+                "type": "list",
+                "items": "{{cells}}",
+                "columns": 7,
+                "spacing": 6,
+                "template": {
+                  "type": "box",
+                  "padding": 7,
+                  "radius": 8,
+                  "background": "{{item.background}}",
+                  "opacity": "{{item.opacity}}",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "{{item.text}}",
+                      "size": 17,
+                      "weight": "{{item.weight}}",
+                      "design": "rounded",
+                      "color": "{{item.color}}",
+                      "align": "center",
+                      "lines": 1
+                    }
+                  ],
+                  "align": "center"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "vstack",
+        "spacing": 6,
+        "align": "leading",
+        "children": [
+          {
+            "type": "text",
+            "text": "{{work}}",
+            "style": "footnote",
+            "color": "secondary"
+          },
+          {
+            "type": "progress",
+            "value": "{{progress}}",
+            "color": "accent"
+          }
+        ]
+      },
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "text",
+        "text": "{{nextTitle}}",
+        "style": "headline",
+        "color": "secondary"
+      },
+      {
+        "type": "vstack",
+        "spacing": 3,
+        "children": [
+          {
+            "type": "list",
+            "items": "{{weekdays}}",
+            "columns": 7,
+            "spacing": 0,
+            "template": {
+              "type": "text",
+              "text": "{{item.d}}",
+              "style": "caption2",
+              "weight": "semibold",
+              "color": "{{item.color}}",
+              "align": "center"
+            }
+          },
+          {
+            "type": "list",
+            "items": "{{nextCells}}",
+            "columns": 7,
+            "spacing": 3,
+            "template": {
+              "type": "box",
+              "padding": 4,
+              "radius": 8,
+              "background": "{{item.background}}",
+              "opacity": "{{item.opacity}}",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "{{item.text}}",
+                  "size": 13,
+                  "weight": "{{item.weight}}",
+                  "design": "rounded",
+                  "color": "{{item.color}}",
+                  "align": "center",
+                  "lines": 1
+                }
+              ],
+              "align": "center"
+            }
+          }
+        ]
+      }
     ]
-   },
-   {
-    "type": "hstack",
-    "align": "bottom",
-    "spacing": 12,
+  },
+  "medium": {
+    "type": "vstack",
+    "spacing": 8,
+    "align": "leading",
     "children": [
-     {
-      "type": "text",
-      "text": "{{day}}",
-      "size": 64,
-      "weight": "bold",
-      "design": "rounded",
-      "color": "accent",
-      "lines": 1
-     },
-     {
-      "type": "vstack",
-      "spacing": 2,
-      "align": "leading",
-      "children": [
-       {
+      {
+        "type": "hstack",
+        "align": "baseline",
+        "children": [
+          {
+            "type": "text",
+            "text": "{{month}}",
+            "style": "headline"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{workShort}}",
+            "style": "caption",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "vstack",
+        "spacing": 4,
+        "children": [
+          {
+            "type": "list",
+            "items": "{{weekdays}}",
+            "columns": 7,
+            "spacing": 0,
+            "template": {
+              "type": "text",
+              "text": "{{item.d}}",
+              "style": "caption2",
+              "weight": "semibold",
+              "color": "{{item.color}}",
+              "align": "center"
+            }
+          },
+          {
+            "type": "list",
+            "items": "{{cells}}",
+            "columns": 7,
+            "spacing": 4,
+            "template": {
+              "type": "box",
+              "padding": 5,
+              "radius": 8,
+              "background": "{{item.background}}",
+              "opacity": "{{item.opacity}}",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "{{item.text}}",
+                  "size": 15,
+                  "weight": "{{item.weight}}",
+                  "design": "rounded",
+                  "color": "{{item.color}}",
+                  "align": "center",
+                  "lines": 1
+                }
+              ],
+              "align": "center"
+            }
+          }
+        ]
+      },
+      {
+        "type": "spacer"
+      }
+    ]
+  },
+  "small": {
+    "type": "vstack",
+    "spacing": 2,
+    "align": "leading",
+    "children": [
+      {
         "type": "text",
         "text": "{{weekday}}",
-        "style": "title3",
-        "weight": "semibold"
-       },
-       {
+        "style": "subheadline",
+        "weight": "semibold",
+        "color": "accent",
+        "lines": 1
+      },
+      {
+        "type": "text",
+        "text": "{{day}}",
+        "size": 64,
+        "weight": "bold",
+        "design": "rounded",
+        "lines": 1
+      },
+      {
         "type": "text",
         "text": "{{title}}",
-        "style": "subheadline",
-        "color": "secondary"
-       }
-      ]
-     },
-     {
-      "type": "spacer"
-     }
-    ]
-   },
-   {
-    "type": "box",
-    "padding": 14,
-    "children": [
-     {
-      "type": "vstack",
-      "spacing": 6,
-      "children": [
-       {
-        "type": "list",
-        "items": "{{weekdays}}",
-        "columns": 7,
-        "spacing": 0,
-        "template": {
-         "type": "text",
-         "text": "{{item.d}}",
-         "style": "caption2",
-         "weight": "semibold",
-         "color": "{{item.color}}",
-         "align": "center"
-        }
-       },
-       {
+        "style": "caption",
+        "color": "secondary",
+        "lines": 1
+      },
+      {
+        "type": "spacer"
+      },
+      {
         "type": "list",
         "items": "{{cells}}",
         "columns": 7,
-        "spacing": 6,
+        "spacing": 1,
         "template": {
-         "type": "box",
-         "padding": 7,
-         "radius": 8,
-         "background": "{{item.background}}",
-         "opacity": "{{item.opacity}}",
-         "children": [
-          {
-           "type": "text",
-           "text": "{{item.text}}",
-           "size": 17,
-           "weight": "{{item.weight}}",
-           "design": "rounded",
-           "color": "{{item.color}}",
-           "align": "center",
-           "lines": 1
-          }
-         ],
-         "align": "center"
+          "type": "box",
+          "padding": 1,
+          "radius": 4,
+          "background": "{{item.background}}",
+          "opacity": "{{item.opacity}}",
+          "align": "center",
+          "children": [
+            {
+              "type": "text",
+              "text": "{{item.text}}",
+              "size": 9,
+              "weight": "{{item.weight}}",
+              "design": "rounded",
+              "color": "{{item.color}}",
+              "align": "center",
+              "lines": 1
+            }
+          ]
         }
-       }
-      ]
-     }
-    ]
-   },
-   {
-    "type": "vstack",
-    "spacing": 6,
-    "align": "leading",
-    "children": [
-     {
-      "type": "text",
-      "text": "{{work}}",
-      "style": "footnote",
-      "color": "secondary"
-     },
-     {
-      "type": "progress",
-      "value": "{{progress}}",
-      "color": "accent"
-     }
-    ]
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "text",
-    "text": "{{nextTitle}}",
-    "style": "headline",
-    "color": "secondary"
-   },
-   {
-    "type": "vstack",
-    "spacing": 3,
-    "children": [
-     {
-      "type": "list",
-      "items": "{{weekdays}}",
-      "columns": 7,
-      "spacing": 0,
-      "template": {
-       "type": "text",
-       "text": "{{item.d}}",
-       "style": "caption2",
-       "weight": "semibold",
-       "color": "{{item.color}}",
-       "align": "center"
+      },
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "text",
+        "text": "{{week}}",
+        "style": "caption2",
+        "color": "secondary"
+      },
+      {
+        "type": "text",
+        "text": "{{workShort}}",
+        "style": "caption",
+        "weight": "semibold",
+        "lines": 1
+      },
+      {
+        "type": "progress",
+        "value": "{{progress}}",
+        "color": "accent"
       }
-     },
-     {
-      "type": "list",
-      "items": "{{nextCells}}",
-      "columns": 7,
-      "spacing": 3,
-      "template": {
-       "type": "box",
-       "padding": 4,
-       "radius": 8,
-       "background": "{{item.background}}",
-       "opacity": "{{item.opacity}}",
-       "children": [
-        {
-         "type": "text",
-         "text": "{{item.text}}",
-         "size": 13,
-         "weight": "{{item.weight}}",
-         "design": "rounded",
-         "color": "{{item.color}}",
-         "align": "center",
-         "lines": 1
-        }
-       ],
-       "align": "center"
-      }
-     }
     ]
-   }
-  ]
- },
- "medium": {
-  "type": "vstack",
-  "spacing": 8,
-  "align": "leading",
-  "children": [
-   {
-    "type": "hstack",
-    "align": "baseline",
-    "children": [
-     {
-      "type": "text",
-      "text": "{{month}}",
-      "style": "headline"
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "text",
-      "text": "{{workShort}}",
-      "style": "caption",
-      "color": "secondary"
-     }
-    ]
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "vstack",
-    "spacing": 4,
-    "children": [
-     {
-      "type": "list",
-      "items": "{{weekdays}}",
-      "columns": 7,
-      "spacing": 0,
-      "template": {
-       "type": "text",
-       "text": "{{item.d}}",
-       "style": "caption2",
-       "weight": "semibold",
-       "color": "{{item.color}}",
-       "align": "center"
-      }
-     },
-     {
-      "type": "list",
-      "items": "{{cells}}",
-      "columns": 7,
-      "spacing": 4,
-      "template": {
-       "type": "box",
-       "padding": 5,
-       "radius": 8,
-       "background": "{{item.background}}",
-       "opacity": "{{item.opacity}}",
-       "children": [
-        {
-         "type": "text",
-         "text": "{{item.text}}",
-         "size": 15,
-         "weight": "{{item.weight}}",
-         "design": "rounded",
-         "color": "{{item.color}}",
-         "align": "center",
-         "lines": 1
-        }
-       ],
-       "align": "center"
-      }
-     }
-    ]
-   },
-   {
-    "type": "spacer"
-   }
-  ]
- },
- "small": {
-  "type": "vstack",
-  "spacing": 2,
-  "align": "leading",
-  "children": [
-   {
-    "type": "text",
-    "text": "{{weekday}}",
-    "style": "subheadline",
-    "weight": "semibold",
-    "color": "accent",
-    "lines": 1
-   },
-   {
-    "type": "text",
-    "text": "{{day}}",
-    "size": 64,
-    "weight": "bold",
-    "design": "rounded",
-    "lines": 1
-   },
-   {
-    "type": "text",
-    "text": "{{title}}",
-    "style": "caption",
-    "color": "secondary",
-    "lines": 1
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "text",
-    "text": "{{week}}",
-    "style": "caption2",
-    "color": "secondary"
-   },
-   {
-    "type": "text",
-    "text": "{{workShort}}",
-    "style": "caption",
-    "weight": "semibold",
-    "lines": 1
-   },
-   {
-    "type": "progress",
-    "value": "{{progress}}",
-    "color": "accent"
-   }
-  ]
- }
+  }
 }

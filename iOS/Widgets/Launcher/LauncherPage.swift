@@ -20,7 +20,7 @@ struct LauncherPage: View {
                     }
                 } else {
                     // Card: one dense grid, no section titles.
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 46), spacing: 8)], spacing: 10) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 60), spacing: 10)], spacing: 12) {
                         ForEach(model.launcher) { item in
                             LauncherTile(item: item, flashed: flashed == item.id, compact: true)
                                 .contentShape(Rectangle())
@@ -39,7 +39,7 @@ struct LauncherPage: View {
     private func section(_ title: String, items: [LauncherItem]) -> some View {
         if !items.isEmpty {
             Text(title).font(.headline).foregroundStyle(.secondary)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 12)], spacing: 14) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 88), spacing: 14)], spacing: 16) {
                 ForEach(items) { item in
                     LauncherTile(item: item, flashed: flashed == item.id)
                         .contentShape(Rectangle())
@@ -71,16 +71,16 @@ private struct LauncherTile: View {
                 } else if theme.style == .ascii {
                     AsciiFrame(color: theme.secondaryText)
                 } else {
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: compact ? 13 : 16, style: .continuous)
                         .fill(item.kind == .shortcut ? Color.indigo.gradient : Color.gray.opacity(0.35).gradient)
-                    Glyph(systemName: item.symbol ?? "questionmark").font(compact ? .body : .title2).foregroundStyle(theme.style == .ascii ? theme.text : .white)
+                    Glyph(systemName: item.symbol ?? "questionmark").font(compact ? .title3 : .title).foregroundStyle(theme.style == .ascii ? theme.text : .white)
                 }
             }
-            .frame(width: compact ? 40 : 56, height: compact ? 40 : 56)
+            .frame(width: compact ? 52 : 68, height: compact ? 52 : 68)
             .scaleEffect(flashed ? 0.88 : 1)
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(flashed ? 0.8 : 0), lineWidth: 2))
+            .overlay(RoundedRectangle(cornerRadius: compact ? 13 : 16, style: .continuous).stroke(.white.opacity(flashed ? 0.8 : 0), lineWidth: 2))
             if !compact {
-                Text(item.title).font(.caption2).lineLimit(2).multilineTextAlignment(.center)
+                Text(item.title).font(.caption).lineLimit(2).multilineTextAlignment(.center)
                     .frame(height: 28, alignment: .top)
             }
         }

@@ -20,19 +20,29 @@ struct ThemesSettings: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Label("Тема меняет вид всего iPhone — фон, карточки, текст, шрифт — у встроенных виджетов и у виджетов из каталога. Тема — это только цвета и настройки, кода в ней нет.",
-                      systemImage: "paintpalette")
-                    .font(.caption).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                installedSection
-                catalogSection
-
-                if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
+        // A gallery (click a phone to apply) with the fine-tuning inspector beside it.
+        HStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Темы").font(.system(size: 26, weight: .bold))
+                        Text("Нажмите на телефон, чтобы применить. Тема меняет фон, карточки, текст и шрифт всех виджетов.")
+                            .font(.callout).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    installedSection
+                    catalogSection
+                    if let message { Text(message).font(.caption).foregroundStyle(.secondary) }
+                }
+                .padding(24)
             }
-            .padding(20)
+            Divider()
+            ScrollView {
+                ThemeTweaksPanel(themes: themes).padding(18).frame(width: 300)
+            }
+            .frame(width: 300)
+            .clipped()
+            .background(Color.black.opacity(0.12))
         }
         .task { if catalog.isEmpty { await loadCatalog() } }
     }
@@ -44,13 +54,18 @@ struct ThemesSettings: View {
             HStack {
                 Text("Установленные").font(.headline)
                 Spacer()
-                Button("Установить из папки…") { choose(development: false) }
-                Button("Папка разработки…") { choose(development: true) }
-                    .help("Подключить папку с theme.json: сохраните файл — iPhone перекрасится сразу")
-                Button { NSWorkspace.shared.open(ThemeStore.root) } label: { Image(systemName: "folder") }
-                    .help("Папка установленных тем")
+                Menu {
+                    Button("Установить из папки…") { choose(development: false) }
+                    Button("Подключить папку разработки…") { choose(development: true) }
+                    Divider()
+                    Button("Показать папку тем в Finder") { NSWorkspace.shared.open(ThemeStore.root) }
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .menuStyle(.borderlessButton).fixedSize()
+                .help("Установить тему из папки или подключить папку разработки")
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 16)], alignment: .leading, spacing: 16) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 20)], alignment: .leading, spacing: 24) {
                 ForEach(themes.all) { theme in
                     ThemeTile(theme: theme, selected: theme.id == themes.selectedID,
                               development: themes.development.contains(theme.id), error: themes.errors[theme.id],
@@ -200,14 +215,31 @@ private struct ThemeTile: View {
     let select: () -> Void
     let remove: (() -> Void)?
 
+    @State private var hovering = false
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
+            // A gallery card: lifts under the pointer, the chosen one carries a check badge. One click applies.
             ThemePreview(theme: theme)
-                .frame(height: 190)
+                .frame(height: 210)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(selected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: selected ? 3 : 1))
+                    .strokeBorder(selected ? Color.accentColor : Color.white.opacity(hovering ? 0.25 : 0.08), lineWidth: selected ? 3 : 1))
+                .overlay(alignment: .topTrailing) {
+                    if selected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 22)).symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, Color.accentColor)
+                            .padding(8)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .shadow(color: .black.opacity(hovering ? 0.45 : 0.25), radius: hovering ? 16 : 8, y: hovering ? 8 : 4)
+                .scaleEffect(hovering ? 1.03 : 1)
+                .animation(.spring(duration: 0.3, bounce: 0.3), value: hovering)
+                .animation(.spring(duration: 0.3), value: selected)
                 .contentShape(Rectangle())
+                .onHover { hovering = $0 }
                 .onTapGesture(perform: select)
             HStack(spacing: 6) {
                 Text(theme.name).font(.headline).lineLimit(1)
@@ -311,5 +343,158 @@ extension Color {
         } else {
             self = fallback
         }
+    }
+}
+
+/// Settings → Themes → Fine-tuning: accent, cards, font, background and page layout on top of the chosen theme.
+private struct ThemeTweaksPanel: View {
+    @ObservedObject var themes: ThemeManager
+
+    var body: some View {
+        let base = themes.selected
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Тонкая настройка").font(.headline)
+                    Text("поверх «\(base.name)»").font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Сбросить") { themes.tweaks = ThemeTweaks() }.disabled(themes.tweaks.isEmpty)
+                    .controlSize(.small)
+            }
+            .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 14) {
+                row("Акцент") {
+                    ColorPicker("", selection: Binding(
+                        get: { Color(hex: themes.tweaks.accent ?? base.colors.accent, fallback: .accentColor) },
+                        set: { themes.tweaks.accent = $0.hex }), supportsOpacity: false)
+                        .labelsHidden()
+                }
+                row("Карточки") {
+                    Picker("", selection: bind(\.style, base.style)) {
+                        Text("Заливка").tag(Theme.Style.flat)
+                        Text("Стекло").tag(Theme.Style.glass)
+                        Text("ASCII").tag(Theme.Style.ascii)
+                    }
+                    .pickerStyle(.segmented).labelsHidden().fixedSize()
+                }
+                row("Шрифт") {
+                    Picker("", selection: bind(\.font, base.font)) {
+                        Text("Системный").tag(Theme.FontDesign.system)
+                        Text("Скруглённый").tag(Theme.FontDesign.rounded)
+                        Text("Моноширинный").tag(Theme.FontDesign.monospaced)
+                        Text("С засечками").tag(Theme.FontDesign.serif)
+                    }
+                    .labelsHidden().fixedSize()
+                }
+                row("Скругление") {
+                    slider(bind(\.radius, base.radius), 0...40, step: 1, unit: "pt")
+                }
+                row("Живой фон") {
+                    Picker("", selection: Binding(
+                        get: { themes.tweaks.animation ?? base.background.animation ?? "none" },
+                        set: { themes.tweaks.animation = $0 })) {
+                        Text("Нет").tag("none")
+                        ForEach(Theme.animations, id: \.self) { Text(Self.animationNames[$0] ?? $0).tag($0) }
+                        Divider()
+                        Text("Фото с iPhone (размытое)").tag(Theme.photoBackground)
+                    }
+                    .labelsHidden().fixedSize()
+                }
+                row("Скорость фона") {
+                    slider(bind(\.speed, base.background.speed ?? 1), 0.2...3, step: 0.1, unit: "×")
+                }
+                Divider()
+                row("Между карточками") {
+                    slider(layout(\.gap, base.layout?.gap ?? 10), 0...24, step: 1, unit: "pt")
+                }
+                row("Поля экрана") {
+                    slider(layout(\.margin, base.layout?.margin ?? 10), 0...24, step: 1, unit: "pt")
+                }
+                row("Внутри карточек") {
+                    slider(layout(\.padding, base.layout?.padding ?? 14), 6...24, step: 1, unit: "pt")
+                }
+                row("Непрозрачность карточек") {
+                    slider(layout(\.cardOpacity, base.layout?.cardOpacity ?? 1), 0...1, step: 0.05, unit: nil, percent: true)
+                }
+                row("Размер текста") {
+                    Picker("", selection: Binding(get: { themes.tweaks.layout.textSize ?? base.layout?.textSize ?? "medium" },
+                                                  set: { themes.tweaks.layout.textSize = $0 })) {
+                        Text("Мелкий").tag("small")
+                        Text("Обычный").tag("medium")
+                        Text("Крупный").tag("large")
+                        Text("Очень крупный").tag("xlarge")
+                    }
+                    .labelsHidden().fixedSize()
+                }
+                row("Тень под карточками") {
+                    Toggle("", isOn: Binding(get: { themes.tweaks.layout.shadow ?? base.layout?.shadow ?? false },
+                                             set: { themes.tweaks.layout.shadow = $0 }))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.small)
+                }
+                row("Время у выреза") {
+                    Toggle("", isOn: Binding(get: { themes.tweaks.layout.status ?? base.layout?.status ?? true },
+                                             set: { themes.tweaks.layout.status = $0 }))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.small)
+                }
+                row("Листать страницы сами") {
+                    Picker("", selection: Binding(get: { themes.tweaks.layout.autoPage ?? base.layout?.autoPage ?? 0 },
+                                                  set: { themes.tweaks.layout.autoPage = $0 })) {
+                        Text("Нет").tag(0.0)
+                        Text("каждые 15 с").tag(15.0)
+                        Text("каждые 30 с").tag(30.0)
+                        Text("каждую минуту").tag(60.0)
+                        Text("каждые 5 мин").tag(300.0)
+                    }
+                    .labelsHidden().fixedSize()
+                }
+                row("Вибрация при нажатии") {
+                    Toggle("", isOn: Binding(get: { themes.tweaks.layout.haptics ?? base.layout?.haptics ?? true },
+                                             set: { themes.tweaks.layout.haptics = $0 }))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.small)
+                }
+                row("Точки страниц") {
+                    Toggle("", isOn: Binding(get: { themes.tweaks.layout.dots ?? base.layout?.dots ?? true },
+                                             set: { themes.tweaks.layout.dots = $0 }))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.small)
+                }
+            }
+        }
+
+    }
+
+    static let animationNames = ["aurora": "Северное сияние", "stars": "Звёзды", "matrix": "Матрица", "waves": "Волны",
+                                 "bokeh": "Огоньки", "lava": "Лавовая лампа", "snow": "Снег", "rain": "Дождь", "gradient": "Градиент"]
+
+    private func row(_ title: String, @ViewBuilder _ control: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).font(.caption.weight(.medium)).foregroundStyle(.secondary)
+            control().frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func bind<T>(_ key: WritableKeyPath<ThemeTweaks, T?>, _ fallback: T) -> Binding<T> {
+        Binding(get: { themes.tweaks[keyPath: key] ?? fallback }, set: { themes.tweaks[keyPath: key] = $0 })
+    }
+
+    private func layout(_ key: WritableKeyPath<Theme.Layout, Double?>, _ fallback: Double) -> Binding<Double> {
+        Binding(get: { themes.tweaks.layout[keyPath: key] ?? fallback }, set: { themes.tweaks.layout[keyPath: key] = $0 })
+    }
+
+    private func slider(_ value: Binding<Double>, _ range: ClosedRange<Double>, step: Double, unit: String?,
+                        percent: Bool = false) -> some View {
+        HStack(spacing: 10) {
+            Slider(value: value, in: range, step: step)
+            Text(percent ? "\(Int((value.wrappedValue * 100).rounded()))%"
+                         : String(format: step < 1 ? "%.1f" : "%.0f", value.wrappedValue) + (unit.map { " " + $0 } ?? ""))
+                .font(.callout.monospacedDigit()).foregroundStyle(.secondary).frame(minWidth: 50, alignment: .leading)
+        }
+    }
+}
+
+private extension Color {
+    var hex: String {
+        let c = NSColor(self).usingColorSpace(.sRGB) ?? .white
+        return String(format: "#%02X%02X%02X", Int(c.redComponent * 255), Int(c.greenComponent * 255), Int(c.blueComponent * 255))
     }
 }

@@ -4,65 +4,139 @@ import SwiftUI
 extension EnvironmentValues {
     /// How much room the widget has; widgets show less as it shrinks.
     @Entry var widgetSize: WidgetSize = .full
+    /// Corner radius for panels inside the widget, concentric with the card around it (nil: the theme's default).
+    @Entry var innerRadius: CGFloat? = nil
+    /// The page the pager shows (its neighbours are laid out too, ready for a swipe).
+    @Entry var isCurrentPage = true
+}
+
+/// The page grid: one set of gaps and insets for every page, both orientations (a theme's `layout` can change them).
+struct PageMetrics {
+    var layout: Theme.Layout?
+
+    init(_ theme: Theme) { layout = theme.layout }
+
+    /// Between cards.
+    var gap: CGFloat { CGFloat(layout?.gap ?? 10) }
+    /// Around the pages; the Dynamic Island's edge gets `island` instead.
+    var edge: CGFloat { CGFloat(layout?.margin ?? 10) }
+    static let island: CGFloat = 50
+    var showsDots: Bool { layout?.dots ?? true }
+    /// Under the cards: the page dots.
+    var dots: CGFloat { showsDots ? 16 : 0 }
+
+    /// Inside a card: tighter in small tiles, roomier in half-page cards.
+    func cardPadding(_ size: WidgetSize) -> CGFloat {
+        let base = CGFloat(layout?.padding ?? 14)
+        return size == .small ? max(6, base - 2) : base + 2
+    }
 }
 
 /// One page: its widgets laid out by `PageLayout`, each in a card (a single widget gets the whole screen).
+/// Lying sideways the cards line up in a row, so each keeps the shape it has upright:
+/// a grid becomes four tall tiles, a trio a half-width card and two tiles.
 struct PageView: View {
     let page: PageInfo
+    @Environment(\.theme) private var theme
 
     var body: some View {
+        let metrics = PageMetrics(theme)
         GeometryReader { geo in
             let landscape = geo.size.width > geo.size.height
             let widgets = page.visibleWidgets
             let sizes = WidgetSize.sizes(for: page.layout)
+            let gap = metrics.gap
             let slot = { (i: Int) -> AnyView in
-                AnyView(Card(ref: widgets.indices.contains(i) ? widgets[i] : nil, size: sizes[i]))
+                AnyView(Card(ref: widgets.indices.contains(i) ? widgets[i] : nil, size: sizes[i], order: i, bare: page.bare == true))
             }
             Group {
                 switch page.layout {
                 case .single:
                     if let ref = widgets.first { WidgetView(ref: ref).environment(\.widgetSize, .full) }
                 case .split:
-                    let layout = landscape ? AnyLayout(HStackLayout(spacing: 12)) : AnyLayout(VStackLayout(spacing: 12))
+                    let layout = landscape ? AnyLayout(HStackLayout(spacing: gap)) : AnyLayout(VStackLayout(spacing: gap))
                     layout { slot(0); slot(1) }
                 case .trio:
                     if landscape {
-                        HStack(spacing: 12) { slot(0); VStack(spacing: 12) { slot(1); slot(2) } }
+                        let tile = (geo.size.width - 2 * gap) / 4
+                        HStack(spacing: gap) {
+                            slot(0)
+                            slot(1).frame(width: tile)
+                            slot(2).frame(width: tile)
+                        }
                     } else {
-                        VStack(spacing: 12) { slot(0); HStack(spacing: 12) { slot(1); slot(2) } }
+                        VStack(spacing: gap) { slot(0); HStack(spacing: gap) { slot(1); slot(2) } }
+                    }
+                case .stack:
+                    let layout = landscape ? AnyLayout(HStackLayout(spacing: gap)) : AnyLayout(VStackLayout(spacing: gap))
+                    layout { slot(0); slot(1); slot(2) }
+                case .six:
+                    let (rows, columns) = landscape ? (2, 3) : (3, 2)
+                    VStack(spacing: gap) {
+                        ForEach(0..<rows, id: \.self) { r in
+                            HStack(spacing: gap) { ForEach(0..<columns, id: \.self) { c in slot(r * columns + c) } }
+                        }
                     }
                 case .grid:
-                    VStack(spacing: 12) {
-                        HStack(spacing: 12) { slot(0); slot(1) }
-                        HStack(spacing: 12) { slot(2); slot(3) }
+                    if landscape {
+                        HStack(spacing: gap) { slot(0); slot(1); slot(2); slot(3) }
+                    } else {
+                        VStack(spacing: gap) {
+                            HStack(spacing: gap) { slot(0); slot(1) }
+                            HStack(spacing: gap) { slot(2); slot(3) }
+                        }
                     }
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
             .debugLayout("page", .red)
         }
-        // Multi-widget pages leave room for the connection badge and the page dots.
-        .padding(.vertical, page.layout == .single ? 0 : 30)
+        .padding(.bottom, metrics.dots)
     }
 }
 
 private struct Card: View {
     let ref: WidgetRef?
     let size: WidgetSize
+    var order = 0
+    /// No surface: the widget sits on the page background.
+    var bare = false
+    @Environment(\.theme) private var theme
+    @Environment(\.isCurrentPage) private var isCurrent
+    @State private var shown = true
 
     var body: some View {
+        let padding = PageMetrics(theme).cardPadding(size)
         ZStack {
             Color.clear
             if let ref {
                 WidgetView(ref: ref)
                     .environment(\.widgetSize, size)
-                    .padding(14)
+                    .environment(\.innerRadius, max(4, CGFloat(theme.radius) - padding))
+                    .padding(padding)
             } else {
                 Image(systemName: "plus.square.dashed").font(.title).foregroundStyle(.tertiary)
             }
         }
-        .themedCard()
+        .modifier(CardSurface(bare: bare))
+        // Arriving on a page, its cards settle in one after another.
+        .scaleEffect(shown ? 1 : 0.94)
+        .opacity(shown ? 1 : 0.5)
+        .onChange(of: isCurrent) { _, now in
+            guard now else { return }
+            shown = false
+            withAnimation(.spring(duration: 0.45, bounce: 0.25).delay(Double(order) * 0.045)) { shown = true }
+        }
         .debugLayout("card", .yellow)
+    }
+}
+
+private struct CardSurface: ViewModifier {
+    let bare: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if bare { content } else { content.themedCard() }
     }
 }
 
@@ -113,6 +187,7 @@ struct WidgetView: View {
             case .launcher: LauncherPage()
             case .weather: WeatherPage()
             case .photos: PhotosPage()
+            case .apps: AppsPage()
             }
         case .custom(let id):
             CustomWidgetView(id: id)
@@ -132,7 +207,7 @@ private struct WidgetPadding: ViewModifier {
 
     func body(content: Content) -> some View {
         if size == .full {
-            content.padding(.horizontal, 20).padding(.vertical, 36)
+            content.padding(.horizontal, 8).padding(.vertical, 6)
         } else {
             content
         }

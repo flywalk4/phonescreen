@@ -1,343 +1,343 @@
 {
- "full": {
-  "type": "vstack",
-  "spacing": 14,
-  "align": "leading",
-  "children": [
-   {
-    "type": "hstack",
-    "spacing": 8,
+  "full": {
+    "type": "vstack",
+    "spacing": 14,
+    "align": "leading",
     "children": [
-     {
-      "type": "symbol",
-      "name": "location.fill",
-      "color": "secondary",
-      "size": 13
-     },
-     {
-      "type": "text",
-      "text": "{{place}}",
-      "style": "caption",
-      "weight": "semibold",
-      "color": "secondary"
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "text",
-      "text": "{{temp}}",
-      "size": 22,
-      "weight": "semibold",
-      "design": "rounded"
-     }
-    ]
-   },
-   {
-    "type": "box",
-    "padding": 18,
-    "spacing": 12,
-    "children": [
-     {
-      "type": "hstack",
-      "spacing": 14,
-      "children": [
-       {
-        "type": "symbol",
-        "name": "{{icon}}",
-        "color": "{{color}}",
-        "size": 44
-       },
-       {
-        "type": "vstack",
-        "spacing": 2,
-        "align": "leading",
+      {
+        "type": "hstack",
+        "spacing": 8,
         "children": [
-         {
-          "type": "text",
-          "text": "{{headline}}",
-          "size": 28,
-          "weight": "bold",
-          "design": "rounded",
-          "lines": 2
-         },
-         {
-          "type": "text",
-          "text": "{{sub}}",
-          "style": "subheadline",
-          "color": "secondary"
-         }
+          {
+            "type": "symbol",
+            "name": "location.fill",
+            "color": "secondary",
+            "size": 13
+          },
+          {
+            "type": "text",
+            "text": "{{place}}",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{temp}}",
+            "size": 22,
+            "weight": "semibold",
+            "design": "rounded"
+          }
         ]
-       },
-       {
-        "type": "spacer"
-       }
-      ]
-     },
-     {
-      "type": "chart",
-      "values": "{{chart}}",
-      "color": "blue",
-      "style": "bar",
-      "height": 90,
-      "if": "{{hasChart}}"
-     },
-     {
-      "type": "hstack",
-      "if": "{{hasChart}}",
-      "children": [
-       {
-        "type": "text",
-        "text": "сейчас",
-        "style": "caption2",
-        "color": "secondary"
-       },
-       {
-        "type": "spacer"
-       },
-       {
-        "type": "text",
-        "text": "+1,5 ч",
-        "style": "caption2",
-        "color": "secondary"
-       },
-       {
-        "type": "spacer"
-       },
-       {
-        "type": "text",
-        "text": "+3 ч",
-        "style": "caption2",
-        "color": "secondary"
-       }
-      ]
-     }
-    ]
-   },
-   {
-    "type": "text",
-    "text": "Вероятность по часам",
-    "style": "caption",
-    "weight": "semibold",
-    "color": "secondary"
-   },
-   {
-    "type": "list",
-    "items": "{{hours}}",
-    "columns": 3,
-    "spacing": 10,
-    "template": {
-     "type": "box",
-     "padding": 12,
-     "spacing": 2,
-     "align": "center",
-     "children": [
-      {
-       "type": "text",
-       "text": "{{item.time}}",
-       "style": "caption",
-       "color": "secondary"
       },
       {
-       "type": "text",
-       "text": "{{item.prob}}",
-       "size": 24,
-       "weight": "bold",
-       "design": "rounded",
-       "color": "{{item.color}}"
+        "type": "box",
+        "padding": 18,
+        "spacing": 12,
+        "children": [
+          {
+            "type": "hstack",
+            "spacing": 14,
+            "children": [
+              {
+                "type": "symbol",
+                "name": "{{icon}}",
+                "color": "{{color}}",
+                "size": 44
+              },
+              {
+                "type": "vstack",
+                "spacing": 2,
+                "align": "leading",
+                "children": [
+                  {
+                    "type": "text",
+                    "text": "{{headline}}",
+                    "size": 28,
+                    "weight": "bold",
+                    "design": "rounded",
+                    "lines": 2
+                  },
+                  {
+                    "type": "text",
+                    "text": "{{sub}}",
+                    "style": "subheadline",
+                    "color": "secondary"
+                  }
+                ]
+              },
+              {
+                "type": "spacer"
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "values": "{{chart}}",
+            "color": "blue",
+            "style": "bar",
+            "height": 90,
+            "if": "{{hasChart}}"
+          },
+          {
+            "type": "hstack",
+            "if": "{{hasChart}}",
+            "children": [
+              {
+                "type": "text",
+                "text": "сейчас",
+                "style": "caption2",
+                "color": "secondary"
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "text",
+                "text": "+1,5 ч",
+                "style": "caption2",
+                "color": "secondary"
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "text",
+                "text": "+3 ч",
+                "style": "caption2",
+                "color": "secondary"
+              }
+            ]
+          }
+        ]
       },
       {
-       "type": "text",
-       "text": "{{item.mm}}",
-       "style": "caption2",
-       "color": "secondary",
-       "if": "{{item.mm}}"
+        "type": "text",
+        "text": "Вероятность по часам",
+        "style": "caption",
+        "weight": "semibold",
+        "color": "secondary"
+      },
+      {
+        "type": "list",
+        "items": "{{hours}}",
+        "columns": 3,
+        "spacing": 10,
+        "template": {
+          "type": "box",
+          "padding": 12,
+          "spacing": 2,
+          "align": "center",
+          "children": [
+            {
+              "type": "text",
+              "text": "{{item.time}}",
+              "style": "caption",
+              "color": "secondary"
+            },
+            {
+              "type": "text",
+              "text": "{{item.prob}}",
+              "size": 24,
+              "weight": "bold",
+              "design": "rounded",
+              "color": "{{item.color}}"
+            },
+            {
+              "type": "text",
+              "text": "{{item.mm}}",
+              "style": "caption2",
+              "color": "secondary",
+              "if": "{{item.mm}}"
+            }
+          ]
+        }
+      },
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "text",
+        "text": "Обновлено {{updated}} · Open-Meteo",
+        "style": "caption2",
+        "color": "secondary"
       }
-     ]
-    }
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "text",
-    "text": "Обновлено {{updated}} · Open-Meteo",
-    "style": "caption2",
-    "color": "secondary"
-   }
-  ]
- },
- "medium": {
-  "type": "vstack",
-  "spacing": 10,
-  "align": "leading",
-  "children": [
-   {
-    "type": "hstack",
-    "spacing": 12,
+    ]
+  },
+  "medium": {
+    "type": "vstack",
+    "spacing": 10,
+    "align": "leading",
     "children": [
-     {
-      "type": "symbol",
-      "name": "{{icon}}",
-      "color": "{{color}}",
-      "size": 32
-     },
-     {
-      "type": "vstack",
-      "spacing": 0,
-      "align": "leading",
-      "children": [
-       {
+      {
+        "type": "hstack",
+        "spacing": 12,
+        "children": [
+          {
+            "type": "symbol",
+            "name": "{{icon}}",
+            "color": "{{color}}",
+            "size": 32
+          },
+          {
+            "type": "vstack",
+            "spacing": 0,
+            "align": "leading",
+            "children": [
+              {
+                "type": "text",
+                "text": "{{headline}}",
+                "size": 20,
+                "weight": "bold",
+                "design": "rounded",
+                "lines": 2
+              },
+              {
+                "type": "text",
+                "text": "{{sub}}",
+                "style": "caption",
+                "color": "secondary",
+                "lines": 2
+              }
+            ]
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{temp}}",
+            "size": 22,
+            "weight": "semibold",
+            "design": "rounded"
+          }
+        ]
+      },
+      {
+        "type": "chart",
+        "values": "{{chart}}",
+        "color": "blue",
+        "style": "area",
+        "height": 70,
+        "if": "{{hasChart}}"
+      },
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "list",
+        "items": "{{hours}}",
+        "columns": 3,
+        "spacing": 6,
+        "template": {
+          "type": "hstack",
+          "spacing": 4,
+          "children": [
+            {
+              "type": "text",
+              "text": "{{item.time}}",
+              "style": "caption2",
+              "color": "secondary"
+            },
+            {
+              "type": "spacer"
+            },
+            {
+              "type": "text",
+              "text": "{{item.prob}}",
+              "style": "caption",
+              "weight": "bold",
+              "design": "rounded",
+              "color": "{{item.color}}"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "small": {
+    "type": "vstack",
+    "spacing": 4,
+    "align": "leading",
+    "children": [
+      {
+        "type": "hstack",
+        "children": [
+          {
+            "type": "symbol",
+            "name": "{{icon}}",
+            "color": "{{color}}",
+            "size": 26
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{temp}}",
+            "size": 20,
+            "weight": "semibold",
+            "design": "rounded"
+          }
+        ]
+      },
+      {
+        "type": "spacer"
+      },
+      {
         "type": "text",
-        "text": "{{headline}}",
-        "size": 20,
-        "weight": "bold",
-        "design": "rounded",
-        "lines": 2
-       },
-       {
+        "text": "{{bigLabel}}",
+        "style": "caption",
+        "weight": "semibold",
+        "color": "secondary",
+        "lines": 1
+      },
+      {
+        "type": "hstack",
+        "align": "baseline",
+        "spacing": 4,
+        "children": [
+          {
+            "type": "text",
+            "text": "{{bigValue}}",
+            "size": 44,
+            "weight": "bold",
+            "design": "rounded",
+            "lines": 1
+          },
+          {
+            "type": "text",
+            "text": "{{bigUnit}}",
+            "style": "headline",
+            "color": "secondary",
+            "lines": 1
+          },
+          {
+            "type": "spacer"
+          }
+        ]
+      },
+      {
         "type": "text",
         "text": "{{sub}}",
-        "style": "caption",
+        "style": "caption2",
         "color": "secondary",
         "lines": 2
-       }
-      ]
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "text",
-      "text": "{{temp}}",
-      "size": 22,
-      "weight": "semibold",
-      "design": "rounded"
-     }
-    ]
-   },
-   {
-    "type": "chart",
-    "values": "{{chart}}",
-    "color": "blue",
-    "style": "bar",
-    "height": 70,
-    "if": "{{hasChart}}"
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "list",
-    "items": "{{hours}}",
-    "columns": 3,
-    "spacing": 6,
-    "template": {
-     "type": "hstack",
-     "spacing": 4,
-     "children": [
-      {
-       "type": "text",
-       "text": "{{item.time}}",
-       "style": "caption2",
-       "color": "secondary"
       },
       {
-       "type": "spacer"
+        "type": "spacer"
       },
       {
-       "type": "text",
-       "text": "{{item.prob}}",
-       "style": "caption",
-       "weight": "bold",
-       "design": "rounded",
-       "color": "{{item.color}}"
+        "type": "chart",
+        "values": "{{chart}}",
+        "color": "blue",
+        "style": "area",
+        "height": 46,
+        "if": "{{hasChart}}"
       }
-     ]
-    }
-   }
-  ]
- },
- "small": {
-  "type": "vstack",
-  "spacing": 4,
-  "align": "leading",
-  "children": [
-   {
-    "type": "hstack",
-    "children": [
-     {
-      "type": "symbol",
-      "name": "{{icon}}",
-      "color": "{{color}}",
-      "size": 26
-     },
-     {
-      "type": "spacer"
-     },
-     {
-      "type": "text",
-      "text": "{{temp}}",
-      "size": 20,
-      "weight": "semibold",
-      "design": "rounded"
-     }
     ]
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "text",
-    "text": "{{bigLabel}}",
-    "style": "caption",
-    "weight": "semibold",
-    "color": "secondary",
-    "lines": 1
-   },
-   {
-    "type": "hstack",
-    "align": "baseline",
-    "spacing": 4,
-    "children": [
-     {
-      "type": "text",
-      "text": "{{bigValue}}",
-      "size": 44,
-      "weight": "bold",
-      "design": "rounded",
-      "lines": 1
-     },
-     {
-      "type": "text",
-      "text": "{{bigUnit}}",
-      "style": "headline",
-      "color": "secondary",
-      "lines": 1
-     },
-     {
-      "type": "spacer"
-     }
-    ]
-   },
-   {
-    "type": "text",
-    "text": "{{sub}}",
-    "style": "caption2",
-    "color": "secondary",
-    "lines": 2
-   },
-   {
-    "type": "spacer"
-   },
-   {
-    "type": "chart",
-    "values": "{{chart}}",
-    "color": "blue",
-    "style": "bar",
-    "height": 46,
-    "if": "{{hasChart}}"
-   }
-  ]
- }
+  }
 }

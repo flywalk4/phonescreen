@@ -84,10 +84,13 @@ private struct NoteRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(note.title.isEmpty ? "Без названия" : note.title).font(.caption.weight(.semibold)).lineLimit(1)
                 Text(note.modified.formatted(.relative(presentation: .named))).font(.caption2).foregroundStyle(.secondary)
+                if !note.snippet.isEmpty {
+                    Text(note.snippet).font(.caption2).foregroundStyle(.tertiary).lineLimit(3).padding(.top, 2)
+                }
             }
-            .padding(.vertical, 6).padding(.horizontal, 8)
+            .padding(.vertical, 8).padding(.horizontal, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.05)))
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.primary.opacity(0.06)))
         } else {
             full
         }

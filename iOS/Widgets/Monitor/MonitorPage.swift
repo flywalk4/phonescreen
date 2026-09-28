@@ -36,33 +36,68 @@ struct MonitorPage: View {
         }
     }
 
+    /// Whole page: upright a single column; lying sideways gauges on the left, charts on the right.
     private var full: some View {
-        VStack(spacing: 20) {
-            if let stats = model.stats {
-                HStack(spacing: 14) {
-                    Gauge(title: "CPU", value: stats.cpu)
-                    Gauge(title: "GPU", value: stats.gpu)
-                    Gauge(title: "RAM", value: Double(stats.memoryUsed) / Double(max(stats.memoryTotal, 1)),
-                          caption: ByteCountFormatter.string(fromByteCount: Int64(stats.memoryUsed), countStyle: .memory))
+        GeometryReader { geo in
+            let wide = geo.size.width > geo.size.height * 1.3
+            Group {
+                if let stats = model.stats {
+                    if wide {
+                        HStack(spacing: 24) {
+                            VStack(spacing: 18) {
+                                gauges(stats, diameter: min(88, (geo.size.height - 90) / 1.6))
+                                network(stats)
+                            }
+                            .frame(width: geo.size.width * 0.4)
+                            VStack(spacing: 14) {
+                                CoreBars(values: stats.cpuPerCore)
+                                LoadChart(history: model.statsHistory)
+                                NetworkChart(history: model.statsHistory)
+                            }
+                        }
+                    } else {
+                        VStack(spacing: 20) {
+                            gauges(stats, diameter: 88)
+                            CoreBars(values: stats.cpuPerCore)
+                            LoadChart(history: model.statsHistory)
+                            NetworkChart(history: model.statsHistory)
+                            network(stats)
+                        }
+                        .frame(maxWidth: 520)
+                    }
+                } else {
+                    VStack(spacing: 12) {
+                        ThemedSpinner()
+                        Text("Жду данные с Mac…").foregroundStyle(.secondary)
+                    }
                 }
-                CoreBars(values: stats.cpuPerCore)
-                LoadChart(history: model.statsHistory)
-                NetworkChart(history: model.statsHistory)
-                HStack {
-                    Label { Text(rate(stats.netInBytesPerSec)) } icon: { Glyph("arrow.down") }
-                    Spacer()
-                    Label { Text(rate(stats.netOutBytesPerSec)) } icon: { Glyph("arrow.up") }
-                }
-                .font(.callout.monospacedDigit())
-                .foregroundStyle(.secondary)
-            } else {
-                ThemedSpinner()
-                Text("Жду данные с Mac…").foregroundStyle(.secondary)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .frame(width: geo.size.width, height: geo.size.height)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 36)
-        .frame(maxWidth: 520, maxHeight: .infinity)
+    }
+
+    private func gauges(_ stats: SystemStats, diameter: CGFloat) -> some View {
+        HStack(spacing: 14) {
+            Gauge(title: "CPU", value: stats.cpu, diameter: diameter)
+            Gauge(title: "GPU", value: stats.gpu, diameter: diameter)
+            Gauge(title: "RAM", value: Double(stats.memoryUsed) / Double(max(stats.memoryTotal, 1)),
+                  caption: ByteCountFormatter.string(fromByteCount: Int64(stats.memoryUsed), countStyle: .memory),
+                  diameter: diameter)
+        }
+    }
+
+    private func network(_ stats: SystemStats) -> some View {
+        HStack {
+            Label { Text(rate(stats.netInBytesPerSec)) } icon: { Glyph("arrow.down") }
+            Spacer()
+            Label { Text(rate(stats.netOutBytesPerSec)) } icon: { Glyph("arrow.up") }
+        }
+        .font(.callout.monospacedDigit())
+        .foregroundStyle(.secondary)
+        .contentTransition(.numericText())
+        .animation(.snappy, value: stats.netInBytesPerSec)
     }
 
     private func rate(_ bytesPerSec: Double) -> String {
@@ -75,6 +110,7 @@ private struct Gauge: View {
     let value: Double?
     var caption: String?
     var diameter: CGFloat = 88
+    @Environment(\.theme) private var theme
 
     var body: some View {
         VStack(spacing: 8) {
@@ -86,15 +122,16 @@ private struct Gauge: View {
 
     private var color: Color {
         switch value ?? 0 {
-        case ..<0.6: .green
-        case ..<0.85: .yellow
-        default: .red
+        case ..<0.6: theme.named("green", .green)
+        case ..<0.85: theme.named("yellow", .yellow)
+        default: theme.named("red", .red)
         }
     }
 }
 
 private struct CoreBars: View {
     let values: [Double]
+    @Environment(\.theme) private var theme
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 3) {
@@ -102,14 +139,14 @@ private struct CoreBars: View {
                 GeometryReader { geo in
                     VStack {
                         Spacer(minLength: 0)
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(.cyan.opacity(0.4 + v * 0.6))
+                        RoundedRectangle(cornerRadius: theme.style == .ascii ? 0 : 2)
+                            .fill((theme.style == .ascii ? theme.text : theme.named("cyan", .cyan)).opacity(0.4 + v * 0.6))
                             .frame(height: max(2, geo.size.height * v))
                     }
                 }
             }
         }
-        .frame(height: 80)
+        .frame(minHeight: 80, maxHeight: 160)
         .animation(.easeOut(duration: 0.4), value: values)
     }
 }
@@ -117,8 +154,20 @@ private struct CoreBars: View {
 /// CPU and GPU over the last minute.
 private struct LoadChart: View {
     let history: [SystemStats]
+    @Environment(\.theme) private var theme
 
     var body: some View {
+        if theme.style == .ascii {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("CPU за минуту").font(.caption2).foregroundStyle(.secondary)
+                AsciiChart(values: history.map { $0.cpu * 100 }, color: theme.text)
+            }
+        } else {
+            chart
+        }
+    }
+
+    private var chart: some View {
         Chart {
             ForEach(Array(history.enumerated()), id: \.offset) { i, s in
                 LineMark(x: .value("t", i), y: .value("%", s.cpu * 100), series: .value("", "CPU"))
@@ -146,7 +195,7 @@ private struct LoadChart: View {
             }
             .font(.caption2).labelStyle(.titleAndIcon)
         }
-        .frame(height: 110)
+        .frame(minHeight: 110, maxHeight: .infinity)
         .animation(.linear(duration: 0.3), value: history.count)
     }
 }
@@ -154,8 +203,20 @@ private struct LoadChart: View {
 /// Download (filled) and upload (line) throughput over the last minute.
 private struct NetworkChart: View {
     let history: [SystemStats]
+    @Environment(\.theme) private var theme
 
     var body: some View {
+        if theme.style == .ascii {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Сеть, входящий").font(.caption2).foregroundStyle(.secondary)
+                AsciiChart(values: history.map(\.netInBytesPerSec), color: theme.text)
+            }
+        } else {
+            chart
+        }
+    }
+
+    private var chart: some View {
         Chart {
             ForEach(Array(history.enumerated()), id: \.offset) { i, s in
                 AreaMark(x: .value("t", i), y: .value("B/s", s.netInBytesPerSec))
@@ -170,6 +231,6 @@ private struct NetworkChart: View {
         .chartXScale(domain: 0...59)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
-        .frame(height: 60)
+        .frame(minHeight: 60, maxHeight: 140)
     }
 }

@@ -1,7 +1,7 @@
 {
   "id": "com.flywalk4.minesweeper",
   "name": "Сапёр",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "flywalk4",
   "description": "Сапёр 8×8 с 10 минами: первый ход всегда безопасный, пустые области открываются сами, флажки — отдельным режимом. Лучшее время сохраняется.",
   "symbol": "flag.fill",
@@ -9,8 +9,11 @@
   "settings": [
     {
       "key": "mines",
-      "title": "Мин на поле 8×8 (5–20)",
-      "default": "10"
+      "title": "Мин на поле 8×8",
+      "type": "number",
+      "default": "10",
+      "min": 5,
+      "max": 20
     }
   ]
 }

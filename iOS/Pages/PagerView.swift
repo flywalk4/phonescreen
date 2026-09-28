@@ -1,8 +1,15 @@
 import PhoneScreenKit
 import SwiftUI
 
+private struct AutoPageKey: Equatable {
+    let page: Int
+    let touches: Int
+    let every: Double?
+}
+
 struct PagerView: View {
     @EnvironmentObject private var model: PhoneModel
+    private var autoPage: Double? { model.theme.layout?.autoPage.flatMap { $0 >= 10 ? $0 : nil } }
     private static let demo = ProcessInfo.processInfo.arguments.contains("--demo")
 
     var body: some View {
@@ -12,8 +19,15 @@ struct PagerView: View {
                 ZStack {
                     content
                         // Keep content clear of the Dynamic Island and the rounded corners, whichever way the phone lies.
-                        .padding(Edge.Set(island), 44)
-                        .padding(18)
+                        .padding(Edge.Set(island), PageMetrics.island)
+                        .padding(PageMetrics(model.theme).edge)
+                    // The band beside the Dynamic Island: time on one side, date on the other (upright or upside down).
+                    if (island == .top || island == .bottom), model.theme.layout?.status ?? true, !model.overview {
+                        IslandStatus()
+                            .frame(height: PageMetrics.island)
+                            .frame(maxHeight: .infinity, alignment: island == .top ? .top : .bottom)
+                            .allowsHitTesting(false)
+                    }
                     PointerOverlay()
                 }
                 .coordinateSpace(.named(pointerSpace))
@@ -26,6 +40,19 @@ struct PagerView: View {
             }
         }
         .themed(model.theme)
+        .dynamicTypeSize(Self.typeSize(model.theme.layout?.textSize))
+        // Texts, dates and weekdays in the Mac's language.
+        .environment(\.locale, Locale(identifier: model.language))
+    }
+
+    /// The theme's text size as Dynamic Type (scales every text style in built-in and catalog widgets).
+    static func typeSize(_ name: String?) -> DynamicTypeSize {
+        switch name {
+        case "small": .small
+        case "large": .xLarge
+        case "xlarge": .xxxLarge
+        default: .large
+        }
     }
 
     @ViewBuilder private var content: some View {
@@ -53,17 +80,27 @@ struct PagerView: View {
             // (20 pages of 22-pt dots are 440 pt — wider than an iPhone — and pushed every page off both edges).
             .overlay {
                 VStack {
-                    if !Self.demo { ConnectionBadge(status: model.status) } // demo screenshots have no Mac
+                    // Only when something is wrong: a connected phone shows nothing but the widgets.
+                    if !Self.demo, model.status.active == nil { ConnectionBadge(status: model.status) }
                     Spacer()
-                    if !model.overview {
+                    if !model.overview, PageMetrics(model.theme).showsDots {
                         PageDots(count: model.pages.count, current: model.currentPage) { index in
                             withAnimation(.snappy) { model.currentPage = index }
                         }
                     }
                 }
-                .padding(.vertical, 12)
+                .padding(.bottom, -PageMetrics(model.theme).edge + 2)
             }
             .onChange(of: model.currentPage) { _, index in model.userChangedPage(to: index) }
+            // Auto-advance: restarts on every page change (a swipe, the Mac, or itself) and on every touch.
+            .task(id: AutoPageKey(page: model.currentPage, touches: model.interactions, every: autoPage)) {
+                guard let every = autoPage, model.pages.count > 1, !model.overview else { return }
+                try? await Task.sleep(for: .seconds(every))
+                guard !Task.isCancelled else { return }
+                withAnimation(.smooth(duration: 0.6)) { model.currentPage = (model.currentPage + 1) % model.pages.count }
+            }
+            .simultaneousGesture(TapGesture().onEnded { model.interactions += 1 })
+            .simultaneousGesture(DragGesture(minimumDistance: 0).onEnded { _ in model.interactions += 1 })
         }
     }
 }
@@ -110,7 +147,16 @@ struct Pager<Page: View>: View {
             let width = geo.size.width
             HStack(spacing: 0) {
                 ForEach(0..<count, id: \.self) { index in
-                    page(index).frame(width: width, height: geo.size.height)
+                    // Only the current page and its neighbours exist: widgets far away don't run timers,
+                    // animations or permission prompts (the photo frame asks for Photos when it appears).
+                    Group {
+                        if abs(index - current) <= 1 {
+                            page(index).environment(\.isCurrentPage, index == current)
+                        } else {
+                            Color.clear
+                        }
+                    }
+                    .frame(width: width, height: geo.size.height)
                 }
             }
             .offset(x: -CGFloat(current) * width + rubberBand(drag + swipe.offset, width: width))
@@ -194,5 +240,29 @@ private struct WaitingView: View {
                 .multilineTextAlignment(.center)
         }
         .padding(32)
+    }
+}
+
+/// Time and date either side of the Dynamic Island, like a status bar for the Mac's side screen.
+private struct IslandStatus: View {
+    var body: some View {
+        TimelineView(.everyMinute) { context in
+            // Two equal halves around a gap the island's width, so nothing slides under it whatever the font.
+            HStack(spacing: 0) {
+                Text(context.date.formatted(date: .omitted, time: .shortened))
+                    .monospacedDigit()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Color.clear.frame(width: 150) // the island
+                Text(context.date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .contentTransition(.numericText())
+            .padding(.horizontal, 30)
+            .padding(.top, 6)
+        }
     }
 }

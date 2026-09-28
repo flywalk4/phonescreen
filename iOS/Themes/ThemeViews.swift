@@ -34,10 +34,24 @@ extension Theme {
     }
 
     /// A widget colour name replaced by the theme (`palette`), if it is.
+    /// A system colour as this theme paints it (its `palette` may replace it).
+    func named(_ name: String, _ fallback: Color) -> Color { paletteColor(name) ?? fallback }
+
+    /// A name the palette doesn't list falls back to its nearest relative that it does (mint → green, teal → cyan…),
+    /// so a theme that recolours "green" also recolours "mint".
     func paletteColor(_ name: String) -> Color? {
-        colors.palette?[name.lowercased()].flatMap(RGBA.init(hex:))
-            .map { Color(.sRGB, red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) }
+        var key = name.lowercased()
+        while true {
+            if let hex = colors.palette?[key], let c = RGBA(hex: hex) {
+                return Color(.sRGB, red: c.r, green: c.g, blue: c.b, opacity: c.a)
+            }
+            guard let next = Self.relatives[key] else { return nil }
+            key = next
+        }
     }
+
+    private static let relatives = ["mint": "green", "teal": "cyan", "cyan": "blue", "indigo": "blue", "pink": "purple",
+                                    "brown": "orange", "grey": "gray"]
 }
 
 extension View {
@@ -66,10 +80,12 @@ private struct WidgetBox: ViewModifier {
     let fill: Color?
     let radius: CGFloat?
     @Environment(\.theme) private var theme
+    @Environment(\.innerRadius) private var innerRadius
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: radius ?? max(0, min(CGFloat(theme.radius) - 6, 18)), style: .continuous)
+        let fallback = innerRadius ?? max(0, min(CGFloat(theme.radius) - 6, 18))
+        let shape = RoundedRectangle(cornerRadius: theme.radius == 0 ? 0 : (radius ?? fallback), style: .continuous)
         if let fill {
             content.background(shape.fill(fill)).clipShape(shape)
         } else {
@@ -105,7 +121,9 @@ struct ThemeBackground: View {
     var body: some View {
         let colors = theme.background.colors.map { Color(hex: $0, fallback: .black) }
         Group {
-            if let name = theme.background.animation, let kind = SceneView.Kind(rawValue: name) {
+            if theme.background.animation == Theme.photoBackground {
+                PhotoBackdrop(fallback: colors.first ?? .black)
+            } else if let name = theme.background.animation, let kind = SceneView.Kind(rawValue: name) {
                 SceneView(kind: kind, base: colors,
                           tints: (theme.background.tints ?? []).map { Color(hex: $0, fallback: theme.accent) },
                           speed: theme.background.speed ?? 1)
@@ -123,16 +141,45 @@ struct ThemeBackground: View {
     }
 }
 
+/// A Favorites photo behind the pages: blurred and dimmed so cards stay readable; a new one every launch.
+private struct PhotoBackdrop: View {
+    let fallback: Color
+    @StateObject private var library = PhotoLibrary(slideshow: false)
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                fallback
+                if let image = library.image {
+                    Image(uiImage: image).resizable().scaledToFill()
+                        .frame(width: geo.size.width, height: geo.size.height).clipped()
+                        .blur(radius: 24, opaque: true)
+                        .overlay((theme.appearance == .light ? Color.white : Color.black).opacity(0.35))
+                        .transition(.opacity)
+                }
+            }
+            .task { await library.start(target: CGSize(width: 400, height: 800)) }
+        }
+    }
+}
+
 private struct ThemedCard: ViewModifier {
     @Environment(\.theme) private var theme
 
-    @ViewBuilder
     func body(content: Content) -> some View {
+        card(content)
+            .shadow(color: .black.opacity(theme.layout?.shadow == true ? (theme.appearance == .light ? 0.10 : 0.35) : 0),
+                    radius: 12, y: 5)
+    }
+
+    @ViewBuilder
+    private func card(_ content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: theme.radius, style: .continuous)
         switch theme.style {
         case .flat:
             content
-                .background(shape.fill(theme.card))
+                .background(shape.fill(theme.card.opacity(theme.layout?.cardOpacity ?? 1)))
                 .overlay(shape.strokeBorder(theme.border ?? .clear, lineWidth: 1))
                 .clipShape(shape)
         case .glass:

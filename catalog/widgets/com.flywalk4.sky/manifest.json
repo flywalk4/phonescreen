@@ -1,13 +1,22 @@
 {
   "id": "com.flywalk4.sky",
   "name": "Солнце и Луна",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "flywalk4",
   "description": "Восход, закат и долгота дня (на сколько минут длиннее вчерашнего), сколько светлого времени осталось, и фаза Луны пиксельной картинкой с датой следующего полнолуния. Данные о солнце — Open-Meteo, Луна считается локально.",
   "symbol": "sun.horizon.fill",
   "refresh": 600,
-  "permissions": { "network": ["open-meteo.com"] },
+  "permissions": {
+    "network": [
+      "open-meteo.com"
+    ]
+  },
   "settings": [
-    { "key": "place", "title": "Город или координаты «55.75, 37.62»", "default": "Москва" }
+    {
+      "key": "place",
+      "title": "Город",
+      "default": "Москва",
+      "hint": "Название или координаты «55.75, 37.62»"
+    }
   ]
 }

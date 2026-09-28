@@ -1,0 +1,265 @@
+{
+  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
+  "full": {
+    "type": "vstack",
+    "spacing": 12,
+    "align": "leading",
+    "children": [
+      {
+        "type": "hstack",
+        "spacing": 8,
+        "children": [
+          {
+            "type": "symbol",
+            "name": "checklist.checked",
+            "color": "accent",
+            "size": 15
+          },
+          {
+            "type": "text",
+            "text": "{{t.header}}",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{t.week}}",
+            "style": "caption2",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "box",
+        "padding": 16,
+        "spacing": 10,
+        "align": "center",
+        "children": [
+          {
+            "type": "gauge",
+            "value": "{{progress}}",
+            "text": "{{ratio}}",
+            "color": "{{color}}",
+            "fill": true
+          },
+          {
+            "type": "text",
+            "text": "{{summary}}",
+            "style": "headline",
+            "color": "{{color}}"
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "items": "{{habits}}",
+        "spacing": 8,
+        "template": {
+          "type": "box",
+          "padding": 12,
+          "spacing": 4,
+          "action": "toggle:{{item.index}}",
+          "children": [
+            {
+              "type": "hstack",
+              "spacing": 10,
+              "children": [
+                {
+                  "type": "symbol",
+                  "name": "{{item.icon}}",
+                  "color": "{{item.color}}",
+                  "size": 24
+                },
+                {
+                  "type": "vstack",
+                  "spacing": 2,
+                  "align": "leading",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "{{item.name}}",
+                      "style": "headline",
+                      "lines": 1
+                    },
+                    {
+                      "type": "text",
+                      "text": "{{item.streak}}",
+                      "style": "caption",
+                      "color": "secondary",
+                      "lines": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "text",
+                  "text": "{{item.week}}",
+                  "style": "caption",
+                  "design": "monospaced",
+                  "color": "{{item.color}}",
+                  "lines": 1
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "medium": {
+    "type": "vstack",
+    "spacing": 8,
+    "align": "leading",
+    "children": [
+      {
+        "type": "hstack",
+        "spacing": 6,
+        "children": [
+          {
+            "type": "symbol",
+            "name": "checklist.checked",
+            "color": "accent",
+            "size": 13
+          },
+          {
+            "type": "text",
+            "text": "{{t.title}}",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{ratio}}",
+            "style": "subheadline",
+            "weight": "bold",
+            "design": "rounded",
+            "color": "{{color}}"
+          }
+        ]
+      },
+      {
+        "type": "progress",
+        "value": "{{progress}}",
+        "color": "{{color}}"
+      },
+      {
+        "type": "list",
+        "items": "{{habits}}",
+        "spacing": 6,
+        "template": {
+          "type": "box",
+          "padding": 9,
+          "spacing": 4,
+          "action": "toggle:{{item.index}}",
+          "children": [
+            {
+              "type": "hstack",
+              "spacing": 10,
+              "children": [
+                {
+                  "type": "symbol",
+                  "name": "{{item.icon}}",
+                  "color": "{{item.color}}",
+                  "size": 18
+                },
+                {
+                  "type": "vstack",
+                  "spacing": 2,
+                  "align": "leading",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "{{item.name}}",
+                      "style": "subheadline",
+                      "lines": 1
+                    },
+                    {
+                      "type": "text",
+                      "text": "{{item.streak}}",
+                      "style": "caption",
+                      "color": "secondary",
+                      "lines": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "text",
+                  "text": "{{item.week}}",
+                  "style": "caption2",
+                  "design": "monospaced",
+                  "color": "{{item.color}}",
+                  "lines": 1
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "type": "spacer"
+      }
+    ]
+  },
+  "small": {
+    "type": "vstack",
+    "spacing": 8,
+    "align": "center",
+    "children": [
+      {
+        "type": "text",
+        "text": "{{t.title}}",
+        "style": "caption",
+        "weight": "semibold",
+        "color": "secondary"
+      },
+      {
+        "type": "gauge",
+        "value": "{{progress}}",
+        "text": "{{ratio}}",
+        "color": "{{color}}",
+        "fill": true
+      },
+      {
+        "type": "text",
+        "text": "{{summary}}",
+        "style": "caption",
+        "color": "{{color}}",
+        "align": "center",
+        "lines": 2
+      },
+      {
+        "type": "list",
+        "items": "{{habits}}",
+        "columns": 4,
+        "spacing": 4,
+        "template": {
+          "type": "box",
+          "padding": 6,
+          "action": "toggle:{{item.index}}",
+          "align": "center",
+          "children": [
+            {
+              "type": "symbol",
+              "name": "{{item.icon}}",
+              "color": "{{item.color}}",
+              "size": 18
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+import Charts
 import CoreLocation
 import SwiftUI
 
@@ -93,7 +94,7 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
                     ($0, r.daily.temperature_2m_min[i], r.daily.temperature_2m_max[i], r.daily.weather_code[i])
                 }
             }
-            let place = try? await CLGeocoder().reverseGeocodeLocation(location).first?.locality
+            let place = try? await CLGeocoder().reverseGeocodeLocation(location, preferredLocale: Locale(identifier: "ru_RU")).first?.locality // the UI is Russian
             forecast = Forecast(place: place, temperature: r.current.temperature_2m, feelsLike: r.current.apparent_temperature,
                                 wind: r.current.wind_speed_10m, code: r.current.weather_code, isDay: r.current.is_day == 1,
                                 hourly: hourly.map { (time: $0.0, temp: $0.1, code: $0.2) },
@@ -200,6 +201,12 @@ struct WeatherPage: View {
 
     /// Card version: now, today's range and (with room) the next hours.
     private func compact(_ f: WeatherModel.Forecast) -> some View {
+        GeometryReader { geo in
+            compactBody(f, wide: size == .medium && geo.size.width > geo.size.height * 1.3)
+        }
+    }
+
+    private func now(_ f: WeatherModel.Forecast) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(f.place ?? "Здесь").font(.subheadline.weight(.semibold)).lineLimit(1)
             HStack(spacing: 6) {
@@ -211,7 +218,80 @@ struct WeatherPage: View {
             if let today = f.daily.first {
                 Text("↓\(Int(today.min.rounded()))°  ↑\(Int(today.max.rounded()))°").font(.caption).foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private func days(_ f: WeatherModel.Forecast, count: Int) -> some View {
+        VStack(spacing: 6) {
+            ForEach(Array(f.daily.dropFirst().prefix(count).enumerated()), id: \.offset) { _, d in
+                HStack(spacing: 8) {
+                    Text(d.day.formatted(.dateTime.weekday(.abbreviated)).capitalizedFirst)
+                        .foregroundStyle(.secondary).frame(width: 28, alignment: .leading)
+                    Glyph(WeatherCode.symbol(d.code), multicolor: true).frame(width: 22)
+                    Spacer(minLength: 0)
+                    Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary)
+                    Text("\(Int(d.max.rounded()))°").fontWeight(.medium).frame(width: 30, alignment: .trailing)
+                }
+                .font(.callout.monospacedDigit())
+            }
+        }
+    }
+
+    private func compactBody(_ f: WeatherModel.Forecast, wide: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if wide {
+                // A wide half-page card: now on the left, the next days beside it (the right side was empty).
+                HStack(alignment: .top, spacing: 20) {
+                    now(f)
+                    days(f, count: 4).frame(maxWidth: 220)
+                }
+            } else {
+                now(f)
+            }
+            if size == .small {
+                Spacer(minLength: 4)
+                // Tall tiles have room for the next hours — as many as fit (8, 6, 4, or none).
+                ViewThatFits(in: .vertical) {
+                    ForEach([12, 10, 8, 6, 4], id: \.self) { count in
+                    VStack(spacing: 5) {
+                        ForEach(Array(f.hourly.dropFirst().prefix(count).enumerated()), id: \.offset) { _, h in
+                            HStack(spacing: 6) {
+                                Text(h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)))).foregroundStyle(.secondary)
+                                    .lineLimit(1).fixedSize()
+                                Glyph(WeatherCode.symbol(h.code), multicolor: true).frame(width: 20)
+                                Spacer(minLength: 0)
+                                Text("\(Int(h.temp.rounded()))°").fontWeight(.medium)
+                            }
+                            .font(.caption.monospacedDigit())
+                        }
+                    }
+                    }
+                    Color.clear.frame(height: 0)
+                }
+            }
             if size == .medium {
+                if !wide {
+                // Taller half-page cards: as many days of the week as fit fill the middle.
+                ViewThatFits(in: .vertical) {
+                    ForEach([5, 3, 2], id: \.self) { days in
+                    VStack(spacing: 6) {
+                        ForEach(Array(f.daily.dropFirst().prefix(days).enumerated()), id: \.offset) { _, d in
+                            HStack(spacing: 8) {
+                                Text(d.day.formatted(.dateTime.weekday(.abbreviated)).capitalizedFirst)
+                                    .foregroundStyle(.secondary).frame(width: 28, alignment: .leading)
+                                Glyph(WeatherCode.symbol(d.code), multicolor: true).frame(width: 22)
+                                Spacer(minLength: 0)
+                                Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary)
+                                Text("\(Int(d.max.rounded()))°").fontWeight(.medium).frame(width: 30, alignment: .trailing)
+                            }
+                            .font(.callout.monospacedDigit())
+                        }
+                    }
+                    }
+                    Color.clear.frame(height: 0)
+                }
+                .layoutPriority(1) // offered the room before the spacer, so the days actually appear
+                }
                 Spacer(minLength: 4)
                 HStack(spacing: 0) {
                     ForEach(Array(f.hourly.prefix(6).enumerated()), id: \.offset) { i, h in
@@ -229,53 +309,132 @@ struct WeatherPage: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
+    /// Whole page: now, the next hours as strip and curve, the week. Lying sideways in two columns.
     private func content(_ f: WeatherModel.Forecast) -> some View {
-        ScrollView {
-            VStack(spacing: 18) {
-                VStack(spacing: 4) {
-                    Text(f.place ?? "Здесь").font(.title3.weight(.medium))
-                    HStack(alignment: .top, spacing: 8) {
-                        Glyph(WeatherCode.symbol(f.code, day: f.isDay), multicolor: true).font(.system(size: 48))
-                        Text("\(Int(f.temperature.rounded()))°").font(.system(size: 72, weight: .thin))
+        GeometryReader { geo in
+            let wide = geo.size.width > geo.size.height * 1.3
+            if wide {
+                HStack(alignment: .top, spacing: 16) {
+                    VStack(spacing: 12) {
+                        hero(f, big: false)
+                        TemperatureCurve(hourly: Array(f.hourly.prefix(25))).frame(maxHeight: .infinity)
                     }
-                    Text(WeatherCode.text(f.code)).font(.headline)
-                    Text("Ощущается как \(Int(f.feelsLike.rounded()))° · ветер \(Int(f.wind.rounded())) м/с")
-                        .font(.subheadline).foregroundStyle(.secondary)
+                    ScrollView { DailyList(daily: f.daily) }.pointerScrollable()
                 }
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 18) {
-                        ForEach(Array(f.hourly.enumerated()), id: \.offset) { i, h in
-                            VStack(spacing: 6) {
-                                Text(i == 0 ? "Сейчас" : h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted))))
-                                    .font(.caption).foregroundStyle(.secondary)
-                                Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.title3)
-                                Text("\(Int(h.temp.rounded()))°").font(.callout.weight(.medium))
-                            }
-                        }
+                .widgetPadding()
+            } else {
+                ScrollView {
+                    VStack(spacing: 14) {
+                        hero(f, big: true)
+                        hourlyStrip(f)
+                        TemperatureCurve(hourly: Array(f.hourly.prefix(25))).frame(height: max(150, geo.size.height - 510)) // the rest of the page
+                        DailyList(daily: f.daily)
                     }
-                    .padding(12)
+                    .frame(minHeight: geo.size.height - 12, alignment: .top)
+                    .widgetPadding()
                 }
-                .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.06)))
-                DailyList(daily: f.daily)
+                .pointerScrollable()
             }
-            .widgetPadding()
         }
-        .pointerScrollable()
+    }
+
+    private func hero(_ f: WeatherModel.Forecast, big: Bool) -> some View {
+        VStack(spacing: 4) {
+            Text(f.place ?? "Здесь").font(.title3.weight(.medium))
+            HStack(alignment: .top, spacing: 8) {
+                Glyph(WeatherCode.symbol(f.code, day: f.isDay), multicolor: true).font(.system(size: big ? 48 : 34))
+                Text("\(Int(f.temperature.rounded()))°").font(.system(size: big ? 80 : 56, weight: .thin))
+                    .contentTransition(.numericText())
+            }
+            Text(WeatherCode.text(f.code)).font(.headline)
+            Text("Ощущается как \(Int(f.feelsLike.rounded()))° · ветер \(Int(f.wind.rounded())) м/с")
+                .font(.subheadline).foregroundStyle(.secondary)
+        }
+        .padding(.top, big ? 12 : 0)
+    }
+
+    private func hourlyStrip(_ f: WeatherModel.Forecast) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 18) {
+                ForEach(Array(f.hourly.enumerated()), id: \.offset) { i, h in
+                    VStack(spacing: 6) {
+                        Text(i == 0 ? "Сейчас" : h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted))))
+                            .font(.caption).foregroundStyle(.secondary)
+                        Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.title3)
+                        Text("\(Int(h.temp.rounded()))°").font(.callout.weight(.medium))
+                    }
+                }
+            }
+            .padding(12)
+        }
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.06)))
+    }
+}
+
+/// The coming hours as a warm-to-cool temperature curve with the extremes labelled.
+private struct TemperatureCurve: View {
+    let hourly: [(time: Date, temp: Double, code: Int)]
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        let temps = hourly.map(\.temp)
+        let lo = temps.min() ?? 0, hi = temps.max() ?? 1
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Ближайшие часы").font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("↓\(Int(lo.rounded()))°  ↑\(Int(hi.rounded()))°").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+            }
+            if theme.style == .ascii {
+                AsciiChart(values: temps, color: theme.text).frame(maxHeight: .infinity)
+            } else {
+                curve(lo: lo, hi: hi)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.primary.opacity(0.06)))
+    }
+
+    private func curve(lo: Double, hi: Double) -> some View {
+            Chart(Array(hourly.enumerated()), id: \.offset) { i, h in
+                AreaMark(x: .value("t", h.time), yStart: .value("lo", lo - 1), yEnd: .value("°", h.temp))
+                    .foregroundStyle(LinearGradient(colors: [.orange.opacity(0.35), .cyan.opacity(0.02)], startPoint: .top, endPoint: .bottom))
+                    .interpolationMethod(.monotone)
+                LineMark(x: .value("t", h.time), y: .value("°", h.temp))
+                    .foregroundStyle(LinearGradient(colors: [.orange, .cyan], startPoint: .top, endPoint: .bottom))
+                    .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .interpolationMethod(.monotone)
+                if i == 0 {
+                    PointMark(x: .value("t", h.time), y: .value("°", h.temp)).foregroundStyle(.white).symbolSize(40)
+                }
+            }
+            .chartYScale(domain: (lo - 1)...(hi + 1))
+            .chartYAxis(.hidden)
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .hour, count: 6)) { _ in
+                    AxisValueLabel(format: .dateTime.hour(.twoDigits(amPM: .omitted)))
+                }
+            }
     }
 }
 
 private struct DailyList: View {
     let daily: [(day: Date, min: Double, max: Double, code: Int)]
+    @Environment(\.theme) private var theme
+    private var ascii: Bool { theme.style == .ascii }
 
     var body: some View {
         let lo = daily.map(\.min).min() ?? 0, hi = daily.map(\.max).max() ?? 1
         VStack(spacing: 10) {
             ForEach(Array(daily.enumerated()), id: \.offset) { i, d in
                 HStack(spacing: 10) {
-                    Text(i == 0 ? "Сегодня" : d.day.formatted(.dateTime.weekday(.abbreviated)).capitalized)
+                    Text(i == 0 ? "Сегодня" : d.day.formatted(.dateTime.weekday(.abbreviated)).capitalizedFirst)
                         .frame(width: 70, alignment: .leading)
                     Glyph(WeatherCode.symbol(d.code), multicolor: true).frame(width: 28)
                     Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary).frame(width: 34, alignment: .trailing)
+                    if ascii {
+                        AsciiBar(value: (d.max - lo) / max(hi - lo, 1), color: theme.text)
+                    } else {
                     GeometryReader { geo in
                         let w = geo.size.width, span = max(hi - lo, 1)
                         Capsule().fill(Color.primary.opacity(0.1))
@@ -286,6 +445,7 @@ private struct DailyList: View {
                             }
                     }
                     .frame(height: 5)
+                    }
                     Text("\(Int(d.max.rounded()))°").frame(width: 34, alignment: .trailing)
                 }
                 .font(.callout)

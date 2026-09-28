@@ -1,70 +1,291 @@
 {
   "full": {
-    "type": "vstack", "spacing": 12, "align": "leading",
+    "type": "vstack",
+    "spacing": 12,
+    "align": "leading",
     "children": [
-      { "type": "hstack", "spacing": 8, "children": [
-        { "type": "box", "fit": true, "padding": 4, "radius": 5, "background": "#FF6600", "children": [
-          { "type": "text", "text": "Y", "size": 13, "weight": "heavy", "color": "white" }
-        ]},
-        { "type": "text", "text": "HACKER NEWS", "style": "caption", "weight": "semibold", "color": "secondary" },
-        { "type": "spacer" },
-        { "type": "text", "text": "{{listName}}", "style": "caption", "color": "secondary" }
-      ]},
-      { "type": "box", "padding": 16, "spacing": 8, "children": [
-        { "type": "text", "text": "{{top.title}}", "style": "title3", "weight": "semibold", "lines": 3 },
-        { "type": "text", "text": "{{top.site}}", "style": "footnote", "color": "secondary", "lines": 1 },
-        { "type": "hstack", "spacing": 12, "children": [
-          { "type": "text", "text": "▲ {{top.points}}", "style": "subheadline", "weight": "semibold", "design": "rounded", "color": "orange" },
-          { "type": "text", "text": "💬 {{top.comments}}", "style": "subheadline", "design": "rounded", "color": "secondary" },
-          { "type": "spacer" },
-          { "type": "text", "text": "{{top.age}}", "style": "caption", "color": "secondary" }
-        ]}
-      ]},
-      { "type": "list", "items": "{{rest}}", "spacing": 12, "template":
-        { "type": "hstack", "align": "top", "spacing": 12, "children": [
-          { "type": "text", "text": "{{item.rank}}", "size": 17, "weight": "bold", "design": "rounded", "color": "secondary" },
-          { "type": "vstack", "spacing": 3, "align": "leading", "children": [
-            { "type": "text", "text": "{{item.title}}", "style": "subheadline", "weight": "medium", "lines": 2 },
-            { "type": "hstack", "spacing": 8, "children": [
-              { "type": "text", "text": "▲ {{item.points}}", "style": "caption", "weight": "semibold", "design": "rounded", "color": "{{item.pointsColor}}" },
-              { "type": "text", "text": "💬 {{item.comments}}", "style": "caption", "color": "secondary" },
-              { "type": "text", "text": "{{item.site}}", "style": "caption", "color": "secondary", "lines": 1 }
-            ]}
-          ]},
-          { "type": "spacer" }
-        ]}
+      {
+        "type": "hstack",
+        "spacing": 8,
+        "children": [
+          {
+            "type": "box",
+            "fit": true,
+            "padding": 4,
+            "radius": 5,
+            "background": "#FF6600",
+            "children": [
+              {
+                "type": "text",
+                "text": "Y",
+                "size": 13,
+                "weight": "heavy",
+                "color": "white"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "HACKER NEWS",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          },
+          {
+            "type": "spacer"
+          },
+          {
+            "type": "text",
+            "text": "{{listName}}",
+            "style": "caption",
+            "color": "secondary"
+          }
+        ]
       },
-      { "type": "spacer" }
+      {
+        "type": "box",
+        "padding": 16,
+        "spacing": 8,
+        "children": [
+          {
+            "type": "text",
+            "text": "{{top.title}}",
+            "style": "title3",
+            "weight": "semibold",
+            "lines": 3
+          },
+          {
+            "type": "text",
+            "text": "{{top.site}}",
+            "style": "footnote",
+            "color": "secondary",
+            "lines": 1
+          },
+          {
+            "type": "hstack",
+            "spacing": 12,
+            "children": [
+              {
+                "type": "text",
+                "text": "▲ {{top.points}}",
+                "style": "subheadline",
+                "weight": "semibold",
+                "design": "rounded",
+                "color": "orange"
+              },
+              {
+                "type": "text",
+                "text": "💬 {{top.comments}}",
+                "style": "subheadline",
+                "design": "rounded",
+                "color": "secondary"
+              },
+              {
+                "type": "spacer"
+              },
+              {
+                "type": "text",
+                "text": "{{top.age}}",
+                "style": "caption",
+                "color": "secondary"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "items": "{{rest}}",
+        "spacing": 12,
+        "template": {
+          "type": "hstack",
+          "align": "top",
+          "spacing": 12,
+          "children": [
+            {
+              "type": "text",
+              "text": "{{item.rank}}",
+              "size": 17,
+              "weight": "bold",
+              "design": "rounded",
+              "color": "secondary"
+            },
+            {
+              "type": "vstack",
+              "spacing": 3,
+              "align": "leading",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "{{item.title}}",
+                  "style": "subheadline",
+                  "weight": "medium",
+                  "lines": 2
+                },
+                {
+                  "type": "hstack",
+                  "spacing": 8,
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "▲ {{item.points}}",
+                      "style": "caption",
+                      "weight": "semibold",
+                      "design": "rounded",
+                      "color": "{{item.pointsColor}}"
+                    },
+                    {
+                      "type": "text",
+                      "text": "💬 {{item.comments}}",
+                      "style": "caption",
+                      "color": "secondary"
+                    },
+                    {
+                      "type": "text",
+                      "text": "{{item.site}}",
+                      "style": "caption",
+                      "color": "secondary",
+                      "lines": 1
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "spacer"
+            }
+          ]
+        }
+      },
+      {
+        "type": "spacer"
+      }
     ]
   },
   "medium": {
-    "type": "vstack", "spacing": 10, "align": "leading",
+    "type": "vstack",
+    "spacing": 10,
+    "align": "leading",
     "children": [
-      { "type": "hstack", "spacing": 6, "children": [
-        { "type": "box", "fit": true, "padding": 3, "radius": 4, "background": "#FF6600", "children": [
-          { "type": "text", "text": "Y", "size": 11, "weight": "heavy", "color": "white" }
-        ]},
-        { "type": "text", "text": "Hacker News", "style": "caption", "weight": "semibold", "color": "secondary" }
-      ]},
-      { "type": "list", "items": "{{stories}}", "spacing": 9, "template":
-        { "type": "hstack", "align": "top", "spacing": 8, "children": [
-          { "type": "text", "text": "{{item.points}}", "style": "caption", "weight": "bold", "design": "rounded", "color": "{{item.pointsColor}}" },
-          { "type": "text", "text": "{{item.title}}", "style": "footnote", "weight": "medium", "lines": 2 },
-          { "type": "spacer" }
-        ]}
+      {
+        "type": "hstack",
+        "spacing": 6,
+        "children": [
+          {
+            "type": "box",
+            "fit": true,
+            "padding": 3,
+            "radius": 4,
+            "background": "#FF6600",
+            "children": [
+              {
+                "type": "text",
+                "text": "Y",
+                "size": 11,
+                "weight": "heavy",
+                "color": "white"
+              }
+            ]
+          },
+          {
+            "type": "text",
+            "text": "Hacker News",
+            "style": "caption",
+            "weight": "semibold",
+            "color": "secondary"
+          }
+        ]
+      },
+      {
+        "type": "list",
+        "items": "{{stories}}",
+        "spacing": 9,
+        "template": {
+          "type": "hstack",
+          "align": "top",
+          "spacing": 8,
+          "children": [
+            {
+              "type": "text",
+              "text": "{{item.points}}",
+              "style": "caption",
+              "weight": "bold",
+              "design": "rounded",
+              "color": "{{item.pointsColor}}"
+            },
+            {
+              "type": "text",
+              "text": "{{item.title}}",
+              "style": "footnote",
+              "weight": "medium",
+              "lines": 2
+            },
+            {
+              "type": "spacer"
+            }
+          ]
+        }
       }
     ]
   },
   "small": {
-    "type": "vstack", "spacing": 6, "align": "leading",
+    "type": "vstack",
+    "spacing": 6,
+    "align": "leading",
     "children": [
-      { "type": "box", "fit": true, "padding": 3, "radius": 4, "background": "#FF6600", "children": [
-        { "type": "text", "text": "Y", "size": 11, "weight": "heavy", "color": "white" }
-      ]},
-      { "type": "text", "text": "{{top.title}}", "style": "subheadline", "weight": "semibold", "lines": 6 },
-      { "type": "spacer" },
-      { "type": "text", "text": "▲ {{top.points}} · 💬 {{top.comments}}", "style": "caption", "weight": "semibold", "design": "rounded", "color": "orange" },
-      { "type": "text", "text": "{{top.site}}", "style": "caption2", "color": "secondary", "lines": 1 }
+      {
+        "type": "box",
+        "fit": true,
+        "padding": 3,
+        "radius": 4,
+        "background": "#FF6600",
+        "children": [
+          {
+            "type": "text",
+            "text": "Y",
+            "size": 11,
+            "weight": "heavy",
+            "color": "white"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "text": "{{top.title}}",
+        "style": "subheadline",
+        "weight": "semibold",
+        "lines": 3
+      },
+      {
+        "type": "list",
+        "items": "{{rest}}",
+        "spacing": 4,
+        "template": {
+          "type": "text",
+          "text": "{{item.title}}",
+          "style": "caption2",
+          "color": "secondary",
+          "lines": 2
+        }
+      },
+      {
+        "type": "spacer"
+      },
+      {
+        "type": "text",
+        "text": "▲ {{top.points}} · 💬 {{top.comments}}",
+        "style": "caption",
+        "weight": "semibold",
+        "design": "rounded",
+        "color": "orange"
+      },
+      {
+        "type": "text",
+        "text": "{{top.site}}",
+        "style": "caption2",
+        "color": "secondary",
+        "lines": 1
+      }
     ]
   }
 }

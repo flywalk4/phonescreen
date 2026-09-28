@@ -21,12 +21,18 @@ final class PhoneModel: ObservableObject {
     @Published private(set) var notes: [NoteSummary]?
     @Published private(set) var noteBodies: [String: String] = [:]
     @Published private(set) var launcher: [LauncherItem] = []
+    /// Apps running on the Mac. Their icons arrive once per connection and are kept in `appIcons`.
+    @Published private(set) var runningApps: [RunningApp] = []
+    @Published private(set) var appIcons: [String: UIImage] = [:]
     /// Installed JavaScript widgets, as last rendered on the Mac.
     @Published private(set) var customWidgets: [String: CustomWidgetState] = [:]
     var customNames: [String: String] { customWidgets.mapValues(\.name) }
     @Published private(set) var stats: SystemStats?
     @Published private(set) var statsHistory: [SystemStats] = []
     /// The look chosen on the Mac; kept so the phone looks right before it reconnects.
+    /// The Mac's language ("ru", "en"…): the phone's own texts follow it (widgets arrive already translated).
+    @Published private(set) var language: String = UserDefaults.standard.string(forKey: "language")
+        ?? String((Locale.preferredLanguages.first ?? "en").prefix(2))
     @Published private(set) var theme: Theme = PhoneModel.savedTheme() {
         didSet {
             if let data = try? JSONEncoder().encode(theme) { UserDefaults.standard.set(data, forKey: "theme") }
@@ -41,6 +47,8 @@ final class PhoneModel: ObservableObject {
 
     let pointer = PointerController()
     let keyboard = KeyboardBridge()
+    /// Bumped by touches and Mac pointer clicks/scrolls: restarts the pages' auto-advance.
+    @Published var interactions = 0
     private let pool: ChannelPool
     private let listener: Listener
     private let bluetooth: BLEPeripheral
@@ -58,6 +66,7 @@ final class PhoneModel: ObservableObject {
         self.pool = pool
         listener = Listener(name: name) { pool.add($0) }
         bluetooth = BLEPeripheral(name: name) { pool.add($0) }
+        pointer.onActivity = { [weak self] in self?.interactions += 1 }
     }
 
     func start() {
@@ -140,6 +149,8 @@ final class PhoneModel: ObservableObject {
             launcher = [LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock.fill"),
                         LauncherItem(id: "sys:darkMode", title: "Тёмная тема", kind: .system, symbol: "circle.lefthalf.filled"),
                         LauncherItem(id: "shortcut:x", title: "Фокус: работа", kind: .shortcut, symbol: "square.stack.3d.up.fill")]
+            runningApps = [RunningApp(id: "com.apple.finder", name: "Finder"), RunningApp(id: "com.apple.Safari", name: "Safari", active: true),
+                           RunningApp(id: "com.apple.Music", name: "Музыка"), RunningApp(id: "com.apple.mail", name: "Почта", hidden: true)]
             let sample = SystemStats(cpu: 0.35, cpuPerCore: [0.2, 0.6, 0.4, 0.1, 0.8, 0.3, 0.2, 0.5], gpu: 0.2,
                                      memoryUsed: 11_000_000_000, memoryTotal: 16_000_000_000, netInBytesPerSec: 250_000, netOutBytesPerSec: 40_000)
             stats = sample
@@ -149,6 +160,12 @@ final class PhoneModel: ObservableObject {
             if let i = args.firstIndex(of: "--demo-bundle"), i + 1 < args.count { loadDemoBundle(args[i + 1]) }
             if let i = args.firstIndex(of: "--demo-theme"), i + 1 < args.count,
                let builtin = Theme.builtin.first(where: { $0.id == args[i + 1] }) { theme = builtin }
+            // `--demo-orientation landscapeIslandLeft`: how the phone lies (landscape layouts on screenshots).
+            // Upright unless asked: the layout is saved, so an earlier landscape run must not leak into this one.
+            let orientation = args.firstIndex(of: "--demo-orientation").flatMap { i in
+                i + 1 < args.count ? PhoneOrientation(rawValue: args[i + 1]) : nil
+            } ?? .portrait
+            layout = PhoneLayout(orientation: orientation, macSide: .left)
             if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]), pages.indices.contains(n) { currentPage = n }
         }
         #endif
@@ -176,7 +193,9 @@ final class PhoneModel: ObservableObject {
             let list = raw.enumerated().compactMap { index, page -> PageInfo? in
                 guard let layout = (page["layout"] as? String).flatMap(PageLayout.init(rawValue:)) else { return nil }
                 let refs = (page["widgets"] as? [String] ?? []).compactMap(WidgetRef.init(rawValue:))
-                return PageInfo(id: "demo-\(index)", layout: layout, widgets: refs)
+                var info = PageInfo(id: "demo-\(index)", layout: layout, widgets: refs)
+                info.bare = page["bare"] as? Bool
+                return info
             }
             if !list.isEmpty { pages = list; currentPage = 0 }
         }
@@ -203,11 +222,20 @@ final class PhoneModel: ObservableObject {
     /// Notes are fetched through the Mac only while their page is on screen (asking Notes launches the app).
     private func requestDataIfNeeded(for index: Int) {
         guard pages.indices.contains(index) else { return }
-        for kind in pages[index].visibleWidgets.compactMap(\.builtin) where kind == .notes || kind == .launcher { refresh(kind) }
+        for kind in pages[index].visibleWidgets.compactMap(\.builtin) where kind == .notes || kind == .launcher || kind == .apps { refresh(kind) }
     }
 
     func perform(_ action: MediaAction) {
+        tap()
         pool.send(.mediaAction(action))
+    }
+
+    private let haptic = UIImpactFeedbackGenerator(style: .light)
+
+    /// A light tick under the finger for buttons, cells and commands (theme `layout.haptics`, on by default).
+    func tap() {
+        guard theme.layout?.haptics ?? true, !PointerController.clicking else { return }
+        haptic.impactOccurred()
     }
 
     func music(_ command: MusicCommand) {
@@ -249,8 +277,17 @@ final class PhoneModel: ObservableObject {
     func openNote(_ id: String) { pool.send(.noteRequest(id: id)) }
     func createNote(_ text: String) { pool.send(.noteCreate(text: text)) }
     func showNoteOnMac(_ id: String) { pool.send(.noteShowOnMac(id: id)) }
-    func run(_ item: LauncherItem) { pool.send(.command(id: item.id)) }
-    func customAction(_ id: String, _ action: String) { pool.send(.customAction(id: id, action: action)) }
+    func run(_ item: LauncherItem) { tap(); pool.send(.command(id: item.id)) }
+    func appAction(_ app: RunningApp, _ action: AppAction) {
+        // Optimistic: the highlight moves on tap; the Mac's update confirms it a moment later.
+        switch action {
+        case .activate: runningApps = runningApps.map { var a = $0; a.active = a.id == app.id; if a.active { a.hidden = false }; return a }
+        case .hide: runningApps = runningApps.map { var a = $0; if a.id == app.id { a.hidden = true; a.active = false }; return a }
+        case .quit: break // the app may ask to save first; wait for the Mac
+        }
+        pool.send(.appAction(id: app.id, action: action))
+    }
+    func customAction(_ id: String, _ action: String) { tap(); pool.send(.customAction(id: id, action: action)) }
 
     private func handle(_ message: Message) {
         switch message {
@@ -295,12 +332,18 @@ final class PhoneModel: ObservableObject {
             noteBodies[id] = text
         case .launcher(let items):
             launcher = items
+        case .runningApps(let list):
+            for app in list { if let data = app.icon, let image = UIImage(data: data) { appIcons[app.id] = image } }
+            runningApps = list.map { var a = $0; a.icon = nil; return a }
         case .customWidget(let state):
             customWidgets[state.id] = state
         case .customWidgetRemoved(let id):
             customWidgets[id] = nil
         case .theme(let value):
             withAnimation(.easeInOut(duration: 0.35)) { theme = value }
+        case .language(let code):
+            language = code
+            UserDefaults.standard.set(code, forKey: "language")
         case .stats(let value):
             stats = value
             statsHistory = Array((statsHistory + [value]).suffix(60))

@@ -1,0 +1,22 @@
+{
+ "description": "Снять отметку повторным нажатием",
+ "now": "2026-09-28T19:00:00Z",
+ "timezone": "Europe/Moscow",
+ "settings": {
+  "habits": "Вода, Спорт"
+ },
+ "storage": {
+  "done": {
+   "2026-09-28": [
+    "Вода"
+   ]
+  }
+ },
+ "actions": [
+  "toggle:0"
+ ],
+ "expect": {
+  "count": 0,
+  "habits.0.done": false
+ }
+}

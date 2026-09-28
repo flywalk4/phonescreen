@@ -18,8 +18,16 @@ struct Glyph: View {
         if theme.style == .ascii {
             Text(AsciiGlyphs.text(for: name)).fontDesign(.monospaced).fontWeight(.bold).lineLimit(1).fixedSize()
         } else {
-            Image(systemName: name).symbolRenderingMode(multicolor ? .multicolor : nil)
+            // Multicolour clouds and moons are white: on a light theme they'd vanish, so draw those in layers of the text colour.
+            Image(systemName: name)
+                .symbolRenderingMode(multicolor ? (theme.appearance == .light && Self.whiteInMulticolor(name) ? .hierarchical : .multicolor) : nil)
         }
+    }
+}
+
+extension Glyph {
+    static func whiteInMulticolor(_ name: String) -> Bool {
+        name.hasPrefix("cloud") || name.hasPrefix("moon") || name.hasPrefix("snowflake") || name == "wind" || name.hasPrefix("smoke")
     }
 }
 
@@ -38,7 +46,7 @@ enum AsciiGlyphs {
         "headphones": "(n)", "hifispeaker.fill": "[o]", "tv": "[_]", "desktopcomputer": "[__]", "laptopcomputer": "/_/",
         "exclamationmark.triangle.fill": "/!\\", "questionmark": "?", "chevron.right": ">", "chevron.left": "<",
         "xmark": "x", "ellipsis": "...", "puzzlepiece.extension": "{}", "sparkles": "*.*",
-        "mappin": "@", "arrow.down": "v", "arrow.up": "^", "circle.fill": "o", "folder": "[/]", "macbook": "[__]",
+        "mappin": "@", "arrow.down": "v", "arrow.up": "^", "arrow.left": "<", "arrow.right": ">", "circle.fill": "o", "folder": "[/]", "macbook": "[__]",
         "circle.lefthalf.filled": "(|", "square.stack.3d.up.fill": "[=]", "moon.zzz.fill": "z", "bell.fill": "(!)",
     ]
 
@@ -52,6 +60,8 @@ struct ThemedBar: View {
     let value: Double
     var color: Color = .primary
     var height: CGFloat = 6
+    /// Spring to a new value (levels, gauges); off for bars driven every frame (playback).
+    var animated = false
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -63,6 +73,7 @@ struct ThemedBar: View {
                     Capsule().fill(Color.primary.opacity(0.15))
                     Capsule().fill(color).frame(width: max(height, geo.size.width * min(max(value, 0), 1)))
                 }
+                .animation(animated ? .spring(duration: 0.45, bounce: 0.15) : nil, value: value)
             }
             .frame(height: height)
         }
@@ -96,6 +107,18 @@ struct ThemedRing: View {
             }
             .frame(width: diameter, height: diameter)
         }
+    }
+}
+
+/// Buttons that dip under the finger and spring back (with a soft highlight behind them).
+struct PressScale: ButtonStyle {
+    var scale: CGFloat = 0.84
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(Circle().fill(Color.primary.opacity(configuration.isPressed ? 0.12 : 0)).padding(-4))
+            .scaleEffect(configuration.isPressed ? scale : 1)
+            .animation(.spring(duration: 0.3, bounce: 0.45), value: configuration.isPressed)
     }
 }
 
@@ -176,4 +199,9 @@ struct AsciiArtwork: View {
         }
         return lines.joined(separator: "\n")
     }
+}
+
+extension String {
+    /// "понедельник, 28 сентября" → "Понедельник, 28 сентября" (`capitalized` would make it "28 Сентября", "2026 Г.").
+    var capitalizedFirst: String { prefix(1).uppercased() + dropFirst() }
 }

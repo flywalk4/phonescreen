@@ -49,7 +49,13 @@ node scripts/widget-dev.mjs test                                             # �
     "network": ["api.example.com"],
     "secrets": [{ "key": "token", "title": "API-токен" }]
   },
-  "settings": [{ "key": "city", "title": "Город", "default": "Москва" }]
+  "settings": [
+    { "key": "city", "title": "Город", "default": "Москва", "hint": "или координаты «55.75, 37.62»" },
+    { "key": "units", "title": "Единицы", "type": "choice", "default": "c",
+      "options": [{ "value": "c", "title": "°C" }, { "value": "f", "title": "°F" }] },
+    { "key": "wind", "title": "Показывать ветер", "type": "toggle", "default": "true" },
+    { "key": "days", "title": "Дней прогноза", "type": "number", "min": 1, "max": 7, "default": "3" }
+  ]
 }
 ```
 
@@ -63,7 +69,7 @@ node scripts/widget-dev.mjs test                                             # �
 | `permissions.network` | домены, куда можно `fetch` (поддомены включены). Только HTTPS, редиректы тоже проверяются. Без схемы, пути и `*` |
 | `permissions.secrets` | секреты (ключи API): пользователь вводит их в настройках, хранятся в Связке ключей Mac |
 | `permissions.files` | чтение (только чтение) файлов в домашней папке: `~/folder/` (папка целиком) или `~/folder/file`. Символические ссылки наружу не пройдут |
-| `settings` | обычные текстовые настройки со значениями по умолчанию |
+| `settings` | настройки, которые пользователь меняет на Mac. `type`: `text` (поле, по умолчанию), `choice` (выпадающий список; `options` — строки или `{ "value", "title" }`, до трёх коротких — переключатель-сегменты), `toggle` (выключатель, значение `"true"` / `"false"`), `number` (ползунок, если заданы `min` и `max`, иначе поле со стрелками; ещё `step` и `unit`). `title` — короткая подпись, пояснения и примеры — в `hint`. Значения в скрипт приходят строками |
 
 Пользователь видит все разрешения до установки.
 
@@ -144,7 +150,7 @@ async function action(name, ctx) {
 | `chart` | `values` (массив чисел, до 200), `color`, `style` (`line` — линия, `area` — линия с заливкой-градиентом, `bar` — столбики), `height` |
 | `button` | `title`, `symbol`, `action` → `action(name)` в provider.js; нажимается пальцем и курсором Mac. В `action` можно привязку: `"tap:{{index}}"` |
 | `box` | плашка: `children` столбиком на скруглённой подложке. `padding` (12), `spacing`, `align`, `radius`; `background` + `opacity` — свой цвет, без них — подложка в стиле темы (стекло в Liquid Glass, рамка в ASCII). `fit: true` — по размеру содержимого («таблетки»), иначе на всю ширину. `action` — вся плашка кнопка (клетки игр, плитки). `aspect` — пропорции (1 — квадрат) |
-| `grid` | `children` в `columns` колонок (1–12), `spacing` |
+| `grid` | `children` в `columns` колонок (1–16), `spacing` |
 | `list` | `items` (массив), `template` (узел), `spacing`, `align`; `columns` — сеткой в N колонок |
 | `sprite` | пиксельная анимация: `frames` — массив кадров, кадр — массив строк одинаковой длины (до 48×48, до 16 кадров); `palette` — символ → цвет (`.` и пробел прозрачные); `fps`. Масштабируется под место. Кадры удобно рисовать кодом в provider.js |
 | `spacer`, `divider` | — |
@@ -218,9 +224,11 @@ catalog/themes/com.author.mytheme/
 | `font` | `system`, `rounded`, `monospaced`, `serif` |
 | `radius` | скругление карточек, 0…40 |
 | `background.colors` | 1 цвет — заливка, 2–4 — линейный градиент; `angle` — направление в градусах (0 — сверху вниз) |
+| `background.animation` | живой фон (`aurora`, `stars`, `matrix`, `waves`, `bokeh`, `lava`, `snow`, `rain`, `gradient`) или `photo` — фото из «Избранного» iPhone, размытое и затемнённое (`colors` — пока фото не загрузилось) |
 | `colors.text` / `secondary` / `accent` | основной текст, второстепенный, акцент (кнопки, полосы без своего цвета) |
 | `colors.card` / `border` | заливка карточки (для `glass` — оттенок стекла) и обводка (для `ascii` — цвет рамки) |
-| `colors.palette` | замена цветов, которые называют виджеты: `{"green": "#…"}` перекрасит всё «зелёное» во всех виджетах |
+| `colors.palette` | замена цветов, которые называют виджеты: `{"green": "#…"}` перекрасит всё «зелёное» во всех виджетах. Не заданный цвет берётся у ближайшего родственного: `mint` → `green`, `teal` → `cyan` → `blue`, `indigo` → `blue`, `pink` → `purple`, `brown` → `orange` |
+| `layout` | необязательно: `gap` — между карточками (0…24), `margin` — поля экрана (0…24), `padding` — внутри карточек (6…24), `dots` — точки страниц (`true`/`false`), `cardOpacity` — непрозрачность карточек 0…1 (с живым фоном красиво 0.6–0.8), `textSize` — размер текста: `small`, `medium`, `large`, `xlarge`, `status` — время и дата у выреза Dynamic Island (`true` по умолчанию), `shadow` — мягкая тень под карточками, `autoPage` — листать страницы самим каждые N секунд (0 — нет), `haptics` — вибрация при нажатии (`true` по умолчанию) |
 
 Цвета — `#RRGGBB` или `#RRGGBBAA` (с прозрачностью). Обновляя опубликованную тему, поднимайте `version` — у пользователей появится «Обновить до …».
 

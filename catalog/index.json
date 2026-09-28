@@ -3,13 +3,13 @@
     {
       "id": "com.flywalk4.air",
       "name": "Воздух",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": "flywalk4",
       "description": "Качество воздуха (европейский индекс AQI) с понятной оценкой, частицы PM2.5 и PM10, NO₂, озон, ультрафиолет и прогноз индекса на сутки столбиками. Данные Open-Meteo, без ключа.",
       "symbol": "aqi.medium",
       "path": "widgets/com.flywalk4.air",
       "files": {
-        "manifest.json": "7a50a0374425daf3210b9c197a52e5419afafc1dc0629b1f9b7e33df04b19367",
+        "manifest.json": "4b6f7df1921ccdce8d9078fef59ec42dad598f8529ff09a0de61b41bd8338bb8",
         "view.json": "a7b6d3f193e36cc23779c70074113108872c150cafab07c542b4eb560686489f",
         "provider.js": "d4ebc26b9c9bf80993d00010c66e90f8f808a09f272b35999ec94f68d009a245"
       }
@@ -17,83 +17,108 @@
     {
       "id": "com.flywalk4.claude-code",
       "name": "Claude Code",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "author": "flywalk4",
       "description": "Что делает Claude Code и сколько потрачено: пиксельный краб бегает, когда Claude работает, машет, когда ждёт тебя, и спит в простое; токены за 5-часовое окно и за неделю. Работает сразу — читает журналы сессий Claude Code (только чтение, в сеть не ходит). С мостом (python3 scripts/claude-code-bridge.py install) — точные проценты лимитов Pro/Max и время сброса.",
       "symbol": "sparkles",
       "path": "widgets/com.flywalk4.claude-code",
       "files": {
-        "manifest.json": "496075a8382e9e25e6aefc4a63b75dc4b612c9868ff887be45281d2f3c90db01",
-        "view.json": "5ccaa9f85a9fce8cc056211b15d2ae73ece3dc008a4763e6280e41f15775f2bc",
-        "provider.js": "5f617d34bbe52b90ba1f6f9ddec2796cd7e85fe37639d159fff1ffaf97fc6b67"
+        "manifest.json": "ffc65945a0ad0dc2fe46e0db5042ccbac6a67043b83a73d6cd63bf1f0f6898a6",
+        "view.json": "a37566eb8f72175c3a03218dd5bde56cff606721e0a0da08b53b7b27fc3a6455",
+        "provider.js": "1744a7b376e4b27d4146646d3154e03858b168d2b161c2b7bce4ff38c95a95bc"
       }
     },
     {
       "id": "com.flywalk4.focus",
       "name": "Фокус",
-      "version": "1.1.0",
+      "version": "1.3.0",
       "author": "flywalk4",
       "description": "Помодоро-таймер: 25 минут работы, 5 минут перерыва, длинный перерыв после четырёх. Старт, пауза и пропуск — прямо с телефона; счётчик помидоров за день. Без сети.",
       "symbol": "timer",
       "path": "widgets/com.flywalk4.focus",
       "files": {
-        "manifest.json": "c470611e306d372759fb6fd6a069a6d78c0f048470e9abe56ec542d7f9cb2b9c",
-        "view.json": "91924f60bab880f2799edb6931ef7c77ae157a823f8e3629363cc2c26935eb34",
+        "manifest.json": "ffb2449af2758e892609a08a59fca0d243adaeb8e211cc49eae76a484b9477d1",
+        "view.json": "535ea277f785452f0a33dfbd8ecbb2e45983ca1ee7ffc9e6c867f710f13a8b97",
         "provider.js": "adf61eb6f901750d56c0a90337d96e3a94762a668ebfeb3a895d9363a46ae2d6"
       }
     },
     {
       "id": "com.flywalk4.game2048",
       "name": "2048",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": "flywalk4",
       "description": "Классическая 2048: сдвигай плитки кнопками-стрелками, одинаковые складываются. Счёт и рекорд сохраняются, партию можно продолжать когда угодно.",
       "symbol": "square.grid.2x2.fill",
       "path": "widgets/com.flywalk4.game2048",
       "files": {
-        "manifest.json": "546c59c233a8bd69c3dc34dc774fe08dc32c1aa3e4ca5cb858f5c683d6b275f2",
-        "view.json": "c40a67b858834188497e67424ac776585ac27f5f2dee69104c9c040c8d4bc670",
+        "manifest.json": "b0acb1ff4e6c78dc770ce8438e25746ef0242c20f9996514419777d0ec305de6",
+        "view.json": "f399188164683addbe9599cbe7ec4e95a59049329cefccccb99aca088bd3a45f",
         "provider.js": "c9de31712ea9e2f40a163a98536cd7118bda2e4a264579d932cdaac4bfa13319"
       }
     },
     {
       "id": "com.flywalk4.github",
       "name": "GitHub",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": "flywalk4",
       "description": "Пул-реквесты, которые ждут твоего ревью, твои открытые PR и непрочитанные уведомления GitHub. Нужен токен (Settings → Developer settings → Personal access tokens; для публичных репозиториев хватит прав только на чтение).",
       "symbol": "arrow.triangle.pull",
       "path": "widgets/com.flywalk4.github",
       "files": {
-        "manifest.json": "fb4ba6c553bae64ecc7aa6c32e17c6dbc4273e40573bc6830f46490b22acb997",
-        "view.json": "4718cc903aabfa18741285d99d51acf45e1d12574a4b03514172b53d14e703a1",
+        "manifest.json": "3c838f9be08a0de5186aab277741ea149c9325507ed1f0177118ddcb43b229b9",
+        "view.json": "f178526fdcae35a1c2ca1dd55d9e6bf62142cfa9fd7cd4ee3d062fac39b61f9f",
         "provider.js": "b9a202a42d957a8173169caa7d13d79d04acf4f50b9df956b356832c027173df"
+      }
+    },
+    {
+      "id": "com.flywalk4.habits",
+      "name": "Привычки",
+      "version": "1.1.0",
+      "author": "flywalk4",
+      "description": "Трекер привычек: отмечай нажатием на телефоне, смотри серию дней подряд и последнюю неделю точками. Без сети.",
+      "symbol": "checklist.checked",
+      "path": "widgets/com.flywalk4.habits",
+      "files": {
+        "manifest.json": "204f053fb892b24fec80b1f70b584b3c7db0d7c4b39c305054c38cc0fa6ed976",
+        "view.json": "2f9ac1d7c4e4ca1eeb4a2e74e481a8360e3b8ee4e4c354eaeba1d35ae1595572",
+        "provider.js": "040d3aee597a40507edfbc670c54ffd1d2b3a847e4c53937bb870ba0cc360360",
+        "strings.json": "e2acd7adf5d1ded0278a30417661f1dda66df7040adc5126ba58a5179486ff2e"
+      },
+      "localized": {
+        "en": {
+          "name": "Habits",
+          "description": "A habit tracker: tap on the phone to check off, see your streak and the last week as dots. Works offline."
+        },
+        "ru": {
+          "name": "Привычки",
+          "description": "Трекер привычек: отмечай нажатием на телефоне, смотри серию дней подряд и последнюю неделю точками. Без сети."
+        }
       }
     },
     {
       "id": "com.flywalk4.hackernews",
       "name": "Hacker News",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "author": "flywalk4",
       "description": "Главные истории Hacker News: заголовок, сайт, очки и комментарии, свежие отмечены. Без ключа.",
       "symbol": "newspaper.fill",
       "path": "widgets/com.flywalk4.hackernews",
       "files": {
-        "manifest.json": "4d97b99d0ac33681bd4b22a0ceb54202c6ea7bcee0a94b270960a1f25aeefbac",
-        "view.json": "badbc6025ad1d30d4c6699171eb0836205b75848dbfb5ae1e8cc9deb46f7ac4c",
+        "manifest.json": "f08dcbcd42ff022d47e806ef54e24d46a33f33e79f6fa2d8c671b5fd33a32b14",
+        "view.json": "3ba126ae08f708378eb5d9cf1a0f1d9660f430dd1787bc1446ea3460c364f664",
         "provider.js": "2bd8921db3a218ca6ab5198edc148da073a4a76c29c4183c0122edead870bc2c"
       }
     },
     {
       "id": "com.flywalk4.markets",
       "name": "Крипта и акции",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": "flywalk4",
       "description": "Цены криптовалют (CoinGecko) и акций Московской биржи (ISS MOEX) с изменением за день и графиком. Без ключей. Акции — с задержкой биржи для бесплатных данных (около 15 минут).",
       "symbol": "chart.line.uptrend.xyaxis",
       "path": "widgets/com.flywalk4.markets",
       "files": {
-        "manifest.json": "bf0321dba60ed06a16551a4d573ed17dcba62e9fbc179880a6eefb18d336777a",
+        "manifest.json": "803ffcdf04591e2f4839f0bcb4b4ea1009d25b51a5f5b53061d22a0c8a7129af",
         "view.json": "d8b0ab31c7201e23f48c8063d59ac5e07cb8c15c75c41d60012425d53dd020f3",
         "provider.js": "c92d06662b6bc3bde1852b838c4f6834e6064a03bb82878d6567a882c3541857"
       }
@@ -101,69 +126,69 @@
     {
       "id": "com.flywalk4.memory",
       "name": "Память",
-      "version": "1.1.0",
+      "version": "1.1.2",
       "author": "flywalk4",
       "description": "Найди пары: 16 карточек, открывай по две. Считаются ходы, лучший результат сохраняется. Наборы картинок — животные, еда, космос.",
       "symbol": "square.grid.3x3.fill",
       "path": "widgets/com.flywalk4.memory",
       "files": {
-        "manifest.json": "5cd244d6d1d0dda2efe05a7bb28c7e81ee9ad8e2cb7ebaced99742e50d727f54",
-        "view.json": "fd33964fc0d034602670e5620b90dbaaff27347ec991ef4d04fac246773bad9c",
+        "manifest.json": "453ea6c0ed1d0cf5ed9d81c45a772db56f1040ae39e2d99eb1ef040aaa62d661",
+        "view.json": "8c8ccdd162a6d3e1c31a5f0bed5aa392774a1bfb54a4949c60188874ca6921b3",
         "provider.js": "bd8896f9b636fd4d67990ab570d0a415f9738d6800aa70fdc0e2cedb934f2ae6"
       }
     },
     {
       "id": "com.flywalk4.minesweeper",
       "name": "Сапёр",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "author": "flywalk4",
       "description": "Сапёр 8×8 с 10 минами: первый ход всегда безопасный, пустые области открываются сами, флажки — отдельным режимом. Лучшее время сохраняется.",
       "symbol": "flag.fill",
       "path": "widgets/com.flywalk4.minesweeper",
       "files": {
-        "manifest.json": "1d03003138e94b7ed51589eb1da7ae5235db08bdffa430a70e7308f119428c79",
-        "view.json": "df015b3a0c9b70e0a06bd010eef132731d3027d4eac2de8fa2f3734c6d68eeff",
+        "manifest.json": "8150e2346b885ae979d211b5d8316a517ac953d17bc2847396b9499b0caee187",
+        "view.json": "407e4c552f8ad717c61b29ed904e0679dbc45bae90ef892764586751607b6567",
         "provider.js": "2aaea91630af2cddb5bd8ffe6910d54c091f4e56a003593b9ee135d8b035b250"
       }
     },
     {
       "id": "com.flywalk4.month",
       "name": "Месяц",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "author": "flywalk4",
       "description": "Календарь месяца сеткой: сегодня выделено, выходные и праздники РФ красным, номер недели и сколько рабочих дней осталось. Без сети.",
       "symbol": "calendar",
       "path": "widgets/com.flywalk4.month",
       "files": {
-        "manifest.json": "1c1fc1bea1c6b6126711b84f967b73f7a0f5a003f91d3b12a6a3c6ca80581f35",
-        "view.json": "a5772b1a1ab6e6a8d996169b9b15f45afe4b2bde4d6ed70e1949eed9006c510a",
+        "manifest.json": "d6f320afe560ffe4ab06dfe118bce804329748318ec1433709bf9d747bb260f8",
+        "view.json": "97969558f3e234b5b7dbc893a490dc1b8db13640c5141558abdeecc686df1909",
         "provider.js": "7378fc8ab9fe7cbe2385e36807c36b0f12cb81e32add4f87b80beb1bc22ca821"
       }
     },
     {
       "id": "com.flywalk4.rain",
       "name": "Осадки",
-      "version": "1.2.0",
+      "version": "1.2.3",
       "author": "flywalk4",
       "description": "Будет ли дождь или снег в ближайшие часы: «дождь через 40 минут», «закончится через 25 минут», график осадков по 15 минут на 3 часа и вероятность по часам. Данные Open-Meteo, без ключа.",
       "symbol": "cloud.rain",
       "path": "widgets/com.flywalk4.rain",
       "files": {
-        "manifest.json": "03e10be6f88619b1b59974a78db79a6d53cd96b43edf0bae1c0c7832647fd760",
-        "view.json": "7cf737197217db6e4b7c214258ddbdcae22a0fad08758c370e0e89c1ac19d252",
+        "manifest.json": "216d64d81b7ea1ce8499e7c32f961c49d7bd00fc97525bb08800fe600521cde2",
+        "view.json": "7e1df56c955827db1a4848164a858766d374fc1f8879958a544e4635936b80f7",
         "provider.js": "34571e9fb3b85830e7c778d051b993dd167e3b37516d940f125c9f93a72b3294"
       }
     },
     {
       "id": "com.flywalk4.rates",
       "name": "Курсы валют",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "author": "flywalk4",
       "description": "Курсы валют к рублю (или другой валюте) по данным open.er-api.com, с графиком изменений.",
       "symbol": "dollarsign.arrow.circlepath",
       "path": "widgets/com.flywalk4.rates",
       "files": {
-        "manifest.json": "c7d59ca5d047134dab6dc41bf0f1d696bd69e9416e1aceafa8cd92872d62b512",
+        "manifest.json": "2991bfc2d313abe63d87681dd7f499770c102e5b6bc962aedfbdbfe22376b4df",
         "view.json": "d7c2cab819d4e68119357004a0aad7c82577fdbb75b3b1792cba3a42b6cfbf3f",
         "provider.js": "f66a8a56c179f6885acf2bf19d7e3f11e31792d94056e0e1eafb603feb67917f"
       }
@@ -171,13 +196,13 @@
     {
       "id": "com.flywalk4.sky",
       "name": "Солнце и Луна",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": "flywalk4",
       "description": "Восход, закат и долгота дня (на сколько минут длиннее вчерашнего), сколько светлого времени осталось, и фаза Луны пиксельной картинкой с датой следующего полнолуния. Данные о солнце — Open-Meteo, Луна считается локально.",
       "symbol": "sun.horizon.fill",
       "path": "widgets/com.flywalk4.sky",
       "files": {
-        "manifest.json": "47fe431187339f7ad4ab2be4da3fbffc284ffc594f54bebf9314fff56a2c0720",
+        "manifest.json": "699faaee3f18b952034256771531e704be7dfc131c18667d67fd96fce4a95046",
         "view.json": "f971b5be1df5ae0c2082dcafbcb0a6127746c143f10016cf9d9c660e3f806d51",
         "provider.js": "e869cbec3d2abd374b6a9d5e4113376a5378ad960002bbaa5c49b2f9153cef8e"
       }
@@ -185,57 +210,57 @@
     {
       "id": "com.flywalk4.tictactoe",
       "name": "Крестики-нолики",
-      "version": "1.1.0",
+      "version": "1.1.2",
       "author": "flywalk4",
       "description": "Крестики-нолики против Mac: ходишь пальцем или курсором, Mac отвечает. Три уровня сложности, счёт партий, ходите по очереди первыми.",
       "symbol": "number",
       "path": "widgets/com.flywalk4.tictactoe",
       "files": {
-        "manifest.json": "2cfbe3b0927ffadd9ac9ef861b257eda9e978d31ba76f6abedea210a71f85ed5",
-        "view.json": "aa670345acf28a31e750337eaaa31e5bc4793a45833fb04a510d60cdeac66a7b",
+        "manifest.json": "1d7b45d008c95576188c373abebcf2bad378fb51ad24d76b23796c2a11b9872c",
+        "view.json": "df02895d75c09b31547cbc80e4867151fd40fbc7451a4d8d09ac498c122394ab",
         "provider.js": "2c0425c3549d6b8158296254b19ade12277e8457c9c472f5b121745c03fe6424"
       }
     },
     {
       "id": "com.flywalk4.time",
       "name": "Время",
-      "version": "1.1.0",
+      "version": "1.3.0",
       "author": "flywalk4",
       "description": "Сколько прошло дня, недели, месяца и года — полосами и процентами, и обратный отсчёт до твоих дат: отпуска, дедлайна, дня рождения. Без сети.",
       "symbol": "hourglass",
       "path": "widgets/com.flywalk4.time",
       "files": {
-        "manifest.json": "7fe5cff2359c3757212068160d4d5100fc8b5fc8561465ec08e464408a43f518",
-        "view.json": "c19461d789628b06961247cac9b488d41222c661085e41ca009cc4e68037a8bd",
-        "provider.js": "7a93c1903333c012747da68b0351ff6f50d66d1efc5eac781608398f1c7f4a94"
+        "manifest.json": "eb3d9e2552d447e6d74fc9608f01ecf270a923619b14cc12eeb5d4b405ba6c27",
+        "view.json": "e6446d9a29fb0e8a4543590df49f85cb36b4286b236118ac53cdb935a63a8f58",
+        "provider.js": "ce8029420fefe463b58c2bb4ebef1896ef57637deaf164511cd468c85daec93d"
       }
     },
     {
       "id": "com.flywalk4.wallpaper",
       "name": "Живые обои",
-      "version": "1.1.0",
+      "version": "1.1.2",
       "author": "flywalk4",
       "description": "Анимированные обои на всю плитку: северное сияние, звёзды, «матрица», волны, огоньки или лавовая лампа — в цветах темы или своей палитре. По желанию с часами поверх. Без сети.",
       "symbol": "sparkles",
       "path": "widgets/com.flywalk4.wallpaper",
       "files": {
-        "manifest.json": "c2f23574f0b538868d82518ced38be3f1304c1eadffd6352952a74ac5eca7cd5",
-        "view.json": "6ffe0f9d94c493dcdc64186fa2b4ab19c8fe03dc3925babd24114e692ba5e047",
+        "manifest.json": "ef67899bcc5361befbbb449c941183b5a19de29ef8ae15bb6b041ef43bd1cd66",
+        "view.json": "27c6e7cfed720c0c1d00b383645eda7c132dffd3bd7685a2d8246a979aad3af1",
         "provider.js": "6da80df340a489f0a6461d3257b15312aab6bb0e340924b5a97dc5256a594299"
       }
     },
     {
       "id": "com.flywalk4.worldclock",
       "name": "Мировое время",
-      "version": "1.2.0",
+      "version": "1.4.0",
       "author": "flywalk4",
       "description": "Время в других городах и часовых поясах: разница с твоим, «завтра» или «вчера» и кто сейчас на работе, а кто спит. Без сети.",
       "symbol": "globe",
       "path": "widgets/com.flywalk4.worldclock",
       "files": {
-        "manifest.json": "811fd6598f904eeaacd0b20d1fbf430f0659506561804905d5721e804842ac67",
-        "view.json": "ba4a52627f05d01d41c44cb64f9b8e1d05af7ac44bb5e713ac343b48c1afc978",
-        "provider.js": "2e9936cc0b072987942398a98db2063a2de14566f2796157b5ce7aca7f648c1a"
+        "manifest.json": "d44e716087340ee81f46255df798e251f8faa0861bdc814515037ed11241a834",
+        "view.json": "5c20b53f827c6cbc7534dab0c462a1c5fa1758476fed3b782bfe0a6df48c89c9",
+        "provider.js": "9802ce3734911ebb4e929eaefdae3468f8cc341d2c16690a3f5323dc39c25b98"
       }
     }
   ],
@@ -253,15 +278,27 @@
       }
     },
     {
+      "id": "com.flywalk4.catppuccin",
+      "name": "Catppuccin Mocha",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Пастельная палитра Catppuccin (Mocha, MIT): мягкий фиолетовый акцент, тёплые пастельные цвета виджетов, медленные огоньки на тёмно-синем.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.catppuccin",
+      "files": {
+        "theme.json": "125453d784ca47be2a0132684c5002db6f81a36de9f2523377cacffd850b1df3"
+      }
+    },
+    {
       "id": "com.flywalk4.claude",
       "name": "Claude",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
       "description": "Тёплая бумага, терракотовый акцент и шрифт с засечками.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.claude",
       "files": {
-        "theme.json": "0a1a318f9d5f6d75163add1f012bf58e8ba212e51b3ee5145af16923129adeb1"
+        "theme.json": "d740402eb48273e30b52a62f487f5d55533bff32d67b9eb40b27cce39f33c53c"
       }
     },
     {
@@ -289,27 +326,63 @@
       }
     },
     {
+      "id": "com.flywalk4.graphite",
+      "name": "Графит",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Чёрный и белый, моноширинный шрифт и один красный акцент — только там, где нужно внимание. Цвета виджетов сведены к оттенкам серого.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.graphite",
+      "files": {
+        "theme.json": "3b8c6ab9be98835a763bdc12a3ae44c1ae69c344de0f7930545edd7d0c77689f"
+      }
+    },
+    {
+      "id": "com.flywalk4.gruvbox",
+      "name": "Gruvbox",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Тёплая ретро-палитра Gruvbox Dark (MIT): кремовый текст на тёмно-коричневом, оранжевый акцент, приглушённые зелёный, жёлтый и голубой.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.gruvbox",
+      "files": {
+        "theme.json": "ad94fbf7eed235c1605f512d1f4f8acd7b6dc79ce6a062b4e93c0ce114efa978"
+      }
+    },
+    {
       "id": "com.flywalk4.nord",
       "name": "Nord",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": "flywalk4",
       "description": "Холодная северная палитра: графит, лёд и полярное сияние.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.nord",
       "files": {
-        "theme.json": "e4928b809a3c1b3aa3338938feb9caec2072f3191a1ce8314612187cabea179d"
+        "theme.json": "54ee10ff7d4e63aab310b8152c976e9d39d30ea40b41954aea1662481b24cd83"
+      }
+    },
+    {
+      "id": "com.flywalk4.pastel",
+      "name": "Пастель",
+      "version": "1.1.0",
+      "author": "flywalk4",
+      "description": "Светлые бенто-карточки на медленно плывущем пастельном градиенте: персик, лаванда и мята. Карточки полупрозрачные, углы мягкие.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.pastel",
+      "files": {
+        "theme.json": "d47bd21d4384bdb0ddad7585643bebfed45a8cb6005feefe8b761b00dd702607"
       }
     },
     {
       "id": "com.flywalk4.rainy",
       "name": "Дождливый вечер",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": "flywalk4",
       "description": "Косой дождь и капли на стекле, графитовые карточки, тёплый янтарный акцент — как у окна кафе.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.rainy",
       "files": {
-        "theme.json": "2b57113003f75ce2e0d5c611ca305da96deee7742c37b2a77c6f1d633528c769"
+        "theme.json": "8a68af42bc7fc1d6b34e8282993443b55ea90250c80464f778422f081380aa91"
       }
     },
     {
@@ -327,25 +400,37 @@
     {
       "id": "com.flywalk4.synthwave",
       "name": "Synthwave",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": "flywalk4",
       "description": "Стекло на неоновом закате: фиолетовый, розовый, оранжевый.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.synthwave",
       "files": {
-        "theme.json": "73e1badeae1c879ad742fc76b93ad614d941af1ed28bd9f31db42b0475ca3e8d"
+        "theme.json": "d800ce87539cbb0a901d119d8087692c83664b27d6c9deaccfa97cca2d6cf0d2"
+      }
+    },
+    {
+      "id": "com.flywalk4.tokyonight",
+      "name": "Tokyo Night",
+      "version": "1.0.0",
+      "author": "flywalk4",
+      "description": "Палитра Tokyo Night (MIT): глубокий ночной синий, неоновые голубой и фиолетовый, редкие звёзды на фоне.",
+      "symbol": "paintpalette",
+      "path": "themes/com.flywalk4.tokyonight",
+      "files": {
+        "theme.json": "2358db9ddcb162b5ff9a8c107c464a3c62cdaafcc77fa2d00c633120a664784c"
       }
     },
     {
       "id": "com.flywalk4.winter",
       "name": "Зима",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": "flywalk4",
       "description": "Тихий снегопад на тёмно-синем небе, стеклянные карточки цвета инея.",
       "symbol": "paintpalette",
       "path": "themes/com.flywalk4.winter",
       "files": {
-        "theme.json": "e4da99550aa7f528a5d3f850e7ce1eece800f16e838340a6cdc3e5d53ee8a218"
+        "theme.json": "536fb0ab32e1435b0948874507cb3496fd3d521ddc91a1ce5da34b53454d31e6"
       }
     }
   ]

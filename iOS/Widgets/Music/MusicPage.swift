@@ -13,24 +13,85 @@ struct MusicPage: View {
     private var compact: some View {
         GeometryReader { geo in
             let wide = geo.size.width > geo.size.height * 1.3
-            let layout = wide ? AnyLayout(HStackLayout(spacing: 12)) : AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
-            layout {
-                Artwork(image: model.artwork)
-                    .frame(maxWidth: wide ? geo.size.height : min(geo.size.width, geo.size.height * 0.5),
-                           maxHeight: wide ? geo.size.height : geo.size.height * 0.5)
+            if !wide, size == .medium, geo.size.width > geo.size.height * 0.75 {
+                squareCard(geo.size)
+            } else {
+                compactFlow(geo, wide: wide)
+            }
+        }
+    }
+
+    /// A roughly square half-page card: cover and title side by side, then the progress bar and big controls.
+    private func squareCard(_ box: CGSize) -> some View {
+        let cover = min(box.width * 0.42, box.height * 0.5)
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 14) {
+                Artwork(image: model.artwork, playing: model.nowPlaying?.playing ?? false, radius: 14)
+                    .frame(width: cover, height: cover)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(model.nowPlaying?.title ?? "Ничего не играет")
-                        .font(size == .small ? .subheadline.weight(.semibold) : .headline).lineLimit(2)
+                    Text(model.nowPlaying?.title ?? "Ничего не играет").font(.title3.weight(.semibold)).lineLimit(3)
                     Text(model.nowPlaying?.artist ?? "Музыка / Spotify на Mac")
-                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                    if size == .medium { ProgressRow(track: model.nowPlaying).padding(.top, 4) }
-                    Spacer(minLength: 0)
-                    Controls(playing: model.nowPlaying?.playing ?? false, compact: true) { model.perform($0) }
-                        .disabled(model.nowPlaying == nil)
+                        .font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
+                    if let album = model.nowPlaying?.album, !album.isEmpty {
+                        Text(album).font(.caption).foregroundStyle(.tertiary).lineLimit(1)
+                    }
                 }
             }
-            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+            ProgressRow(track: model.nowPlaying).padding(.top, 6)
+            Controls(playing: model.nowPlaying?.playing ?? false, scale: 0.8) { model.perform($0) }
+                .disabled(model.nowPlaying == nil)
         }
+        // One tight group in the middle of the card, not cover at the top and buttons at the bottom.
+        .frame(width: box.width, height: box.height)
+    }
+
+    private func compactFlow(_ geo: GeometryProxy, wide: Bool) -> some View {
+        let w = geo.size.width, h = geo.size.height
+        let progress = size == .medium || h > w * 1.5
+        return Group {
+            if wide {
+                // Cover and column the same height: title level with the cover's top, buttons with its bottom.
+                let cover = min(h, w * 0.4)
+                HStack(spacing: 14) {
+                    Artwork(image: model.artwork, playing: model.nowPlaying?.playing ?? false, radius: 12)
+                        .frame(width: cover, height: cover)
+                    VStack(alignment: .leading, spacing: 6) {
+                        trackText
+                        Spacer(minLength: 0)
+                        if progress { ProgressRow(track: model.nowPlaying) }
+                        Controls(playing: model.nowPlaying?.playing ?? false, scale: 0.6) { model.perform($0) }
+                            .disabled(model.nowPlaying == nil)
+                    }
+                    .frame(height: cover)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                // Upright: one tight group — cover, title, bar, buttons — all the cover's width, centred in the tile.
+                let info: CGFloat = progress ? 150 : 110
+                let side = max(40, min(w, w * 0.9, h - info))
+                VStack(alignment: .leading, spacing: 8) {
+                    Artwork(image: model.artwork, playing: model.nowPlaying?.playing ?? false, radius: 12)
+                        .frame(width: side, height: side)
+                    trackText
+                    if progress { ProgressRow(track: model.nowPlaying) }
+                    Controls(playing: model.nowPlaying?.playing ?? false, scale: 0.6) { model.perform($0) }
+                        .disabled(model.nowPlaying == nil)
+                }
+                .frame(width: side)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .frame(width: w, height: h)
+    }
+
+    private var trackText: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(model.nowPlaying?.title ?? "Ничего не играет")
+                .font(size == .small ? .subheadline.weight(.semibold) : .headline).lineLimit(2)
+            Text(model.nowPlaying?.artist ?? "Музыка / Spotify на Mac")
+                .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @State private var mode: Mode = {
@@ -59,7 +120,7 @@ struct MusicPage: View {
                         .pointerTarget { withAnimation(.snappy) { mode = m } }
                 }
             }
-            .padding(.top, 48) // below the connection badge
+            .padding(.top, 4)
             switch mode {
             case .now: nowPlaying
             case .queue: QueueView()
@@ -73,18 +134,20 @@ struct MusicPage: View {
             let landscape = geo.size.width > geo.size.height
             let layout = landscape
                 ? AnyLayout(HStackLayout(spacing: 32))
-                : AnyLayout(VStackLayout(spacing: 24))
+                : AnyLayout(VStackLayout(spacing: 32))
+            // Upright: cover, title, bar and buttons share one column width, so their edges line up.
+            let column = landscape ? 420 : max(160, min(geo.size.width - 56, 420, geo.size.height - 430))
             layout {
-                Artwork(image: model.artwork)
-                    .frame(maxWidth: landscape ? geo.size.height * 0.7 : geo.size.width * 0.72)
-                VStack(spacing: 18) {
+                Artwork(image: model.artwork, playing: model.nowPlaying?.playing ?? false)
+                    .frame(width: landscape ? geo.size.height * 0.7 : column, height: landscape ? geo.size.height * 0.7 : column)
+                VStack(spacing: 22) {
                     TrackInfo(track: model.nowPlaying)
                     SeekBar(track: model.nowPlaying) { model.music(.seek($0)) }
                     Controls(playing: model.nowPlaying?.playing ?? false) { model.perform($0) }
                         .disabled(model.nowPlaying == nil)
                     ExtrasRow(track: model.nowPlaying) { model.music($0) }
                 }
-                .frame(maxWidth: 420)
+                .frame(maxWidth: column)
             }
             .padding(.horizontal, 28)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -96,23 +159,27 @@ struct MusicPage: View {
 private struct ExtrasRow: View {
     let track: NowPlaying?
     let send: (MusicCommand) -> Void
+    @Environment(\.theme) private var theme
 
     var body: some View {
-        HStack(spacing: 36) {
-            toggle("shuffle", on: track?.shuffle == true) { send(.toggleShuffle) }
+        HStack(spacing: 0) {
+            toggle("shuffle", on: track?.shuffle == true, align: .leading) { send(.toggleShuffle) }
+            Spacer(minLength: 0)
             if let liked = track?.liked {
-                toggle(liked ? "star.fill" : "star", on: liked) { send(.toggleLike) }
+                toggle(liked ? "star.fill" : "star", on: liked, align: .center) { send(.toggleLike) }
+                Spacer(minLength: 0)
             }
-            toggle(track?.repeatMode == "one" ? "repeat.1" : "repeat", on: (track?.repeatMode ?? "off") != "off") { send(.cycleRepeat) }
+            toggle(track?.repeatMode == "one" ? "repeat.1" : "repeat", on: (track?.repeatMode ?? "off") != "off",
+                   align: .trailing) { send(.cycleRepeat) }
         }
         .disabled(track == nil)
     }
 
-    private func toggle(_ symbol: String, on: Bool, action: @escaping () -> Void) -> some View {
+    private func toggle(_ symbol: String, on: Bool, align: Alignment, action: @escaping () -> Void) -> some View {
         Glyph(systemName: symbol)
             .font(.system(size: 18, weight: .semibold))
-            .foregroundStyle(on ? Color.accentColor : .secondary)
-            .frame(width: 44, height: 36)
+            .foregroundStyle(on ? theme.accent : .secondary)
+            .frame(width: 44, height: 36, alignment: align)
             .contentShape(Rectangle())
             .onTapGesture(perform: action)
             .pointerTarget(action: action)
@@ -120,44 +187,33 @@ private struct ExtrasRow: View {
 }
 
 /// Progress you can grab: drag with a finger, or press-and-drag / scroll with the Mac pointer.
+/// The bar follows the finger, then glides on from where you let go (see `TrackProgress`).
 private struct SeekBar: View {
     let track: NowPlaying?
     let seek: (Double) -> Void
     @State private var dragging: Double?
+    @State private var pending: Double?
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.5)) { context in
-            let duration = track?.duration ?? 0
-            let elapsed = dragging.map { $0 * duration } ?? min(currentElapsed(at: context.date), duration)
-            let fraction = duration > 0 ? elapsed / duration : 0
+        TrackProgress(track: track, pending: $pending) { fraction, elapsed, duration in
+            let shownFraction = dragging ?? fraction
             VStack(spacing: 6) {
-                LevelBar(value: fraction, height: dragging == nil ? 5 : 9) { f in
+                LevelBar(value: shownFraction, height: dragging == nil ? 5 : 9) { f in
                     dragging = f
                 } onEnd: { f in
-                    dragging = nil
-                    seek(f * duration)
+                    commit(f * duration)
                 }
-                .pointerDraggable(value: fraction) { seek($0 * duration) }
-                HStack {
-                    Text(format(elapsed))
-                    Spacer()
-                    Text("-" + format(max(duration - elapsed, 0)))
-                }
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
+                .pointerDraggable(value: fraction) { commit($0 * duration) }
+                PlaybackTimes(elapsed: dragging.map { $0 * duration } ?? elapsed, duration: duration)
             }
         }
         .opacity(track?.duration == nil ? 0 : 1)
     }
 
-    private func currentElapsed(at date: Date) -> Double {
-        guard let track, let elapsed = track.elapsed else { return 0 }
-        return track.playing ? elapsed + date.timeIntervalSince(track.timestamp) : elapsed
-    }
-
-    private func format(_ seconds: Double) -> String {
-        let s = Int(seconds.rounded(.down))
-        return String(format: "%d:%02d", s / 60, s % 60)
+    private func commit(_ seconds: Double) {
+        dragging = nil
+        pending = seconds
+        seek(seconds)
     }
 }
 
@@ -287,6 +343,7 @@ private struct SoundView: View {
 private struct AirPlayRow: View {
     let device: AirPlayDevice
     let toggle: () -> Void
+    @Environment(\.theme) private var theme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -294,7 +351,7 @@ private struct AirPlayRow: View {
             Text(device.name).lineLimit(1)
             Spacer()
             Glyph(systemName: device.selected ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(device.selected ? Color.accentColor : .secondary)
+                .foregroundStyle(device.selected ? theme.accent : .secondary)
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.primary.opacity(device.selected ? 0.1 : 0.05)))
@@ -313,21 +370,44 @@ private struct AirPlayRow: View {
     }
 }
 
+/// Cover art: a new cover fades and settles in; on pause the cover sinks back a little (like Music on iPhone).
 private struct Artwork: View {
     let image: UIImage?
+    var playing = true
+    var radius: CGFloat = 18
+
+    @Environment(\.theme) private var theme
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 18).fill(Color.primary.opacity(0.08))
-            if let image {
-                ThemedPicture(image: image)
+            if image == nil, theme.style != .ascii {
+                // No cover: a soft gradient in the theme's accent instead of a grey square.
+                LinearGradient(colors: [theme.accent.opacity(0.55), theme.accent.opacity(0.15)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
             } else {
-                Glyph(systemName: "music.note").font(.system(size: 64)).foregroundStyle(.secondary)
+                RoundedRectangle(cornerRadius: radius).fill(Color.primary.opacity(0.08))
             }
+            Group {
+                if let image {
+                    ThemedPicture(image: image)
+                } else {
+                    GeometryReader { geo in
+                        Glyph(systemName: "music.note")
+                            .font(.system(size: min(geo.size.width, geo.size.height) * 0.38, weight: .medium))
+                            .foregroundStyle(.white.opacity(theme.style == .ascii ? 1 : 0.85))
+                            .frame(width: geo.size.width, height: geo.size.height)
+                    }
+                }
+            }
+            .id(image)
+            .transition(.asymmetric(insertion: .opacity.combined(with: .scale(scale: 1.08)), removal: .opacity))
         }
         .aspectRatio(1, contentMode: .fit)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(color: .black.opacity(0.5), radius: 20, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+        .shadow(color: .black.opacity(playing ? 0.5 : 0.25), radius: playing ? 20 : 10, y: playing ? 10 : 4)
+        .scaleEffect(playing ? 1 : 0.88)
+        .animation(.spring(duration: 0.5, bounce: 0.3), value: playing)
+        .animation(.easeInOut(duration: 0.45), value: image)
     }
 }
 
@@ -335,6 +415,18 @@ private struct TrackInfo: View {
     let track: NowPlaying?
 
     var body: some View {
+        ZStack {
+            info
+                .id(track?.title)
+                .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
+                                        removal: .move(edge: .leading).combined(with: .opacity)))
+        }
+        .frame(maxWidth: .infinity)
+        .clipped()
+        .animation(.spring(duration: 0.45, bounce: 0.2), value: track?.title)
+    }
+
+    private var info: some View {
         VStack(spacing: 6) {
             Text(track?.title ?? "Ничего не играет")
                 .font(.title2.weight(.bold))
@@ -350,60 +442,47 @@ private struct TrackInfo: View {
 
 private struct ProgressRow: View {
     let track: NowPlaying?
+    @State private var pending: Double?
 
     var body: some View {
-        // Extrapolate locally between updates so the bar moves smoothly without extra traffic.
-        TimelineView(.periodic(from: .now, by: 0.5)) { context in
-            let duration = track?.duration ?? 0
-            let elapsed = min(currentElapsed(at: context.date), duration)
+        TrackProgress(track: track, pending: $pending) { fraction, elapsed, duration in
             VStack(spacing: 6) {
-                ThemedBar(value: duration > 0 ? elapsed / duration : 0, height: 4)
-                HStack {
-                    Text(format(elapsed))
-                    Spacer()
-                    Text("-" + format(max(duration - elapsed, 0)))
-                }
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
+                ThemedBar(value: fraction, height: 4)
+                PlaybackTimes(elapsed: elapsed, duration: duration)
             }
         }
         .opacity(track?.duration == nil ? 0 : 1)
     }
-
-    private func currentElapsed(at date: Date) -> Double {
-        guard let track, let elapsed = track.elapsed else { return 0 }
-        return track.playing ? elapsed + date.timeIntervalSince(track.timestamp) : elapsed
-    }
-
-    private func format(_ seconds: Double) -> String {
-        let s = Int(seconds.rounded(.down))
-        return String(format: "%d:%02d", s / 60, s % 60)
-    }
 }
 
+/// Previous · play/pause · next spread across the column: the outer icons sit flush with its edges (under the
+/// cover's and the progress bar's edges), play/pause in the middle. `scale` sizes everything (1 = whole page).
 private struct Controls: View {
     let playing: Bool
-    var compact = false
+    var scale: CGFloat = 1
     let action: (MediaAction) -> Void
 
     var body: some View {
-        HStack(spacing: compact ? 6 : 44) {
-            button("backward.fill", size: compact ? 16 : 30) { action(.previous) }
-            button(playing ? "pause.fill" : "play.fill", size: compact ? 24 : 44) { action(.togglePlayPause) }
-            button("forward.fill", size: compact ? 16 : 30) { action(.next) }
+        HStack(spacing: 0) {
+            button("backward.fill", size: 30, align: .leading) { action(.previous) }
+            Spacer(minLength: 4)
+            button(playing ? "pause.fill" : "play.fill", size: 44, align: .center) { action(.togglePlayPause) }
+            Spacer(minLength: 4)
+            button("forward.fill", size: 30, align: .trailing) { action(.next) }
         }
+        .frame(maxWidth: .infinity)
         .foregroundStyle(.primary)
     }
 
-    private func button(_ symbol: String, size: CGFloat, perform: @escaping () -> Void) -> some View {
+    private func button(_ symbol: String, size: CGFloat, align: Alignment, perform: @escaping () -> Void) -> some View {
         Button(action: perform) {
             Glyph(systemName: symbol)
-                .font(.system(size: size))
+                .font(.system(size: size * scale))
                 .contentTransition(.symbolEffect(.replace))
-                .frame(width: compact ? 38 : 64, height: compact ? 38 : 64)
+                .frame(minWidth: 44 * scale, minHeight: 56 * scale, alignment: align)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressScale())
         .pointerTarget(action: perform)
     }
 }

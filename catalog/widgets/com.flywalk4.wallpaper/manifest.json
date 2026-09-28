@@ -1,7 +1,7 @@
 {
   "id": "com.flywalk4.wallpaper",
   "name": "Живые обои",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "author": "flywalk4",
   "description": "Анимированные обои на всю плитку: северное сияние, звёзды, «матрица», волны, огоньки или лавовая лампа — в цветах темы или своей палитре. По желанию с часами поверх. Без сети.",
   "symbol": "sparkles",
@@ -9,23 +9,107 @@
   "settings": [
     {
       "key": "style",
-      "title": "Анимация: aurora, stars, matrix, waves, bokeh, lava, snow, rain, gradient",
-      "default": "aurora"
+      "title": "Анимация",
+      "type": "choice",
+      "default": "aurora",
+      "options": [
+        {
+          "value": "aurora",
+          "title": "Северное сияние"
+        },
+        {
+          "value": "stars",
+          "title": "Звёзды"
+        },
+        {
+          "value": "matrix",
+          "title": "Матрица"
+        },
+        {
+          "value": "waves",
+          "title": "Волны"
+        },
+        {
+          "value": "bokeh",
+          "title": "Огоньки"
+        },
+        {
+          "value": "lava",
+          "title": "Лавовая лампа"
+        },
+        {
+          "value": "snow",
+          "title": "Снег"
+        },
+        {
+          "value": "rain",
+          "title": "Дождь"
+        },
+        {
+          "value": "gradient",
+          "title": "Градиент"
+        }
+      ]
     },
     {
       "key": "palette",
-      "title": "Цвета: auto, theme, sunset, ocean, forest, neon, mono, winter, storm",
-      "default": "auto"
+      "title": "Цвета",
+      "type": "choice",
+      "default": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "title": "Авто"
+        },
+        {
+          "value": "theme",
+          "title": "Как в теме"
+        },
+        {
+          "value": "sunset",
+          "title": "Закат"
+        },
+        {
+          "value": "ocean",
+          "title": "Океан"
+        },
+        {
+          "value": "forest",
+          "title": "Лес"
+        },
+        {
+          "value": "neon",
+          "title": "Неон"
+        },
+        {
+          "value": "mono",
+          "title": "Монохром"
+        },
+        {
+          "value": "winter",
+          "title": "Зима"
+        },
+        {
+          "value": "storm",
+          "title": "Гроза"
+        }
+      ]
     },
     {
       "key": "clock",
-      "title": "Часы поверх (yes / no)",
-      "default": "yes"
+      "title": "Часы поверх",
+      "type": "toggle",
+      "default": "true"
     },
     {
       "key": "speed",
-      "title": "Скорость (0.2–3)",
-      "default": "1"
+      "title": "Скорость",
+      "type": "number",
+      "default": "1",
+      "min": 0.2,
+      "max": 3,
+      "step": 0.1,
+      "unit": "×"
     }
   ]
 }

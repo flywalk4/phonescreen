@@ -85,15 +85,26 @@ final class PhotoLibrary: ObservableObject {
     private var assets: PHFetchResult<PHAsset>?
     private var target = CGSize(width: 400, height: 400)
     private var timer: Timer?
+    /// Off for a still picture (the theme's photo background): no timer.
+    private let slideshow: Bool
+
+    init(slideshow: Bool = true) { self.slideshow = slideshow }
 
     func start(target size: CGSize) async {
         target = CGSize(width: size.width * UIScreen.main.scale, height: size.height * UIScreen.main.scale)
+        #if DEBUG
+        // Demo screenshots don't stop at the system prompt (it would cover every page); `--demo-photos` asks anyway.
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("--demo"), !args.contains("--demo-photos"),
+           PHPhotoLibrary.authorizationStatus(for: .readWrite) == .notDetermined { state = .denied; return }
+        #endif
         let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         guard status == .authorized || status == .limited else { state = .denied; return }
         assets = Self.fetch()
         guard let assets, assets.count > 0 else { state = .empty; return }
         index = Int.random(in: 0..<assets.count)
         await show()
+        guard slideshow else { return }
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: Self.interval, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.next() }

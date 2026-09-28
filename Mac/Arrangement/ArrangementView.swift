@@ -7,7 +7,12 @@ struct ArrangementView: View {
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Расположение").font(.system(size: 26, weight: .bold))
+                Text("Где iPhone стоит относительно экрана — отсюда курсор перейдёт на телефон.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
             ArrangementCanvas()
                 .frame(minWidth: 560, minHeight: 340)
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .underPageBackgroundColor)))

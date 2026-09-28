@@ -101,18 +101,37 @@ struct RemindersPage: View {
     private var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             WidgetHeader(title: "Напоминания", symbol: "checklist",
-                         subtitle: model.items.isEmpty ? "Всё сделано" : "\(model.items.filter { !$0.isCompleted }.count) осталось")
+                         subtitle: model.items.isEmpty ? nil : "\(model.items.filter { !$0.isCompleted }.count) осталось")
             if size == .full { listChips }
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 2) {
-                    ForEach(model.items, id: \.calendarItemIdentifier) { reminder in
-                        ReminderRow(reminder: reminder,
-                                    color: Color(cgColor: reminder.calendar.cgColor),
-                                    done: reminder.isCompleted) { model.toggle(reminder) }
+            if model.items.isEmpty {
+                // Nothing left: a calm "all done" instead of an empty list.
+                VStack(spacing: size == .small ? 6 : 12) {
+                    Glyph(systemName: "checkmark.circle.fill")
+                        .font(.system(size: size == .small ? 34 : 64, weight: .light))
+                        .foregroundStyle(Color.green.gradient)
+                        .symbolEffect(.bounce, value: model.items.count)
+                    Text("Всё сделано").font(size == .small ? .subheadline.weight(.semibold) : .title3.weight(.semibold))
+                    if size != .small {
+                        Text("Добавьте новое внизу или на Mac").font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.scale(scale: 0.9).combined(with: .opacity))
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 2) {
+                        ForEach(model.items, id: \.calendarItemIdentifier) { reminder in
+                            ReminderRow(reminder: reminder,
+                                        color: Color(cgColor: reminder.calendar.cgColor),
+                                        done: reminder.isCompleted) { model.toggle(reminder) }
+                                .transition(.asymmetric(insertion: .move(edge: .top).combined(with: .opacity),
+                                                        removal: .opacity))
+                        }
+                    }
+                    .animation(.snappy, value: model.items.map(\.calendarItemIdentifier))
+                }
+                .pointerScrollable()
             }
-            .pointerScrollable()
             if size != .small { addField }
         }
         .widgetPadding()
