@@ -426,14 +426,21 @@ public struct RunningApp: Codable, Equatable, Identifiable, Sendable {
     /// Frontmost on the Mac.
     public var active: Bool
     public var hidden: Bool
+    /// Title of the app's front window (needs Accessibility on the Mac).
+    public var window: String?
+    /// Open windows, minimised ones included (needs Accessibility on the Mac).
+    public var windows: Int?
     /// PNG icon. Sent only the first time an app appears on a connection; the phone keeps it.
     public var icon: Data?
 
-    public init(id: String, name: String, active: Bool = false, hidden: Bool = false, icon: Data? = nil) {
+    public init(id: String, name: String, active: Bool = false, hidden: Bool = false,
+                window: String? = nil, windows: Int? = nil, icon: Data? = nil) {
         self.id = id
         self.name = name
         self.active = active
         self.hidden = hidden
+        self.window = window
+        self.windows = windows
         self.icon = icon
     }
 }

@@ -35,8 +35,10 @@ public enum Message: Equatable, Sendable {
     case launcher([LauncherItem])
 
     // Running apps
-    /// Mac → phone: apps running on the Mac, in launch order.
+    /// Mac → phone: apps running on the Mac, most recently used first.
     case runningApps([RunningApp])
+    /// Mac → phone: a JPEG snapshot of the app's front window; empty when it has no windows left.
+    case appPreview(id: String, image: Data)
     /// Phone → Mac: switch to, hide or quit a running app.
     case appAction(id: String, action: AppAction)
 
@@ -96,7 +98,7 @@ extension Message: Codable {
     private enum Kind: String, Codable {
         case hello, ping, pong, pages, setPage, pageChanged, layout, nowPlaying, stats, mediaAction, command
         case notes, noteRequest, noteBody, noteCreate, noteShowOnMac, launcher, refresh, musicQueue, audio, music
-        case customWidget, customWidgetRemoved, customAction, theme, runningApps, appAction, language
+        case customWidget, customWidgetRemoved, customAction, theme, runningApps, appAction, appPreview, language
         case pointerEnter, pointerDelta, pointerButton, pointerScroll, pointerExit, textFocus, keyText, key
         case pointerPinch, pointerSmartZoom
     }
@@ -127,6 +129,7 @@ extension Message: Codable {
         case .noteShowOnMac: self = .noteShowOnMac(id: try c.decode(String.self, forKey: .id))
         case .launcher: self = .launcher(try c.decode([LauncherItem].self, forKey: .list))
         case .runningApps: self = .runningApps(try c.decode([RunningApp].self, forKey: .list))
+        case .appPreview: self = .appPreview(id: try c.decode(String.self, forKey: .id), image: try c.decode(Data.self, forKey: .value))
         case .appAction: self = .appAction(id: try c.decode(String.self, forKey: .id), action: try c.decode(AppAction.self, forKey: .value))
         case .refresh: self = .refresh(try c.decode(WidgetKind.self, forKey: .value))
         case .customWidget: self = .customWidget(try c.decode(CustomWidgetState.self, forKey: .value))
@@ -178,6 +181,8 @@ extension Message: Codable {
         case .noteShowOnMac(let id): try c.encode(Kind.noteShowOnMac, forKey: .t); try c.encode(id, forKey: .id)
         case .launcher(let v): try c.encode(Kind.launcher, forKey: .t); try c.encode(v, forKey: .list)
         case .runningApps(let v): try c.encode(Kind.runningApps, forKey: .t); try c.encode(v, forKey: .list)
+        case .appPreview(let id, let image):
+            try c.encode(Kind.appPreview, forKey: .t); try c.encode(id, forKey: .id); try c.encode(image, forKey: .value)
         case .appAction(let id, let action):
             try c.encode(Kind.appAction, forKey: .t); try c.encode(id, forKey: .id); try c.encode(action, forKey: .value)
         case .refresh(let v): try c.encode(Kind.refresh, forKey: .t); try c.encode(v, forKey: .value)

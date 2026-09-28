@@ -23,7 +23,13 @@ final class PhoneModel: ObservableObject {
     @Published private(set) var launcher: [LauncherItem] = []
     /// Apps running on the Mac. Their icons arrive once per connection and are kept in `appIcons`.
     @Published private(set) var runningApps: [RunningApp] = []
-    @Published private(set) var appIcons: [String: UIImage] = [:]
+    @Published private(set) var appIcons: [String: UIImage] = [:] {
+        didSet { for (id, icon) in appIcons where appTints[id] == nil { appTints[id] = icon.dominantColor } }
+    }
+    /// Snapshots of each app's front window (Wi-Fi / USB only, while the apps page is on screen).
+    @Published private(set) var appPreviews: [String: UIImage] = [:]
+    /// Each app's colour, taken from its icon, for the front tile's glow and icon-only tiles.
+    private(set) var appTints: [String: UIColor] = [:]
     /// Installed JavaScript widgets, as last rendered on the Mac.
     @Published private(set) var customWidgets: [String: CustomWidgetState] = [:]
     var customNames: [String: String] { customWidgets.mapValues(\.name) }
@@ -101,7 +107,9 @@ final class PhoneModel: ObservableObject {
         if args.contains("--demo") {
             pages = [PageInfo(id: "grid", layout: .grid, builtins: [.music, .weather, .calendar, .monitor]),
                      PageInfo(id: "trio", layout: .trio, builtins: [.music, .notes, .launcher]),
-                     PageInfo(id: "split", layout: .split, builtins: [.reminders, .weather])]
+                     PageInfo(id: "split", layout: .split, builtins: [.reminders, .weather]),
+                     PageInfo(id: "apps-split", layout: .split, builtins: [.apps, .weather]),
+                     PageInfo(id: "apps-trio", layout: .trio, builtins: [.music, .apps, .monitor])]
                 + WidgetKind.allCases.map { PageInfo($0) }
             if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]) { currentPage = n }
             if args.contains("--overview") { overview = true }
@@ -149,8 +157,17 @@ final class PhoneModel: ObservableObject {
             launcher = [LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock.fill"),
                         LauncherItem(id: "sys:darkMode", title: "Тёмная тема", kind: .system, symbol: "circle.lefthalf.filled"),
                         LauncherItem(id: "shortcut:x", title: "Фокус: работа", kind: .shortcut, symbol: "square.stack.3d.up.fill")]
-            runningApps = [RunningApp(id: "com.apple.finder", name: "Finder"), RunningApp(id: "com.apple.Safari", name: "Safari", active: true),
-                           RunningApp(id: "com.apple.Music", name: "Музыка"), RunningApp(id: "com.apple.mail", name: "Почта", hidden: true)]
+            runningApps = [RunningApp(id: "com.apple.Safari", name: "Safari", active: true, window: "flywalk4/phonescreen — GitHub", windows: 3),
+                           RunningApp(id: "com.apple.dt.Xcode", name: "Xcode", window: "PhoneScreen — AppsPage.swift", windows: 1),
+                           RunningApp(id: "com.apple.Terminal", name: "Терминал", window: "repo — zsh — 120×40", windows: 2),
+                           RunningApp(id: "com.apple.Music", name: "Музыка", window: "Музыка", windows: 1),
+                           RunningApp(id: "com.apple.mail", name: "Почта", hidden: true, window: "Входящие", windows: 1),
+                           RunningApp(id: "com.apple.finder", name: "Finder", windows: 0)]
+            appIcons = DemoIcons.make(["com.apple.Safari": ("safari", .systemBlue), "com.apple.dt.Xcode": ("hammer.fill", .systemIndigo),
+                                       "com.apple.Terminal": ("apple.terminal.fill", .darkGray), "com.apple.Music": ("music.note", .systemPink),
+                                       "com.apple.mail": ("envelope.fill", .systemTeal), "com.apple.finder": ("face.smiling", .systemCyan)])
+            appPreviews = DemoIcons.windows(["com.apple.Safari": .systemBlue, "com.apple.dt.Xcode": .systemIndigo,
+                                             "com.apple.Terminal": .black, "com.apple.Music": .systemPink, "com.apple.mail": .systemTeal])
             let sample = SystemStats(cpu: 0.35, cpuPerCore: [0.2, 0.6, 0.4, 0.1, 0.8, 0.3, 0.2, 0.5], gpu: 0.2,
                                      memoryUsed: 11_000_000_000, memoryTotal: 16_000_000_000, netInBytesPerSec: 250_000, netOutBytesPerSec: 40_000)
             stats = sample
@@ -281,10 +298,15 @@ final class PhoneModel: ObservableObject {
     func appAction(_ app: RunningApp, _ action: AppAction) {
         // Optimistic: the highlight moves on tap; the Mac's update confirms it a moment later.
         switch action {
-        case .activate: runningApps = runningApps.map { var a = $0; a.active = a.id == app.id; if a.active { a.hidden = false }; return a }
+        case .activate:
+            // Like ⌘Tab: it becomes the front app and moves to the top.
+            var list = runningApps.map { var a = $0; a.active = a.id == app.id; if a.active { a.hidden = false }; return a }
+            if let i = list.firstIndex(where: { $0.id == app.id }) { list.insert(list.remove(at: i), at: 0) }
+            runningApps = list
         case .hide: runningApps = runningApps.map { var a = $0; if a.id == app.id { a.hidden = true; a.active = false }; return a }
         case .quit: break // the app may ask to save first; wait for the Mac
         }
+        tap()
         pool.send(.appAction(id: app.id, action: action))
     }
     func customAction(_ id: String, _ action: String) { tap(); pool.send(.customAction(id: id, action: action)) }
@@ -335,6 +357,10 @@ final class PhoneModel: ObservableObject {
         case .runningApps(let list):
             for app in list { if let data = app.icon, let image = UIImage(data: data) { appIcons[app.id] = image } }
             runningApps = list.map { var a = $0; a.icon = nil; return a }
+            let ids = Set(list.map(\.id))
+            appPreviews = appPreviews.filter { ids.contains($0.key) }
+        case .appPreview(let id, let image):
+            appPreviews[id] = image.isEmpty ? nil : UIImage(data: image)
         case .customWidget(let state):
             customWidgets[state.id] = state
         case .customWidgetRemoved(let id):

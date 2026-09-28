@@ -91,9 +91,13 @@ final class AppModel: ObservableObject {
     private var launcherItems: [LauncherItem] = []
     private let runningApps = RunningAppsProvider()
     private var apps: [RunningApp] = []
+    private let previews = AppPreviewProvider()
+    /// Window snapshots by app id, kept to send again on a new connection.
+    private var appPreviews: [String: Data] = [:]
     /// Apps whose icon the phone already has on this connection.
     private var appIconsSent: Set<String> = []
     private var notesTimer: Timer?
+    private var appsTimer: Timer?
     private var musicExtrasTimer: Timer?
 
     init() {
@@ -271,6 +275,11 @@ final class AppModel: ObservableObject {
             self?.sendApps()
         }
         runningApps.start()
+        previews.onPreview = { [weak self] id, image in
+            guard let self else { return }
+            appPreviews[id] = image.isEmpty ? nil : image
+            if !pool.isLowBandwidth { pool.send(.appPreview(id: id, image: image)) }
+        }
         widgets.send = { [weak self] in self?.pool.send($0) }
         widgets.start()
         themes.send = { [weak self] in self?.pool.send($0) }
@@ -282,11 +291,27 @@ final class AppModel: ObservableObject {
                 self.notes.refresh()
             }
         }
+        // Window titles change without any app event (a new tab, another document): re-read them while
+        // the apps page is on screen. The list only goes out when something actually changed.
+        appsTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, self.currentWidgets.contains(.apps) else { return }
+                self.runningApps.refresh()
+                self.capturePreviews()
+            }
+        }
     }
 
     func pageBecameVisible() {
         if currentWidgets.contains(.notes) { notes.refresh() }
         if currentWidgets.contains(.launcher) { launcher.refresh() }
+        if currentWidgets.contains(.apps) { capturePreviews() }
+    }
+
+    /// Window snapshots are big: never over Bluetooth, and only while the apps page is on screen.
+    private func capturePreviews() {
+        guard !pool.isLowBandwidth, currentWidgets.contains(.apps) else { return }
+        previews.capture(ids: Set(apps.map(\.id)))
     }
 
     private func sendLauncher() {
@@ -324,7 +349,7 @@ final class AppModel: ObservableObject {
         case .refresh(let kind):
             if kind == .notes { notes.refresh(force: true) }
             if kind == .launcher { launcher.refresh() }
-            if kind == .apps { runningApps.refresh() }
+            if kind == .apps { runningApps.resend(); capturePreviews() }
         case .appAction(let id, let action):
             runningApps.perform(action, id: id)
         case .noteRequest(let id):
@@ -370,6 +395,7 @@ final class AppModel: ObservableObject {
         sendLauncher()
         appIconsSent = [] // a new connection may be a phone that has never seen them
         sendApps()
+        if !pool.isLowBandwidth { for (id, image) in appPreviews { pool.send(.appPreview(id: id, image: image)) } }
         widgets.sendAll()
         // Notes are fetched only when their page is shown: asking Notes launches the app.
         if currentWidgets.contains(.notes) { notes.refresh(force: true) }
