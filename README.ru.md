@@ -1,31 +1,47 @@
 <div align="center">
 
-<img src="iOS/Assets.xcassets/AppIcon.appiconset/icon-1024.png" alt="Иконка PhoneScreen" width="128" height="128">
+<img src="iOS/Assets.xcassets/AppIcon.appiconset/icon-1024.png" alt="Иконка Qwovi" width="128" height="128">
 
-# PhoneScreen
+# Qwovi
 
 **iPhone как второй экран для Mac.**
 
 Живые виджеты: музыка, нагрузка системы, календарь, погода, крипта, лимиты Claude Code, фоторамка и мини-игры.<br>
 Уведите курсор Mac за край дисплея — и он окажется на телефоне.
 
-[![Build](https://github.com/flywalk4/phonescreen/actions/workflows/build.yml/badge.svg)](https://github.com/flywalk4/phonescreen/actions/workflows/build.yml)
-[![Catalog](https://github.com/flywalk4/phonescreen/actions/workflows/catalog.yml/badge.svg)](https://github.com/flywalk4/phonescreen/actions/workflows/catalog.yml)
+[![Build](https://github.com/flywalk4/qwovi/actions/workflows/build.yml/badge.svg)](https://github.com/flywalk4/qwovi/actions/workflows/build.yml)
+[![Catalog](https://github.com/flywalk4/qwovi/actions/workflows/catalog.yml/badge.svg)](https://github.com/flywalk4/qwovi/actions/workflows/catalog.yml)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white)
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-F05138?logo=swift&logoColor=white)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-blue.svg)](LICENSE)
-[![Download](https://img.shields.io/github/v/release/flywalk4/phonescreen?label=download&color=brightgreen)](https://github.com/flywalk4/phonescreen/releases/latest)
+[![Download](https://img.shields.io/github/v/release/flywalk4/qwovi?label=download&color=brightgreen)](https://github.com/flywalk4/qwovi/releases/latest)
 
 [English](README.md) · **Русский**
 
-[Возможности](#-возможности) · [Виджеты](#-виджеты) · [Темы](#-темы) · [Второй экран](#-второй-экран) · [Установка](#-установка) · [Быстрый старт](#-быстрый-старт) · [Свой виджет](#-свой-виджет) · [Как это устроено](#-как-это-устроено)
+[Знакомство](#-знакомство) · [Возможности](#-возможности) · [Виджеты](#-виджеты) · [Темы](#-темы) · [Второй экран](#-второй-экран) · [Установка](#-установка) · [Быстрый старт](#-быстрый-старт) · [Свой виджет](#-свой-виджет) · [Как это устроено](#-как-это-устроено)
 
 <br>
 
-<img src="docs/images/hero.png" alt="PhoneScreen в темах: тёмная, Liquid Glass, светлая, ASCII" width="100%">
+<img src="docs/images/hero.png" alt="Qwovi в темах: тёмная, Liquid Glass, светлая, ASCII" width="100%">
 
 </div>
+
+## 👋 Знакомство
+
+Большую часть дня iPhone просто лежит у клавиатуры — экраном вниз на столе или на подставке — и загорается только ради уведомлений. При первом запуске Qwovi открывает знакомство, которое его будит, и **телефон участвует сам**: здоровается, как только подключится, просит довести до него курсор Mac и кликнуть, потом коснуться пальцем — а Mac отмечает каждый шаг, как только вы его сделали.
+
+<a href="docs/images/tour/tour.mp4"><img src="docs/images/tour/tour.webp" alt="Знакомство с Qwovi: телефон просыпается, подключается, курсор переходит на него, палец касается экрана, окно переезжает на телефон, меняются темы" width="100%"></a>
+
+<sub>▶ [То же знакомство видеороликом в полном качестве](docs/images/tour/tour.mp4)</sub>
+
+<img src="docs/images/tour/steps.webp" alt="Все шаги знакомства: спит, проснулся, подключение, одним взглядом, курсор, касание, второй экран, темы, готово" width="100%">
+
+**А в это время на телефоне** — приветствие, мишень для курсора Mac, мишень для пальца и конфетти:
+
+<img src="docs/images/tour/phone.webp" alt="Знакомство на iPhone: привет, клик курсором Mac, касание пальцем, готово" width="100%">
+
+Знакомство говорит по-английски и по-русски (переключатель в углу) и всегда есть в строке меню: **Qwovi → Знакомство**.
 
 ## ✨ Возможности
 
@@ -168,34 +184,34 @@ Mac → **Темы…**, под списком тем — **Тонкая нас�
 <summary><b>Как это устроено</b></summary>
 <br>
 
-Mac создаёт дисплей приватным API `CGVirtualDisplay` в форме телефона (не меньше 640 точек по короткой стороне — меньше macOS не даёт режим HiDPI), снимает его через ScreenCaptureKit, кодирует кадры VideoToolbox и шлёт их по тому же каналу USB / Wi-Fi, что и виджеты. Телефон декодирует их в `AVSampleBufferDisplayLayer` и отправляет обратно касания, а Mac превращает их в события мыши на этом дисплее. Из-за приватного API PhoneScreen и не может попасть в Mac App Store.
+Mac создаёт дисплей приватным API `CGVirtualDisplay` в форме телефона (не меньше 640 точек по короткой стороне — меньше macOS не даёт режим HiDPI), снимает его через ScreenCaptureKit, кодирует кадры VideoToolbox и шлёт их по тому же каналу USB / Wi-Fi, что и виджеты. Телефон декодирует их в `AVSampleBufferDisplayLayer` и отправляет обратно касания, а Mac превращает их в события мыши на этом дисплее. Из-за приватного API Qwovi и не может попасть в Mac App Store.
 
 </details>
 
 ## 📦 Установка
 
-Готовые сборки лежат на странице [**Releases**](https://github.com/flywalk4/phonescreen/releases/latest). Они не подписаны Apple (для этого нужен платный аккаунт разработчика), поэтому на каждой платформе есть один лишний шаг. Собрать самому — см. [Быстрый старт](#-быстрый-старт).
+Готовые сборки лежат на странице [**Releases**](https://github.com/flywalk4/qwovi/releases/latest). Они не подписаны Apple (для этого нужен платный аккаунт разработчика), поэтому на каждой платформе есть один лишний шаг. Собрать самому — см. [Быстрый старт](#-быстрый-старт).
 
 <details open>
-<summary><b>💻 Mac</b> — <code>PhoneScreen-x.y.z.dmg</code>, macOS 14+, Apple silicon и Intel</summary>
+<summary><b>💻 Mac</b> — <code>Qwovi-x.y.z.dmg</code>, macOS 14+, Apple silicon и Intel</summary>
 <br>
 
-1. Откройте `.dmg` и перетащите **PhoneScreen** в **Программы**.
-2. Откройте PhoneScreen. macOS скажет, что не может проверить программу на вредоносное ПО, — нажмите **Готово**.
-3. Откройте **Системные настройки → Конфиденциальность и безопасность**, пролистайте вниз и нажмите **Всё равно открыть** напротив PhoneScreen, подтвердите. Дальше программа открывается как обычно.
+1. Откройте `.dmg` и перетащите **Qwovi** в **Программы**.
+2. Откройте Qwovi. macOS скажет, что не может проверить программу на вредоносное ПО, — нажмите **Готово**.
+3. Откройте **Системные настройки → Конфиденциальность и безопасность**, пролистайте вниз и нажмите **Всё равно открыть** напротив Qwovi, подтвердите. Дальше программа открывается как обычно.
 
 Или в Терминале, до первого запуска:
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/PhoneScreen.app
+xattr -dr com.apple.quarantine /Applications/Qwovi.app
 ```
 
-После обновления macOS может снова попросить **Универсальный доступ** и **Запись экрана** — выключите и включите PhoneScreen в этом списке.
+После обновления macOS может снова попросить **Универсальный доступ** и **Запись экрана** — выключите и включите Qwovi в этом списке.
 
 </details>
 
 <details open>
-<summary><b>📱 iPhone</b> — <code>PhoneScreen-x.y.z.ipa</code>, iOS 18+</summary>
+<summary><b>📱 iPhone</b> — <code>Qwovi-x.y.z.ipa</code>, iOS 18+</summary>
 <br>
 
 Установите со своим Apple ID через [Sideloadly](https://sideloadly.io) или [AltStore](https://altstore.io):
@@ -214,13 +230,13 @@ xattr -dr com.apple.quarantine /Applications/PhoneScreen.app
 
 ```bash
 brew install xcodegen
-git clone https://github.com/flywalk4/phonescreen.git && cd phonescreen
+git clone https://github.com/flywalk4/qwovi.git && cd qwovi
 xcodegen generate
-open PhoneScreen.xcodeproj
+open Qwovi.xcodeproj
 ```
 
-1. **Mac:** схема `PhoneScreenMac`. В строке меню появится иконка. При первом запросе трека macOS спросит разрешение на управление Музыкой или Spotify.
-2. **iPhone:** схема `PhoneScreeniOS` на телефоне. Команду укажите в Xcode → Signing или так: `DEVELOPMENT_TEAM=XXXXXXXXXX xcodegen generate`. Разрешите доступ к **локальной сети**, когда iOS спросит (USB работает и без этого).
+1. **Mac:** схема `QwoviMac`. В строке меню появится иконка. При первом запросе трека macOS спросит разрешение на управление Музыкой или Spotify.
+2. **iPhone:** схема `QwoviiOS` на телефоне. Команду укажите в Xcode → Signing или так: `DEVELOPMENT_TEAM=XXXXXXXXXX xcodegen generate`. Разрешите доступ к **локальной сети**, когда iOS спросит (USB работает и без этого).
 3. **Расположение:** меню → **Расположение iPhone…**. Перетащите телефон к любому краю любого экрана — курсор будет переходить через зелёный участок. `R` / `⇧R` — поворот.
 4. **Виджеты и темы:** меню → **Виджеты…** / **Темы…**.
 5. **Второй экран (по желанию):** поставьте виджет **«Второй экран»** на страницу с раскладкой «Один». В первый раз macOS попросит **Запись экрана** (для трансляции) и **Универсальный доступ** (чтобы касания стали кликами). Дисплей появляется, пока эта страница открыта на телефоне, и исчезает через 5 секунд после ухода с неё; окна с него переезжают на основной экран и возвращаются в следующий раз.
@@ -293,14 +309,14 @@ async function refresh(ctx) {
 
 ```bash
 python3 scripts/validate-widget.py catalog/widgets/<id>   # статическая проверка
-PhoneScreen --widget-test catalog/widgets/<id>            # запуск в настоящей песочнице
+Qwovi --widget-test catalog/widgets/<id>            # запуск в настоящей песочнице
 python3 scripts/build-catalog.py                          # пересобрать catalog/index.json
 python3 scripts/claude-code-bridge.py install             # необязательный мост для «Claude Code»: точные % лимитов
 ```
 
 </details>
 
-📖 Полная документация: [`catalog/README.ru.md`](catalog/README.ru.md) · 🤖 Скилл для ИИ-агентов: [`skills/phonescreen-widget`](skills/phonescreen-widget/SKILL.md)
+📖 Полная документация: [`catalog/README.ru.md`](catalog/README.ru.md) · 🤖 Скилл для ИИ-агентов: [`skills/qwovi-widget`](skills/qwovi-widget/SKILL.md)
 
 ## 🔍 Как это устроено
 
@@ -321,7 +337,7 @@ Mac (агент в строке меню)                              iPhone
 | Приоритет | Канал | Нужно |
 | :-: | --- | --- |
 | 1 | USB (через системный `usbmuxd`) | кабель, iPhone доверяет Mac |
-| 2 | Wi-Fi LAN (Bonjour `_phonescreen._tcp`) | общая сеть |
+| 2 | Wi-Fi LAN (Bonjour `_qwovi._tcp`) | общая сеть |
 | 3 | Wi-Fi P2P (AWDL) | ничего — Wi-Fi включён, устройства рядом |
 | 4 | Bluetooth LE (L2CAP) | Bluetooth включён; без обложек и иконок — канал узкий |
 
@@ -331,13 +347,13 @@ Mac (агент в строке меню)                              iPhone
 
 | Путь | Что внутри |
 | --- | --- |
-| [`Packages/PhoneScreenKit`](Packages/PhoneScreenKit) | Общий протокол (`Message`, кадры `[UInt32 BE длина][JSON]`), каналы, шаблоны виджетов и темы |
+| [`Packages/QwoviKit`](Packages/QwoviKit) | Общий протокол (`Message`, кадры `[UInt32 BE длина][JSON]`), каналы, шаблоны виджетов и темы |
 | [`Mac/`](Mac) | Агент в строке меню: usbmuxd, Bonjour и BLE, провайдеры данных, среда виджетов, передача курсора и хоткеи. `Mac/Display` — второй экран: виртуальный дисплей (приватный `CGVirtualDisplay`), ScreenCaptureKit + VideoToolbox H.264, касания → события мыши |
 | [`iOS/`](iOS) | Приложение для телефона: приём соединений, страницы, встроенные виджеты, рендер пользовательских виджетов с темами, анимированные сцены |
 | [`catalog/`](catalog) | Виджеты и темы с `index.json` из SHA-256. Приложение отклоняет файл, если хэш не совпадает |
 
 ```bash
-cd Packages/PhoneScreenKit && swift test        # протокол, шаблоны, темы
+cd Packages/QwoviKit && swift test        # протокол, шаблоны, темы
 node scripts/widget-dev.mjs test                # все сценарии виджетов, Mac не нужен
 ```
 

@@ -1,5 +1,5 @@
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
 /// Which theme the phone shows: the built-in ones plus installed themes (`ThemeStore`). Development installs are
 /// re-read when their file changes, so the phone recolours as the author saves.

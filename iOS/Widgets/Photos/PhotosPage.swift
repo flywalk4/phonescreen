@@ -16,7 +16,7 @@ struct PhotosPage: View {
                 case .loading:
                     ThemedSpinner()
                 case .denied:
-                    message(L("No access to photos"), L("Allow PhoneScreen access in Settings → Privacy & Security → Photos"))
+                    message(L("No access to photos"), L("Allow Qwovi access in Settings → Privacy & Security → Photos"))
                 case .empty:
                     message(L("No photos"), L("Add pictures to Favorites and they'll show up here"))
                 case .ready:

@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// A remote for the Mac: system actions, Dock apps and the user's Shortcuts. The phone only sends ids;

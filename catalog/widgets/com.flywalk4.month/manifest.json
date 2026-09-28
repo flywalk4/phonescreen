@@ -1,8 +1,8 @@
 {
-  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
+  "$schema": "https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/manifest.schema.json",
   "id": "com.flywalk4.month",
   "name": "Month",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "flywalk4",
   "description": "The month as a grid: today highlighted, weekends and Russian public holidays in red, the week number and how many working days are left. Works offline.",
   "symbol": "calendar",

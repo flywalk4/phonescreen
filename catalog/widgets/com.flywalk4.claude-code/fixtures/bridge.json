@@ -2,8 +2,8 @@
  "description": "Bridge installed: official percentages and state from hooks, a day of work in the logs",
  "now": "2026-09-27T14:40:00Z",
  "files": {
-  "~/.claude/phonescreen/status.json": "{\"at\": 1790520000, \"model\": \"Opus 5.5\", \"rate_limits\": {\"five_hour\": {\"used_percentage\": 62.4, \"resets_at\": 1790525400}, \"seven_day\": {\"used_percentage\": 23, \"resets_at\": 1790820000}}}",
-  "~/.claude/phonescreen/state.json": "{\"at\": 1790520000, \"sessions\": {\"x\": {\"state\": \"waiting\", \"at\": 1790519970}}}",
+  "~/.claude/qwovi/status.json": "{\"at\": 1790520000, \"model\": \"Opus 5.5\", \"rate_limits\": {\"five_hour\": {\"used_percentage\": 62.4, \"resets_at\": 1790525400}, \"seven_day\": {\"used_percentage\": 23, \"resets_at\": 1790820000}}}",
+  "~/.claude/qwovi/state.json": "{\"at\": 1790520000, \"sessions\": {\"x\": {\"state\": \"waiting\", \"at\": 1790519970}}}",
   "~/.claude/projects/-repo/day.jsonl": [
    "{\"type\": \"assistant\", \"timestamp\": \"2026-09-27T13:30:00.000Z\", \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"text\"}], \"model\": \"claude-opus-5-5\", \"id\": \"msg_1\", \"stop_reason\": \"end_turn\", \"usage\": {\"input_tokens\": 10, \"output_tokens\": 2084, \"cache_creation_input_tokens\": 4170, \"cache_read_input_tokens\": 50000}}, \"isSidechain\": false}",
    "{\"type\": \"assistant\", \"timestamp\": \"2026-09-27T12:30:00.000Z\", \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"text\"}], \"model\": \"claude-opus-5-5\", \"id\": \"msg_2\", \"stop_reason\": \"end_turn\", \"usage\": {\"input_tokens\": 10, \"output_tokens\": 4483, \"cache_creation_input_tokens\": 8966, \"cache_read_input_tokens\": 50000}}, \"isSidechain\": false}",

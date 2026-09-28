@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static checks for a PhoneScreen widget package (no app needed).
+"""Static checks for a Qwovi widget package (no app needed).
 
     python3 scripts/validate-widget.py path/to/com.author.widget [--hints]
 
@@ -7,7 +7,7 @@
 
 Checks the three files, manifest fields and permissions, and that view.json only uses known node types and
 fields, with bindings that look right. Mirrors the rules of the app (WidgetManifest.validate, WidgetTemplate).
-To actually run the widget in the real sandbox, use the Mac app:  PhoneScreen --widget-test <folder>
+To actually run the widget in the real sandbox, use the Mac app:  Qwovi --widget-test <folder>
 """
 import json
 import re
@@ -26,7 +26,7 @@ NODES = {
     "gauge": {"value", "label", "color", "text", "fill"},
     "progress": {"value", "color"},
     "chart": {"values", "color", "style", "height"},
-    "button": {"title", "symbol", "action"},
+    "button": {"title", "symbol", "action", "color"},
     "sprite": {"frames", "palette", "fps"},
     "spacer": set(),
     "divider": set(),

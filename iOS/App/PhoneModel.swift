@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 import UIKit
 
@@ -48,7 +48,7 @@ final class PhoneModel: ObservableObject {
     private static func savedLanguage() -> String {
         let code = UserDefaults.standard.string(forKey: "language") ?? "en"
         Lang.code = code
-        Localization.translate = { L($0) } // widget and layout names from PhoneScreenKit
+        Localization.translate = { L($0) } // widget and layout names from QwoviKit
         return code
     }
     @Published private(set) var theme: Theme = PhoneModel.savedTheme() {
@@ -77,6 +77,9 @@ final class PhoneModel: ObservableObject {
     func sendDisplay(_ message: Message) { pool.send(message) }
     let keyboard = KeyboardBridge()
     private let motion = MotionOrientation()
+    /// The Mac's welcome tour is open: its step is shown over the pages.
+    @Published private(set) var tour: TourStep?
+    func sendTour(_ event: TourEvent) { pool.send(.tourEvent(event)) }
     /// Bumped by touches and Mac pointer clicks/scrolls: restarts the pages' auto-advance.
     @Published var interactions = 0
     private let pool: ChannelPool
@@ -158,7 +161,7 @@ final class PhoneModel: ObservableObject {
                 error: nil, updated: Date())
             pages.insert(PageInfo(id: "custom", layout: .grid, widgets: [.custom("com.flywalk4.rates"), .builtin(.weather), .builtin(.music), .builtin(.monitor)]), at: 0)
             pages.insert(PageInfo(id: "custom-full", layout: .single, widgets: [.custom("com.flywalk4.rates")]), at: 0)
-            // `--demo-widget <file>`: output of `PhoneScreen --widget-test` (Mac), shown as a real widget.
+            // `--demo-widget <file>`: output of `Qwovi --widget-test` (Mac), shown as a real widget.
             if let i = args.firstIndex(of: "--demo-widget"), i + 1 < args.count,
                let data = FileManager.default.contents(atPath: args[i + 1]),
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -189,12 +192,12 @@ final class PhoneModel: ObservableObject {
                                     duration: 240, elapsed: 70, playing: true)
             nowPlaying?.player = "Music"; nowPlaying?.volume = 0.7; nowPlaying?.shuffle = true; nowPlaying?.repeatMode = "all"; nowPlaying?.liked = true
             notes = [NoteSummary(id: "1", title: "Groceries", snippet: "milk, bread, coffee", folder: "Notes", modified: Date().addingTimeInterval(-600)),
-                     NoteSummary(id: "2", title: "PhoneScreen ideas", snippet: "a 2×2 dashboard, a keyboard on the phone", folder: "Projects", modified: Date().addingTimeInterval(-86_400))]
+                     NoteSummary(id: "2", title: "Qwovi ideas", snippet: "a 2×2 dashboard, a keyboard on the phone", folder: "Projects", modified: Date().addingTimeInterval(-86_400))]
             launcher = [LauncherItem(id: "sys:lock", title: "Lock Screen", kind: .system, symbol: "lock.fill"),
                         LauncherItem(id: "sys:darkMode", title: "Dark Mode", kind: .system, symbol: "circle.lefthalf.filled"),
                         LauncherItem(id: "shortcut:x", title: "Focus: work", kind: .shortcut, symbol: "square.stack.3d.up.fill")]
-            runningApps = [RunningApp(id: "com.apple.Safari", name: "Safari", active: true, window: "flywalk4/phonescreen — GitHub", windows: 3),
-                           RunningApp(id: "com.apple.dt.Xcode", name: "Xcode", window: "PhoneScreen — AppsPage.swift", windows: 1),
+            runningApps = [RunningApp(id: "com.apple.Safari", name: "Safari", active: true, window: "flywalk4/qwovi — GitHub", windows: 3),
+                           RunningApp(id: "com.apple.dt.Xcode", name: "Xcode", window: "Qwovi — AppsPage.swift", windows: 1),
                            RunningApp(id: "com.apple.Terminal", name: "Terminal", window: "repo — zsh — 120×40", windows: 2),
                            RunningApp(id: "com.apple.Music", name: "Music", window: "Music", windows: 1),
                            RunningApp(id: "com.apple.mail", name: "Mail", hidden: true, window: "Inbox", windows: 1),
@@ -213,6 +216,12 @@ final class PhoneModel: ObservableObject {
             if let i = args.firstIndex(of: "--demo-bundle"), i + 1 < args.count { loadDemoBundle(args[i + 1]) }
             if let i = args.firstIndex(of: "--demo-theme"), i + 1 < args.count,
                let builtin = Theme.builtin.first(where: { $0.id == args[i + 1] }) { theme = builtin }
+            // `--demo-gap N`: the theme's gap between cards (how close cards blend together).
+            if let i = args.firstIndex(of: "--demo-gap"), i + 1 < args.count, let gap = Double(args[i + 1]) {
+                var layout = theme.layout ?? Theme.Layout()
+                layout.gap = gap
+                theme.layout = layout
+            }
             // `--demo-orientation landscapeIslandLeft`: how the phone lies (landscape layouts on screenshots).
             // Upright unless asked: the layout is saved, so an earlier landscape run must not leak into this one.
             let orientation = args.firstIndex(of: "--demo-orientation").flatMap { i in
@@ -220,6 +229,13 @@ final class PhoneModel: ObservableObject {
             } ?? .portrait
             layout = PhoneLayout(orientation: orientation, macSide: .left)
             if let i = args.firstIndex(of: "--page"), i + 1 < args.count, let n = Int(args[i + 1]), pages.indices.contains(n) { currentPage = n }
+            // `--demo-tour hello|cursor|touch|finish`: the Mac's welcome tour on the phone.
+            if let i = args.firstIndex(of: "--demo-tour"), i + 1 < args.count { tour = TourStep(rawValue: args[i + 1]) }
+            // `--demo-focus N`: the page's N-th widget opened full screen (screenshots of the opened state).
+            if let i = args.firstIndex(of: "--demo-focus"), i + 1 < args.count, let n = Int(args[i + 1]),
+               pages.indices.contains(currentPage), pages[currentPage].visibleWidgets.indices.contains(n) {
+                focused = FocusedWidget(ref: pages[currentPage].visibleWidgets[n], held: false)
+            }
         }
         #endif
     }
@@ -418,6 +434,8 @@ final class PhoneModel: ObservableObject {
             customWidgets[id] = nil
         case .theme(let value):
             withAnimation(.easeInOut(duration: 0.35)) { theme = value }
+        case .tour(let step):
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.8)) { tour = step }
         case .language(let code):
             language = code
             UserDefaults.standard.set(code, forKey: "language")
@@ -441,6 +459,21 @@ final class PhoneModel: ObservableObject {
         let new = ref.map { FocusedWidget(ref: $0, held: held, anchor: anchor) }
         guard new != focused else { return }
         withAnimation(.spring(duration: 0.35, bounce: 0.2)) { focused = new }
+    }
+
+    /// A widget's backdrop scene at this size (a live wallpaper), drawn under its whole card rather than inset.
+    func backdrop(_ ref: WidgetRef, size: WidgetSize) -> WidgetNode? {
+        guard case .custom(let id) = ref else { return nil }
+        return customWidgets[id]?.view(for: size)?.backdrop?.scene
+    }
+
+    /// The backdrop of the widget that has the whole screen (opened, or alone on the current page): it replaces the
+    /// page background, edge to edge.
+    var screenBackdrop: WidgetNode? {
+        if let focused { return backdrop(focused.ref, size: .full) }
+        guard !overview, pages.indices.contains(currentPage), pages[currentPage].layout == .single,
+              let ref = pages[currentPage].visibleWidgets.first else { return nil }
+        return backdrop(ref, size: .full)
     }
 
     /// Open a page from the overview.

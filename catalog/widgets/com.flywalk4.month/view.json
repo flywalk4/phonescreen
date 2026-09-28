@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
+  "$schema": "https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/view.schema.json",
   "full": {
     "type": "vstack",
     "spacing": 14,
@@ -88,7 +88,7 @@
                 "template": {
                   "type": "text",
                   "text": "{{item.d}}",
-                  "style": "caption2",
+                  "style": "footnote",
                   "weight": "semibold",
                   "color": "{{item.color}}",
                   "align": "center"
@@ -98,18 +98,18 @@
                 "type": "list",
                 "items": "{{cells}}",
                 "columns": 7,
-                "spacing": 6,
+                "spacing": 8,
                 "template": {
                   "type": "box",
-                  "padding": 7,
-                  "radius": 8,
+                  "padding": 11,
+                  "radius": 10,
                   "background": "{{item.background}}",
                   "opacity": "{{item.opacity}}",
                   "children": [
                     {
                       "type": "text",
                       "text": "{{item.text}}",
-                      "size": 17,
+                      "size": 20,
                       "weight": "{{item.weight}}",
                       "design": "rounded",
                       "color": "{{item.color}}",
@@ -143,9 +143,6 @@
         ]
       },
       {
-        "type": "spacer"
-      },
-      {
         "type": "text",
         "text": "{{nextTitle}}",
         "style": "headline",
@@ -173,10 +170,10 @@
             "type": "list",
             "items": "{{nextCells}}",
             "columns": 7,
-            "spacing": 3,
+            "spacing": 5,
             "template": {
               "type": "box",
-              "padding": 4,
+              "padding": 6,
               "radius": 8,
               "background": "{{item.background}}",
               "opacity": "{{item.opacity}}",
@@ -184,7 +181,7 @@
                 {
                   "type": "text",
                   "text": "{{item.text}}",
-                  "size": 13,
+                  "size": 15,
                   "weight": "{{item.weight}}",
                   "design": "rounded",
                   "color": "{{item.color}}",
@@ -196,6 +193,9 @@
             }
           }
         ]
+      },
+      {
+        "type": "spacer"
       }
     ]
   },

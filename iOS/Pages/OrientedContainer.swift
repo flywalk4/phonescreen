@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// Renders content upright for the orientation the phone lies in next to the Mac.

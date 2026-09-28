@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 extension EnvironmentValues {
@@ -8,6 +8,8 @@ extension EnvironmentValues {
     @Entry var innerRadius: CGFloat? = nil
     /// The page the pager shows (its neighbours are laid out too, ready for a swipe).
     @Entry var isCurrentPage = true
+    /// The page draws one blended surface under its cards (see `MorphedCards`); a card only clips its content.
+    @Entry var cardMorph = false
 }
 
 /// The page grid: one set of gaps and insets for every page, both orientations (a theme's `layout` can change them).
@@ -24,6 +26,13 @@ struct PageMetrics {
     var showsDots: Bool { layout?.dots ?? true }
     /// Under the cards: the page dots.
     var dots: CGFloat { showsDots ? 16 : 0 }
+
+    /// Cards closer than 11 pt flow into one another like drops of liquid, the more the closer they are:
+    /// the blur that melts their shapes together (0: they stay apart).
+    var morph: CGFloat {
+        guard let g = layout?.gap, g < 11 else { return 0 }
+        return min(1, (11 - CGFloat(g)) / 4) * 9
+    }
 
     /// Inside a card: tighter in small tiles, roomier in half-page cards.
     func cardPadding(_ size: WidgetSize) -> CGFloat {
@@ -89,6 +98,7 @@ struct PageView: View {
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height)
+            .modifier(MorphedCards(amount: page.bare == true || page.layout == .single ? 0 : metrics.morph))
             .debugLayout("page", .red)
         }
         .padding(.bottom, metrics.dots)
@@ -118,6 +128,8 @@ private struct Card: View {
         let padding = PageMetrics(theme).cardPadding(size)
         ZStack {
             Color.clear
+            // A live wallpaper fills the whole card, not a panel inside the padding.
+            if let ref, let scene = model.backdrop(ref, size: size) { WidgetBackdrop(scene: scene) }
             if let ref {
                 WidgetView(ref: ref)
                     .environment(\.widgetSize, size)
@@ -230,10 +242,113 @@ struct CloseFocusedButton: View {
 
 private struct CardSurface: ViewModifier {
     let bare: Bool
+    @Environment(\.cardMorph) private var morph
+    @Environment(\.theme) private var theme
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        if bare { content } else { content.themedCard() }
+        if bare {
+            content
+        } else if morph {
+            content
+                .clipShape(RoundedRectangle(cornerRadius: theme.radius, style: .continuous))
+                .anchorPreference(key: CardBounds.self, value: .bounds) { [$0] }
+        } else {
+            content.themedCard()
+        }
+    }
+}
+
+private struct CardBounds: PreferenceKey {
+    static let defaultValue: [Anchor<CGRect>] = []
+    static func reduce(value: inout [Anchor<CGRect>], nextValue: () -> [Anchor<CGRect>]) { value += nextValue() }
+}
+
+/// Close cards blend into one surface, joined by liquid bridges where they almost touch.
+/// Liquid Glass does it itself (a glass container blends shapes within its spacing); flat and frosted cards get
+/// one surface drawn under them all, its shape the cards' outlines melted together (blur, then a hard alpha cut).
+private struct MorphedCards: ViewModifier {
+    let amount: CGFloat
+    @Environment(\.theme) private var theme
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if amount <= 0 || theme.style == .ascii {
+            content
+        } else if theme.style == .glass, let glass = liquidGlass(content) {
+            glass
+        } else {
+            content
+                .environment(\.cardMorph, true)
+                .backgroundPreferenceValue(CardBounds.self) { anchors in
+                    GeometryReader { geo in
+                        MorphSurface(rects: anchors.map { geo[$0] }, amount: amount)
+                    }
+                }
+        }
+    }
+
+    private func liquidGlass(_ content: Content) -> AnyView? {
+        #if compiler(>=6.2)
+        if #available(iOS 26, *) { return AnyView(GlassEffectContainer(spacing: amount * 2) { content }) }
+        #endif
+        return nil
+    }
+}
+
+private struct MorphSurface: View {
+    let rects: [CGRect]
+    let amount: CGFloat
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        let radius = CGFloat(theme.radius)
+        let shadow = theme.layout?.shadow == true ? (theme.appearance == .light ? 0.10 : 0.35) : 0
+        ZStack {
+            if theme.style == .glass { // frosted: iOS 26 blends Liquid Glass itself
+                Rectangle().fill(theme.card)
+                Rectangle().fill(.ultraThinMaterial)
+            } else {
+                Rectangle().fill(theme.card.opacity(theme.layout?.cardOpacity ?? 1))
+            }
+        }
+        .mask(MeltedShape(rects: rects, radius: radius, amount: amount))
+        .overlay {
+            if let border = theme.border {
+                // The outline: the melted shape minus the same shape 1 pt smaller.
+                ZStack {
+                    border.mask(MeltedShape(rects: rects, radius: radius, amount: amount))
+                    Color.black
+                        .mask(MeltedShape(rects: rects.map { $0.insetBy(dx: 1, dy: 1) }, radius: max(0, radius - 1), amount: amount))
+                        .blendMode(.destinationOut)
+                }
+                .compositingGroup()
+            }
+        }
+        .compositingGroup()
+        .shadow(color: .black.opacity(shadow), radius: 12, y: 5)
+        .allowsHitTesting(false)
+    }
+}
+
+/// Rounded rectangles melted together: blurred, then cut at half opacity (a metaball outline), softened a hair.
+private struct MeltedShape: View {
+    let rects: [CGRect]
+    let radius: CGFloat
+    let amount: CGFloat
+
+    var body: some View {
+        Canvas { ctx, _ in
+            // Filters apply last-added first: blur, cut, then the antialiasing blur.
+            ctx.addFilter(.blur(radius: 0.6))
+            ctx.addFilter(.alphaThreshold(min: 0.5))
+            ctx.addFilter(.blur(radius: amount))
+            ctx.drawLayer { layer in
+                for rect in rects {
+                    layer.fill(RoundedRectangle(cornerRadius: radius, style: .continuous).path(in: rect), with: .color(.black))
+                }
+            }
+        }
     }
 }
 

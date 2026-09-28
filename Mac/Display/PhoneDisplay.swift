@@ -67,7 +67,7 @@ final class PhoneDisplay {
         if display == nil {
             let descriptor = CGVirtualDisplayDescriptor()
             descriptor.queue = .main
-            descriptor.name = "iPhone (PhoneScreen)"
+            descriptor.name = "iPhone (Qwovi)"
             // Room for a HiDPI mode of any phone in either orientation, so rotating only needs a new mode.
             descriptor.maxPixelsWide = 3200
             descriptor.maxPixelsHigh = 3200

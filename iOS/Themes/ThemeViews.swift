@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 extension EnvironmentValues {
@@ -22,6 +22,11 @@ extension Theme {
     var accent: Color { Color(hex: colors.accent, fallback: .accentColor) }
     var card: Color { Color(hex: colors.card, fallback: .clear) }
     var border: Color? { colors.border.map { Color(hex: $0, fallback: .clear) } }
+    /// Text on an accent-filled shape: dark on a light accent (sky blue, yellow, mint), white otherwise.
+    var onAccent: Color {
+        guard let c = RGBA(hex: colors.accent) else { return .white }
+        return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b > 0.6 ? .black.opacity(0.85) : .white
+    }
     var colorScheme: ColorScheme { appearance == .light ? .light : .dark }
 
     var fontDesign: Font.Design {
@@ -86,12 +91,14 @@ private struct WidgetBox: ViewModifier {
     func body(content: Content) -> some View {
         let fallback = innerRadius ?? max(0, min(CGFloat(theme.radius) - 6, 18))
         let shape = RoundedRectangle(cornerRadius: theme.radius == 0 ? 0 : (radius ?? fallback), style: .continuous)
+        // A hairline edge, as on the welcome tour's cards: panels read as glass lying on the card, not flat stains.
+        let edge = shape.strokeBorder(theme.text.opacity(theme.appearance == .light ? 0.06 : 0.09), lineWidth: 1)
         if let fill {
-            content.background(shape.fill(fill)).clipShape(shape)
+            content.background(shape.fill(fill)).overlay(edge).clipShape(shape)
         } else {
             switch theme.style {
             case .flat:
-                content.background(shape.fill(theme.text.opacity(0.07))).clipShape(shape)
+                content.background(shape.fill(theme.text.opacity(0.07))).overlay(edge).clipShape(shape)
             case .glass:
                 glass(content, shape: shape)
             case .ascii:

@@ -1,7 +1,7 @@
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
-/// `PhoneScreen --widget-test <folder>`: validates a package, runs `refresh()` once in the real sandbox and
+/// `Qwovi --widget-test <folder>`: validates a package, runs `refresh()` once in the real sandbox and
 /// prints the data and the resolved UI for every size as JSON (exit 0), or the error (exit 1).
 /// For widget authors and AI agents: the same code path the app uses, without a phone.
 enum WidgetTestRunner {
@@ -58,7 +58,7 @@ enum WidgetTestRunner {
         }
     }
 
-    /// `PhoneScreen --catalog-test <index.json URL or path>`: downloads every widget and theme the way the app
+    /// `Qwovi --catalog-test <index.json URL or path>`: downloads every widget and theme the way the app
     /// installs it (SHA-256 checked) and validates it. Exit 0 if all install.
     static func runCatalog(_ location: String) {
         let url = location.contains("://") ? URL(string: location)! : URL(fileURLWithPath: location)

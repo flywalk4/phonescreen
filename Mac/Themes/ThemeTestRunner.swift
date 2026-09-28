@@ -1,7 +1,7 @@
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
-/// `PhoneScreen --theme-test <folder or theme.json>`: reads the theme exactly as the app installs it and prints it
+/// `Qwovi --theme-test <folder or theme.json>`: reads the theme exactly as the app installs it and prints it
 /// (exit 0) with readability warnings, or the error (exit 1). For theme authors and AI agents.
 enum ThemeTestRunner {
     static func run(_ url: URL) {

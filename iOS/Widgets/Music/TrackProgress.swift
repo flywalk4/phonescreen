@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// Where playback is, drawn smoothly: the position is extrapolated every frame while playing, a seek shows up at once

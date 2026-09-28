@@ -20,7 +20,7 @@
 	<string>1</string>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>_phonescreen._tcp</string>
+		<string>_qwovi._tcp</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

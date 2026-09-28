@@ -1,6 +1,6 @@
-name: PhoneScreen
+name: Qwovi
 options:
-  bundleIdPrefix: com.flywalk4.phonescreen
+  bundleIdPrefix: com.flywalk4.qwovi
   deploymentTarget:
     macOS: "14.0"
     iOS: "18.0"
@@ -9,8 +9,8 @@ options:
   developmentLanguage: en
 
 packages:
-  PhoneScreenKit:
-    path: Packages/PhoneScreenKit
+  QwoviKit:
+    path: Packages/QwoviKit
 
 settings:
   base:
@@ -20,17 +20,17 @@ settings:
     CODE_SIGN_STYLE: Automatic
 
 targets:
-  PhoneScreenMac:
+  QwoviMac:
     type: application
     platform: macOS
     sources: [Mac]
     dependencies:
-      - package: PhoneScreenKit
+      - package: QwoviKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.flywalk4.phonescreen.mac
+        PRODUCT_BUNDLE_IDENTIFIER: com.flywalk4.qwovi.mac
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        PRODUCT_NAME: PhoneScreen
+        PRODUCT_NAME: Qwovi
         # Local-only distribution: no sandbox (needs usbmuxd socket, AppleScript, later CGEventTap).
         ENABLE_HARDENED_RUNTIME: NO
         # A real identity (not ad-hoc) keeps the Accessibility grant across rebuilds.
@@ -39,38 +39,38 @@ targets:
         SWIFT_OBJC_BRIDGING_HEADER: Mac/Display/CGVirtualDisplay.h
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
-        INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
-        INFOPLIST_KEY_NSAppleEventsUsageDescription: "PhoneScreen reads the current track, notes and shortcuts and shows them on the iPhone."
-        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen finds the iPhone on the local network and over direct Wi-Fi."
+        INFOPLIST_KEY_CFBundleDisplayName: Qwovi
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "Qwovi reads the current track, notes and shortcuts and shows them on the iPhone."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "Qwovi finds the iPhone on the local network and over direct Wi-Fi."
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "A backup link to the iPhone when there's no cable or Wi-Fi."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
     info:
       path: Mac/Info.plist
       properties:
-        NSBonjourServices: [_phonescreen._tcp]
+        NSBonjourServices: [_qwovi._tcp]
 
-  PhoneScreeniOS:
+  QwoviiOS:
     type: application
     platform: iOS
     sources: [iOS]
     dependencies:
-      - package: PhoneScreenKit
+      - package: QwoviKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.flywalk4.phonescreen.ios
+        PRODUCT_BUNDLE_IDENTIFIER: com.flywalk4.qwovi.ios
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        PRODUCT_NAME: PhoneScreen
+        PRODUCT_NAME: Qwovi
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
+        INFOPLIST_KEY_CFBundleDisplayName: Qwovi
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIRequiresFullScreen: YES
         INFOPLIST_KEY_UIStatusBarHidden: YES
         # The app stays portrait; OrientedContainer rotates the UI itself — from the accelerometer when the phone
         # is held up (MotionOrientation), from the Mac arrangement when it lies flat.
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
-        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen accepts the Mac's connection over Wi-Fi and directly."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "Qwovi accepts the Mac's connection over Wi-Fi and directly."
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "A backup link to the Mac when there's no cable or Wi-Fi."
         INFOPLIST_KEY_NSRemindersFullAccessUsageDescription: "Shows and checks off your reminders on the screen next to your Mac."
         INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Shows today's agenda from your calendar."
@@ -81,6 +81,6 @@ targets:
     info:
       path: iOS/Info.plist
       properties:
-        NSBonjourServices: [_phonescreen._tcp]
+        NSBonjourServices: [_qwovi._tcp]
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false

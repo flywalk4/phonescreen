@@ -16,8 +16,8 @@ jobs:
         run: |
           sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
           xcodebuild -version
-      - name: PhoneScreenKit tests
-        working-directory: Packages/PhoneScreenKit
+      - name: QwoviKit tests
+        working-directory: Packages/QwoviKit
         run: swift test
       - name: Generate the project
         run: |
@@ -25,22 +25,22 @@ jobs:
           xcodegen generate
       - name: Build the Mac app
         run: |
-          xcodebuild -project PhoneScreen.xcodeproj -scheme PhoneScreenMac -configuration Debug \
+          xcodebuild -project Qwovi.xcodeproj -scheme QwoviMac -configuration Debug \
             -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build > mac.log 2>&1 || true
           grep -E "error:|BUILD (SUCCEEDED|FAILED)" mac.log || true
           grep -q "BUILD SUCCEEDED" mac.log
       - name: Local widgets in the real sandbox (--widget-test)
         run: |
-          APP=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -path '*Build/Products/Debug/PhoneScreen.app' | head -1)
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -path '*Build/Products/Debug/Qwovi.app' | head -1)
           for w in time worldclock focus tictactoe game2048 minesweeper memory wallpaper; do
-            out=$("$APP/Contents/MacOS/PhoneScreen" --widget-test "catalog/widgets/com.flywalk4.$w" 2>&1) || { echo "$out" | tail -20; exit 1; }
+            out=$("$APP/Contents/MacOS/Qwovi" --widget-test "catalog/widgets/com.flywalk4.$w" 2>&1) || { echo "$out" | tail -20; exit 1; }
             echo "✓ $w: $(echo "$out" | tail -1)"
           done
           # the format helpers are loaded (prelude.js bundled as a resource)
           test -f "$APP/Contents/Resources/prelude.js"
       - name: Build the iPhone app
         run: |
-          xcodebuild -project PhoneScreen.xcodeproj -scheme PhoneScreeniOS -configuration Debug \
+          xcodebuild -project Qwovi.xcodeproj -scheme QwoviiOS -configuration Debug \
             -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" build > ios.log 2>&1 || true
           grep -E "error:|BUILD (SUCCEEDED|FAILED)" ios.log || true
           grep -q "BUILD SUCCEEDED" ios.log

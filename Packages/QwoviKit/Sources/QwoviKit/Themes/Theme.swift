@@ -1,0 +1,304 @@
+import Foundation
+
+/// How the whole phone looks: page background, cards, text, accent, font — for built-in and JavaScript
+/// widgets alike. A theme is one `theme.json`; the Mac keeps the chosen one and sends it to the phone.
+public struct Theme: Codable, Equatable, Sendable, Identifiable {
+    /// How cards (and, for JavaScript widgets, progress bars, gauges and charts) are drawn.
+    public enum Style: String, Codable, Sendable, CaseIterable {
+        /// Filled rounded cards.
+        case flat
+        /// Liquid Glass (iOS 26; frosted material on older systems) over the background.
+        case glass
+        /// Everything as text: `+--+` frames, `[####....]` bars, `*` charts, monospaced type.
+        case ascii
+    }
+
+    public enum Appearance: String, Codable, Sendable, CaseIterable {
+        case dark, light
+    }
+
+    public enum FontDesign: String, Codable, Sendable, CaseIterable {
+        case system, rounded, monospaced, serif
+    }
+
+    /// One colour, or 2–4 for a linear gradient (`angle` in degrees, 0 = top to bottom).
+    /// `animation` brings it to life: the moving parts are drawn in `tints` at `speed` (1 = normal).
+    public struct Background: Codable, Equatable, Sendable {
+        public var colors: [String]
+        public var angle: Double?
+        public var animation: String?
+        public var tints: [String]?
+        public var speed: Double?
+
+        public init(colors: [String], angle: Double? = nil, animation: String? = nil, tints: [String]? = nil, speed: Double? = nil) {
+            self.colors = colors
+            self.angle = angle
+            self.animation = animation
+            self.tints = tints
+            self.speed = speed
+        }
+    }
+
+    /// Animated backgrounds the phone can draw (`background.animation`, and the `scene` widget node).
+    public static let animations = ["aurora", "stars", "matrix", "waves", "bokeh", "lava", "snow", "rain", "gradient"]
+    /// `background.animation` value for a photo from the phone's Favorites (blurred and dimmed) instead of colours.
+    public static let photoBackground = "photo"
+
+    /// Colours as `#RRGGBB` or `#RRGGBBAA`.
+    public struct Colors: Codable, Equatable, Sendable {
+        public var text: String
+        public var secondary: String
+        public var accent: String
+        /// Card fill (flat and ascii) or glass tint.
+        public var card: String?
+        /// Card outline (and the `+--+` frame in ascii).
+        public var border: String?
+        /// Replacements for colour names widgets use: `{"green": "#39FF14", "secondary": "#1F8F3A"}`.
+        public var palette: [String: String]?
+
+        public init(text: String, secondary: String, accent: String, card: String? = nil, border: String? = nil,
+                    palette: [String: String]? = nil) {
+            self.text = text
+            self.secondary = secondary
+            self.accent = accent
+            self.card = card
+            self.border = border
+            self.palette = palette
+        }
+    }
+
+    /// How the page is laid out around the cards; everything optional (the phone's defaults otherwise).
+    public struct Layout: Codable, Equatable, Sendable {
+        /// Between cards, 0…24 pt.
+        public var gap: Double?
+        /// Around the page (the Dynamic Island's edge always keeps clear of it), 0…24 pt.
+        public var margin: Double?
+        /// Inside cards, 6…24 pt.
+        public var padding: Double?
+        /// Page dots under the cards.
+        public var dots: Bool?
+        /// Card fill opacity 0…1 (flat style): lower lets an animated background show through.
+        public var cardOpacity: Double?
+        /// Text size: "small", "medium" (default), "large", "xlarge".
+        public var textSize: String?
+        /// Time and date beside the Dynamic Island (default on).
+        public var status: Bool?
+        /// A soft shadow under cards (lifts them off light and gradient backgrounds).
+        public var shadow: Bool?
+        /// Turn to the next page by itself every N seconds (10…600; nil or 0 — off). Touching the phone restarts the count.
+        public var autoPage: Double?
+        /// A light vibration on taps (default on).
+        public var haptics: Bool?
+        /// Pages go round: after the last comes the first (swipes, the trackpad, hotkeys, auto-turning).
+        public var loop: Bool?
+        /// Back to the first page whenever the phone (re)connects (default: stay where it was).
+        public var homeOnConnect: Bool?
+
+        public static let textSizes = ["small", "medium", "large", "xlarge"]
+
+        public init(gap: Double? = nil, margin: Double? = nil, padding: Double? = nil, dots: Bool? = nil, cardOpacity: Double? = nil,
+                    textSize: String? = nil, status: Bool? = nil, shadow: Bool? = nil, autoPage: Double? = nil, haptics: Bool? = nil,
+                    loop: Bool? = nil, homeOnConnect: Bool? = nil) {
+            self.gap = gap
+            self.margin = margin
+            self.padding = padding
+            self.dots = dots
+            self.cardOpacity = cardOpacity
+            self.textSize = textSize
+            self.status = status
+            self.shadow = shadow
+            self.autoPage = autoPage
+            self.haptics = haptics
+            self.loop = loop
+            self.homeOnConnect = homeOnConnect
+        }
+    }
+
+    /// Reverse-DNS, lowercase: `com.author.theme`.
+    public var id: String
+    public var name: String
+    public var version: String
+    public var author: String
+    public var description: String?
+    /// Name and description in other languages: `{"ru": {"name": "…", "description": "…"}}`.
+    public var localized: [String: [String: String]]?
+    public var style: Style
+    public var appearance: Appearance
+    public var font: FontDesign
+    /// Card corner radius, 0…40 pt.
+    public var radius: Double
+    public var background: Background
+    public var colors: Colors
+    public var layout: Layout?
+
+    public init(id: String, name: String, version: String = "1.0.0", author: String, description: String? = nil,
+                localized: [String: [String: String]]? = nil, style: Style, appearance: Appearance, font: FontDesign, radius: Double,
+                background: Background, colors: Colors, layout: Layout? = nil) {
+        self.id = id
+        self.name = name
+        self.version = version
+        self.author = author
+        self.description = description
+        self.localized = localized
+        self.style = style
+        self.appearance = appearance
+        self.font = font
+        self.radius = radius
+        self.background = background
+        self.colors = colors
+        self.layout = layout
+    }
+
+    /// Name and description in `language`, falling back to the theme's own.
+    public func text(in language: String) -> (name: String, description: String?) {
+        let table = localized?[language]
+        return (table?["name"] ?? name, table?["description"] ?? description)
+    }
+
+    public struct Invalid: Error, Equatable, CustomStringConvertible {
+        public var description: String
+    }
+
+    public func validate() throws {
+        guard id.range(of: #"^[a-z0-9]+(\.[a-z0-9-]+)+$"#, options: .regularExpression) != nil else {
+            throw Invalid(description: "id: “\(id)” — a lowercase reverse domain, e.g. com.author.theme")
+        }
+        guard !name.isEmpty, name.count <= 40 else { throw Invalid(description: "name: 1 to 40 characters") }
+        guard (0...40).contains(radius) else { throw Invalid(description: "radius: 0 to 40") }
+        if let size = layout?.textSize, !Layout.textSizes.contains(size) {
+            throw Invalid(description: "layout.textSize: small, medium, large or xlarge")
+        }
+        if let l = layout {
+            for (name, value, range) in [("gap", l.gap, 0.0...24), ("margin", l.margin, 0...24), ("padding", l.padding, 6...24),
+                                         ("cardOpacity", l.cardOpacity, 0...1), ("autoPage", l.autoPage, 0...600)] {
+                if let value, !range.contains(value) {
+                    throw Invalid(description: "layout.\(name): \(range.lowerBound.formatted()) to \(range.upperBound.formatted())")
+                }
+            }
+        }
+        guard (1...4).contains(background.colors.count) else {
+            throw Invalid(description: "background.colors: 1 to 4 colours")
+        }
+        if let a = background.animation, !Self.animations.contains(a), a != Self.photoBackground {
+            throw Invalid(description: "background.animation: “\(a)” — one of \(Self.animations.joined(separator: ", "))")
+        }
+        if let s = background.speed, !(0.1...5).contains(s) { throw Invalid(description: "background.speed: 0.1 to 5") }
+        guard (background.tints?.count ?? 0) <= 6 else { throw Invalid(description: "background.tints: at most 6 colours") }
+        var all = background.colors.map { ("background.colors", $0) }
+        all += (background.tints ?? []).map { ("background.tints", $0) }
+        all += [("colors.text", colors.text), ("colors.secondary", colors.secondary), ("colors.accent", colors.accent)]
+        if let c = colors.card { all.append(("colors.card", c)) }
+        if let c = colors.border { all.append(("colors.border", c)) }
+        for (key, value) in colors.palette ?? [:] { all.append(("colors.palette.\(key)", value)) }
+        for (key, value) in all where RGBA(hex: value) == nil {
+            throw Invalid(description: "\(key): “\(value)” — a colour like #RRGGBB or #RRGGBBAA")
+        }
+    }
+}
+
+// MARK: - Readability
+
+public extension Theme {
+    /// Places where text would be hard to read: WCAG contrast of `text` (needs 4.5:1) and `secondary` (3:1) against
+    /// every background colour and the card over it. Advisory — a theme with warnings still installs.
+    func contrastWarnings() -> [String] {
+        let backgrounds = background.colors.compactMap(RGBA.init(hex:)).map { $0.over(RGBA(r: 0, g: 0, b: 0)) }
+        let card = colors.card.flatMap(RGBA.init(hex:))
+        var surfaces: [(String, RGBA)] = backgrounds.map { ("the background", $0) }
+        if let card, style != .glass { surfaces += backgrounds.map { ("a card", card.over($0)) } }
+        var warnings: [String] = []
+        for (name, hex, minimum) in [("text", colors.text, 4.5), ("secondary", colors.secondary, 3.0)] {
+            guard let fg = RGBA(hex: hex) else { continue }
+            let worst = surfaces.map { ($0.0, fg.over($0.1).contrast(with: $0.1)) }.min { $0.1 < $1.1 }
+            if let worst, worst.1 < minimum {
+                warnings.append("colors.\(name) reads poorly on \(worst.0): contrast \(String(format: "%.1f", worst.1)):1, needs at least \(String(format: "%.1f", minimum)):1")
+            }
+        }
+        return warnings
+    }
+}
+
+/// A colour parsed from `#RRGGBB` / `#RRGGBBAA`, components 0…1.
+public struct RGBA: Equatable, Sendable {
+    public var r, g, b, a: Double
+
+    public init(r: Double, g: Double, b: Double, a: Double = 1) {
+        self.r = r
+        self.g = g
+        self.b = b
+        self.a = a
+    }
+
+    public init?(hex: String) {
+        let s = hex.trimmingCharacters(in: .whitespaces)
+        guard s.hasPrefix("#"), s.count == 7 || s.count == 9,
+              s.dropFirst().allSatisfy(\.isHexDigit), let v = UInt64(s.dropFirst(), radix: 16) else { return nil }
+        let rgba = s.count == 7 ? (v << 8) | 0xFF : v
+        self.init(r: Double((rgba >> 24) & 0xFF) / 255, g: Double((rgba >> 16) & 0xFF) / 255,
+                  b: Double((rgba >> 8) & 0xFF) / 255, a: Double(rgba & 0xFF) / 255)
+    }
+
+    /// This colour composited over an opaque one.
+    public func over(_ below: RGBA) -> RGBA {
+        RGBA(r: r * a + below.r * (1 - a), g: g * a + below.g * (1 - a), b: b * a + below.b * (1 - a))
+    }
+
+    /// WCAG relative luminance.
+    public var luminance: Double {
+        func channel(_ c: Double) -> Double { c <= 0.03928 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4) }
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+    }
+
+    /// WCAG contrast ratio, 1…21.
+    public func contrast(with other: RGBA) -> Double {
+        let (l1, l2) = (luminance, other.luminance)
+        return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+    }
+}
+
+// MARK: - Built-in themes
+
+public extension Theme {
+    static let dark = Theme(
+        id: "builtin.dark", name: "Dark", author: "Qwovi",
+        description: "A black background and dark cards — the classic look.",
+        localized: ["ru": ["name": "Тёмная", "description": "Чёрный фон и тёмные карточки — как раньше."]],
+        style: .flat, appearance: .dark, font: .system, radius: 22,
+        background: .init(colors: ["#000000"]),
+        colors: .init(text: "#FFFFFF", secondary: "#98989F", accent: "#0A84FF", card: "#FFFFFF12"))
+
+    static let light = Theme(
+        id: "builtin.light", name: "Light", author: "Qwovi",
+        description: "A light grey background, white cards, dark text.",
+        localized: ["ru": ["name": "Светлая", "description": "Светло-серый фон, белые карточки, тёмный текст."]],
+        style: .flat, appearance: .light, font: .system, radius: 22,
+        background: .init(colors: ["#F2F2F7"]),
+        colors: .init(text: "#000000", secondary: "#6C6C70", accent: "#007AFF", card: "#FFFFFF", border: "#0000000F",
+                      // Apple's increased-contrast variants: the stock yellow, mint, cyan and green fade on white.
+                      palette: ["green": "#248A3D", "mint": "#0C817B", "teal": "#008299", "cyan": "#0071A4",
+                                "yellow": "#B25000", "orange": "#C93400"]))
+
+    static let glass = Theme(
+        id: "builtin.glass", name: "Liquid Glass", author: "Qwovi",
+        description: "Glass cards over a bright gradient, as in iOS 26.",
+        localized: ["ru": ["description": "Стеклянные карточки поверх яркого градиента, как в iOS 26."]],
+        style: .glass, appearance: .dark, font: .rounded, radius: 28,
+        background: .init(colors: ["#141B45", "#2A1650"], angle: 35, animation: "aurora",
+                          tints: ["#3A6FF7", "#B04BD8", "#16A3A8", "#E0559C"], speed: 1),
+        colors: .init(text: "#FFFFFF", secondary: "#FFFFFFB3", accent: "#7FD4FF", card: "#FFFFFF14", border: "#FFFFFF33"))
+
+    static let ascii = Theme(
+        id: "builtin.ascii", name: "ASCII", author: "Qwovi",
+        description: "Everything as in a terminal: +-| frames, [####....] bars, monospaced green text.",
+        localized: ["ru": ["description": "Всё как в терминале: рамки из +-|, полосы [####....], моноширинный зелёный текст."]],
+        style: .ascii, appearance: .dark, font: .monospaced, radius: 0,
+        background: .init(colors: ["#050805"], animation: "matrix", tints: ["#39FF14", "#0F5A0A"], speed: 1),
+        colors: .init(text: "#39FF14", secondary: "#1FA30C", accent: "#39FF14", card: "#050805EB", border: "#1FA30C",
+                      palette: ["primary": "#39FF14", "secondary": "#1FA30C", "tertiary": "#146B08",
+                                "accent": "#39FF14", "green": "#39FF14", "mint": "#39FF14", "teal": "#39FF14",
+                                "orange": "#FFB000", "yellow": "#FFE066", "red": "#FF3B30",
+                                "blue": "#39FF14", "cyan": "#39FF14", "indigo": "#39FF14", "purple": "#39FF14",
+                                "pink": "#FFB000", "white": "#39FF14", "gray": "#1FA30C"]))
+
+    static let builtin: [Theme] = [.dark, .light, .glass, .ascii]
+}

@@ -1,5 +1,5 @@
 // Private CoreGraphics classes for creating a virtual display (macOS 11+). Not in the SDK headers;
-// DeskPad, BetterDisplay and others use the same declarations. PhoneScreen is distributed locally only.
+// DeskPad, BetterDisplay and others use the same declarations. Qwovi is distributed locally only.
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 

@@ -1,5 +1,5 @@
 import AVFoundation
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 import UIKit
 
@@ -32,7 +32,7 @@ struct DisplayPage: View {
                                     model.displayStopped = false
                                     model.sendDisplay(.displayVisible(true))
                                 }
-                                .buttonStyle(.borderedProminent)
+                                .buttonStyle(PillButtonStyle(fill: .accentColor))
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(Color.black)

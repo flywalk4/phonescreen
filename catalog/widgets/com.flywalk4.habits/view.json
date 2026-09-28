@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
+  "$schema": "https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/view.schema.json",
   "full": {
     "type": "vstack",
     "spacing": 12,

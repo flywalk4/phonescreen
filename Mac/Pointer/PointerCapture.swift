@@ -1,7 +1,7 @@
 import AppKit
 import ApplicationServices
 import CoreGraphics
-import PhoneScreenKit
+import QwoviKit
 
 // Lets a background (menu bar) app hide the cursor. Private, but the standard route —
 // Barrier / Deskflow / Synergy rely on it; without it CGDisplayHideCursor only works while frontmost.
@@ -128,7 +128,7 @@ final class PointerCapture: @unchecked Sendable {
             ready.signal()
             CFRunLoopRun()
         }
-        thread.name = "PhoneScreen.pointer"
+        thread.name = "Qwovi.pointer"
         thread.qualityOfService = .userInteractive
         thread.start()
         tapThread = thread

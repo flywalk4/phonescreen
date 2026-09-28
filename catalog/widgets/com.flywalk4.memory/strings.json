@@ -20,7 +20,7 @@
       "one": "Done in {n} move!",
       "other": "Done in {n} moves!"
     },
-    "mismatch": "Not a pair — tap on",
+    "mismatch": "Not a pair — tap to go on",
     "findAll": "Find all the pairs",
     "header": "MEMORY",
     "best": "best",

@@ -1,4 +1,5 @@
 import EventKit
+import QwoviKit
 import SwiftUI
 
 /// One EventKit store for Reminders and Calendar — the same data as on the Mac through iCloud,
@@ -36,20 +37,21 @@ struct AccessPrompt: View {
     let title: String
     let status: EKAuthorizationStatus
     let request: () async -> Void
+    @Environment(\.theme) private var theme
 
     var body: some View {
         VStack(spacing: 14) {
             Image(systemName: symbol).font(.system(size: 44)).foregroundStyle(.secondary)
             Text(title).font(.title3.weight(.semibold))
             if status == .denied || status == .restricted {
-                Text("Access denied. Allow it in Settings → PhoneScreen.")
+                Text("Access denied. Allow it in Settings → Qwovi.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 Button("Open Settings") {
                     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                 }
             } else {
                 Button("Allow access") { Task { await request() } }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(PillButtonStyle(fill: theme.accent))
                     .pointerTarget { Task { await request() } }
             }
         }

@@ -1,18 +1,15 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Settings → Themes, laid out like Settings → Widgets: installed themes (pick one), the GitHub catalog (with
+/// Settings → Themes, laid out like Settings → Widgets: installed themes (pick one), the catalogs (with
 /// previews), and installing from a folder (copy, or link for development with live reload).
 struct ThemesSettings: View {
     @ObservedObject private var themes: ThemeManager
-    @AppStorage("widgetCatalogURL") private var catalogURL = WidgetsSettings.defaultCatalog
-    @State private var catalog: [WidgetCatalog.Entry] = []
-    /// Catalog themes downloaded (hash-checked) for their previews; installing writes the same bytes.
+    @ObservedObject private var sources = CatalogSources.shared
+    /// Catalog themes downloaded (hash-checked) for their previews, by `previewKey`; installing writes the same bytes.
     @State private var downloaded: [String: (theme: Theme, data: Data)] = [:]
-    @State private var catalogError: String?
-    @State private var loadingCatalog = false
     @State private var message: String?
 
     init(themes: ThemeManager) {
@@ -44,7 +41,8 @@ struct ThemesSettings: View {
             .clipped()
             .background(Color.black.opacity(0.12))
         }
-        .task { if catalog.isEmpty { await loadCatalog() } }
+        .task { await sources.loadIfNeeded() }
+        .task(id: sources.themes.map(Self.previewKey)) { await loadPreviews() }
     }
 
     // MARK: - Installed
@@ -81,23 +79,22 @@ struct ThemesSettings: View {
     private var catalogSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Catalog").font(.headline)
+                Text("Catalogs").font(.headline)
                 Spacer()
-                Button { Task { await loadCatalog() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
-                    .disabled(loadingCatalog)
+                Button { Task { await sources.reloadAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
+                    .disabled(sources.loading)
             }
-            TextField("index.json address", text: $catalogURL)
-                .textFieldStyle(.roundedBorder).font(.caption.monospaced())
-            if loadingCatalog { ProgressView().controlSize(.small) }
-            if let catalogError { Text(catalogError).font(.caption).foregroundStyle(.red) }
-            if !loadingCatalog, catalogError == nil, catalog.isEmpty {
-                Text("There are no themes in this catalog yet.").font(.callout).foregroundStyle(.secondary)
+            CatalogSourcesView(sources: sources)
+            if !sources.loading, sources.themes.isEmpty {
+                Text("There are no themes in these catalogs yet.").font(.callout).foregroundStyle(.secondary)
             }
-            ForEach(catalog) { entry in
+            ForEach(sources.themes) { item in
+                let entry = item.entry
+                let preview = downloaded[Self.previewKey(item)]
                 let installed = themes.installed.first { $0.id == entry.id }
                 HStack(alignment: .top, spacing: 12) {
                     Group {
-                        if let theme = downloaded[entry.id]?.theme {
+                        if let theme = preview?.theme {
                             ThemePreview(theme: theme).clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         } else {
                             RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.15))
@@ -106,9 +103,10 @@ struct ThemesSettings: View {
                     }
                     .frame(width: 64, height: 110)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(entry.text(in: AppLanguage.current).name)  ").font(.headline) + Text("v\(entry.version) · \(entry.author)").font(.caption).foregroundColor(.secondary)
+                        let from = sources.urls.count > 1 ? " · " + sources.name(of: item.source.absoluteString) : ""
+                        Text("\(entry.text(in: AppLanguage.current).name)  ").font(.headline) + Text("v\(entry.version) · \(entry.author)\(from)").font(.caption).foregroundColor(.secondary)
                         if let d = entry.text(in: AppLanguage.current).description { Text(d).font(.callout).foregroundStyle(.secondary) }
-                        if let theme = downloaded[entry.id]?.theme {
+                        if let theme = preview?.theme {
                             Text(summary(theme)).font(.caption).foregroundStyle(.secondary)
                         }
                     }
@@ -120,7 +118,7 @@ struct ThemesSettings: View {
                             Button("Turn on") { themes.selectedID = entry.id }
                         }
                     } else {
-                        Button(installed == nil ? String(localized: "Install") : String(localized: "Update to \(entry.version)")) { Task { await install(entry) } }
+                        Button(installed == nil ? String(localized: "Install") : String(localized: "Update to \(entry.version)")) { Task { await install(item) } }
                     }
                 }
                 .padding(10)
@@ -149,33 +147,27 @@ struct ThemesSettings: View {
 
     // MARK: - Actions
 
-    private func loadCatalog() async {
-        guard let url = URL(string: catalogURL) else { catalogError = String(localized: "Invalid address"); return }
-        loadingCatalog = true
-        defer { loadingCatalog = false }
-        do {
-            catalog = try await WidgetStore.loadCatalog(url).themes ?? []
-            catalogError = nil
-        } catch {
-            catalog = []
-            catalogError = String(localized: "The catalog is unavailable: \(error.localizedDescription)")
-            return
-        }
-        // Previews: every theme.json is ~1 KB.
-        downloaded = [:]
+    /// A theme's preview is its version from its catalog: a refreshed or newer entry downloads again.
+    private static func previewKey(_ item: CatalogSources.Item) -> String {
+        "\(item.source.absoluteString)#\(item.id)@\(item.entry.version)"
+    }
+
+    /// Previews: every theme.json is ~1 KB; only the ones not downloaded yet.
+    private func loadPreviews() async {
+        let missing = sources.themes.filter { downloaded[Self.previewKey($0)] == nil }
         await withTaskGroup(of: (String, (theme: Theme, data: Data)?).self) { group in
-            for entry in catalog {
-                group.addTask { (entry.id, try? await ThemeStore.download(entry, indexURL: url)) }
+            for item in missing {
+                group.addTask { (Self.previewKey(item), try? await ThemeStore.download(item.entry, indexURL: item.source)) }
             }
-            for await (id, result) in group { downloaded[id] = result }
+            for await (key, result) in group { downloaded[key] = result }
         }
     }
 
-    private func install(_ entry: WidgetCatalog.Entry) async {
-        guard let url = URL(string: catalogURL) else { return }
+    private func install(_ item: CatalogSources.Item) async {
+        let entry = item.entry
         do {
-            var data = downloaded[entry.id]?.data
-            if data == nil { data = try await ThemeStore.download(entry, indexURL: url).data }
+            var data = downloaded[Self.previewKey(item)]?.data
+            if data == nil { data = try await ThemeStore.download(entry, indexURL: item.source).data }
             guard let data else { return }
             let theme = try themes.install(data: data)
             themes.selectedID = theme.id
@@ -407,7 +399,10 @@ private struct ThemeTweaksPanel: View {
                 }
                 Divider()
                 row("Between cards") {
-                    slider(layout(\.gap, base.layout?.gap ?? 10), 0...24, step: 1, unit: "pt")
+                    VStack(alignment: .leading, spacing: 4) {
+                        slider(layout(\.gap, base.layout?.gap ?? 10), 0...24, step: 1, unit: "pt")
+                        Text("Below 11 pt, close cards melt into one another").font(.caption).foregroundStyle(.secondary)
+                    }
                 }
                 row("Screen margins") {
                     slider(layout(\.margin, base.layout?.margin ?? 10), 0...24, step: 1, unit: "pt")

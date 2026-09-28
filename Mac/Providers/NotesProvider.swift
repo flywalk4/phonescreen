@@ -1,5 +1,5 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 
 /// Apple Notes through AppleScript: iOS has no API for Notes, the Mac does, and iCloud keeps both in sync —
 /// so the Mac is the phone's window into Notes. Runs on its own queue; talking to Notes can take a while.
@@ -8,7 +8,7 @@ final class NotesProvider: @unchecked Sendable {
     var onNotes: (@MainActor ([NoteSummary]) -> Void)?
     var onBody: (@MainActor (String, String) -> Void)?
 
-    private let queue = DispatchQueue(label: "phonescreen.notes", qos: .utility)
+    private let queue = DispatchQueue(label: "qwovi.notes", qos: .utility)
     private let script = AppleScriptRunner()
     private var lastRefresh = Date.distantPast
     static let limit = 40

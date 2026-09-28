@@ -1,5 +1,5 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 
 /// Apps running on the Mac (the ones with a Dock icon), most recently used first like ⌘Tab, with their front
 /// window's title. Pushed to the phone on every launch, quit, switch, hide and unhide, and only when something
@@ -8,7 +8,7 @@ final class RunningAppsProvider: @unchecked Sendable {
     /// Called on the main thread with every app's icon; the caller strips icons the phone already has.
     var onApps: (@MainActor ([RunningApp]) -> Void)?
 
-    private let queue = DispatchQueue(label: "phonescreen.runningApps", qos: .utility)
+    private let queue = DispatchQueue(label: "qwovi.runningApps", qos: .utility)
     /// Icons by app id, rendered once (PNG rendering is the slow part and stays off the main thread).
     private var icons: [String: Data] = [:]
     private var running: [String: NSRunningApplication] = [:]

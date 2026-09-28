@@ -9,7 +9,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT=${1:-screenshots}
 ORIENT=${ORIENT:-portrait}
-BUNDLE_ID=com.flywalk4.phonescreen.ios
+BUNDLE_ID=com.flywalk4.qwovi.ios
 mkdir -p "$OUT/widgets" "$OUT/pages" "$OUT/catalog-themes" build
 
 # A 6.1" iPhone from the newest runtime (the demo pages assume a regular-size phone).
@@ -22,9 +22,9 @@ print(pick[0]["udid"])')
 echo "simulator: $(xcrun simctl list devices | grep "$DEV" | sed 's/^ *//')"
 
 xcodegen generate >/dev/null
-xcodebuild -project PhoneScreen.xcodeproj -scheme PhoneScreeniOS -configuration Debug -destination "id=$DEV" \
+xcodebuild -project Qwovi.xcodeproj -scheme QwoviiOS -configuration Debug -destination "id=$DEV" \
   -derivedDataPath build/sim CODE_SIGNING_ALLOWED=NO build > build/sim.log 2>&1 || { grep -E "error:" build/sim.log; exit 1; }
-APP=build/sim/Build/Products/Debug-iphonesimulator/PhoneScreen.app
+APP=build/sim/Build/Products/Debug-iphonesimulator/Qwovi.app
 
 xcrun simctl boot "$DEV" 2>/dev/null || true
 xcrun simctl bootstatus "$DEV" -b >/dev/null
@@ -46,7 +46,7 @@ shot() { # shot <file> <launch args…>
   # The app hides the status bar; if it is gone from the process list, it crashed — keep the report.
   if ! xcrun simctl spawn "$DEV" launchctl list | grep -q "$BUNDLE_ID"; then
     echo "  ✗ $file: the app isn't running"
-    find ~/Library/Logs/DiagnosticReports -name 'PhoneScreen*' -newer build/bundle.txt -exec cp {} "$OUT/crashes/" \; 2>/dev/null || true
+    find ~/Library/Logs/DiagnosticReports -name 'Qwovi*' -newer build/bundle.txt -exec cp {} "$OUT/crashes/" \; 2>/dev/null || true
   else
     echo "  $file"
   fi

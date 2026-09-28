@@ -1,5 +1,5 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 
 /// Current track from Music.app / Spotify via AppleScript.
 ///
@@ -43,7 +43,7 @@ final class NowPlayingProvider: @unchecked Sendable {
     var onAudio: (@MainActor (AudioState) -> Void)?
 
     // Everything below is confined to `queue`.
-    private let queue = DispatchQueue(label: "phonescreen.nowplaying", qos: .utility)
+    private let queue = DispatchQueue(label: "qwovi.nowplaying", qos: .utility)
     private var current: NowPlaying?
     private var timer: DispatchSourceTimer?
     private var activePlayer: Player?

@@ -1,5 +1,5 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 
 /// The phone as a second screen: while a page with the "second screen" widget is on the phone (and the link is
 /// fast enough), a virtual display sits where the phone is in the arrangement and its picture streams to the

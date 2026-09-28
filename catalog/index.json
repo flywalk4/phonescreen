@@ -1,4 +1,5 @@
 {
+  "name": "Qwovi",
   "widgets": [
     {
       "id": "com.flywalk4.air",
@@ -34,9 +35,9 @@
       "symbol": "sparkles",
       "path": "widgets/com.flywalk4.claude-code",
       "files": {
-        "manifest.json": "d81fc3a942e13e338da859916353b3b0e920c19c5cc2b708e2d043ae59ca7dbd",
+        "manifest.json": "0c8bb35550064298155db12afdfeb6840c0cba426ed7df572fd560f9c038bf5c",
         "view.json": "2dabfb9bf75ae2aa37948e566f1b6f9efe0a86370d810d0fade074eeb17a7958",
-        "provider.js": "1a4c7f5d5742b2fefb34b329ab2e5263d971cfdd7cbf736d5bfd11fa92ab8fd1",
+        "provider.js": "a05b09a74ebe4810311d6597f7cdd273a0a667f6117989c740510a71bc8f1501",
         "strings.json": "7f9cdcac676734f074ec90f9f0f16d45b4bfb10015979120a1bb6729aec913fa"
       },
       "localized": {
@@ -76,14 +77,14 @@
     {
       "id": "com.flywalk4.game2048",
       "name": "2048",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": "flywalk4",
       "description": "The classic 2048: slide tiles with the arrow buttons, equal ones merge. Score and best are kept, and a game can be picked up any time.",
       "symbol": "square.grid.2x2.fill",
       "path": "widgets/com.flywalk4.game2048",
       "files": {
-        "manifest.json": "7fa4babb6d11a1cbae8791784886b7f82964dc5d715f7b7c6bd863a363d64fac",
-        "view.json": "aeb6b5de349ea145ce7f7a197afd601a09969cb0350883571baa969b69657cb6",
+        "manifest.json": "8d6bc545a4b22de4dbf2500387ecc5b8fdbf1114dba64e696d33860c4308482b",
+        "view.json": "7a79e6d0b27ffda754fe25e8ff270ebf271ab4b5635ee37932ded9517aae5ea1",
         "provider.js": "859df5bd4e887d6058c8fad3f4e2e3a58a838d64aea99124a3ed6e925113c6b9",
         "strings.json": "da251406d0b318e6022afe2b6019b5a3acd11a6f8526c3d5a3c0e7d66527628f"
       },
@@ -128,8 +129,8 @@
       "symbol": "checklist.checked",
       "path": "widgets/com.flywalk4.habits",
       "files": {
-        "manifest.json": "cb9829af8aa705284251fbb721ee5cb9360779b2659eb018b6aa9bc42e395de7",
-        "view.json": "2f9ac1d7c4e4ca1eeb4a2e74e481a8360e3b8ee4e4c354eaeba1d35ae1595572",
+        "manifest.json": "f55baea7e226a6fbe649ab8f86e58e100a8efd440f1a3ab65f854dce7cb89b3b",
+        "view.json": "9ec8b3236b3bc5d3b5fd920008a40ee91dcc24eaa0fce6eea0657a276b805588",
         "provider.js": "662a47aff7ac33dc5754e56478d2fef6c6a25b49d951207c0d8a3886b5a90bc8",
         "strings.json": "8a64383d2d7eaed4b876d36401f466bbedf364a309d19e38fbf37ced9ff0c491"
       },
@@ -195,16 +196,16 @@
     {
       "id": "com.flywalk4.memory",
       "name": "Memory",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": "flywalk4",
       "description": "Find the pairs: 16 cards, flip two at a time. Moves are counted and the best score is kept. Card sets: animals, food, space.",
       "symbol": "square.grid.3x3.fill",
       "path": "widgets/com.flywalk4.memory",
       "files": {
-        "manifest.json": "c6638713a25bdb254685ac442e8ff504f10db43a3ca65fc5257a0006e3ce5f3b",
-        "view.json": "07157f0bacf4dac0bdd1f7d0750a814c6dd2081b225ecec9e85daf207d67a764",
+        "manifest.json": "435d3b1cfc42259c5d8910a647092ff189aa94d2ae4476d116497ac6c5306fa0",
+        "view.json": "57415d8f1b7bfd740bb28678a0e0abfc99c6abc3b67faa0c2bcf44374e768523",
         "provider.js": "7e1f01cd2683d344ca8a8991411ca1e7b37d55bd332406107a5fff31931c9d1e",
-        "strings.json": "33c14dffe9915e5b26e14e9124908220c02af13d161b44cc245175ba66e2d05e"
+        "strings.json": "c404dc37ac3afb932299020c7a854ea2d93447b725d0d38259ea7be85cb20970"
       },
       "localized": {
         "en": {
@@ -220,14 +221,14 @@
     {
       "id": "com.flywalk4.minesweeper",
       "name": "Minesweeper",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "author": "flywalk4",
       "description": "Minesweeper on 8×8 with 10 mines: the first move is always safe, empty areas open by themselves, flags have their own mode. The best time is kept.",
       "symbol": "flag.fill",
       "path": "widgets/com.flywalk4.minesweeper",
       "files": {
-        "manifest.json": "f707a64637f37f8a587f71d8f81801e9e5389173268140ba6ecbf44223a46d26",
-        "view.json": "69f3af3c6ffc4705d87b8dc5e1536fd3a55785db58567be683be0332ba800de1",
+        "manifest.json": "d9c922b7595f1debae1138a71398483356fe25fa048ee41bd9d60fc9586d1e9c",
+        "view.json": "7b7225dddcfeddf5d514647841de202eb7b8484e720be9a3e3fe899a5fd4d9b0",
         "provider.js": "b8a370751dd21fcf1f497ecbc7ee76eef0de66c8706d1731973b59afb3517d13",
         "strings.json": "d3be30ca3a57c9ef7630afbb828988453a2a309a32d160e70167270f860f3481"
       },
@@ -245,14 +246,14 @@
     {
       "id": "com.flywalk4.month",
       "name": "Month",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "author": "flywalk4",
       "description": "The month as a grid: today highlighted, weekends and Russian public holidays in red, the week number and how many working days are left. Works offline.",
       "symbol": "calendar",
       "path": "widgets/com.flywalk4.month",
       "files": {
-        "manifest.json": "67d852e5ca1321bff0ff5a537ed377dc5d3102af73b4c44190f23aff3a21f9a0",
-        "view.json": "ebbc28203e0cd82a92b6cc1d0072cd2d862a0e3206e63e2af7b8e3f14339face",
+        "manifest.json": "8531ee4108b5137f54308e1bb5778b758a312602da008a49d3a300b6d49d74f0",
+        "view.json": "bcc680ea6e771822e65471bc871cc7d50b661367c0c17f3cc4abf3711a86b34d",
         "provider.js": "fc2b8cf376ae4df1bc36d3ecf376bf8b3e86b96d0506baf2d8b414a605e0c057",
         "strings.json": "5347e36d65ab760d3c6fc460b6cac7af3e21167c64ed8226bc27cf85cd0fc76c"
       },
@@ -345,14 +346,14 @@
     {
       "id": "com.flywalk4.tictactoe",
       "name": "Tic-tac-toe",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "author": "flywalk4",
       "description": "Tic-tac-toe against the Mac: move with a finger or the cursor, the Mac answers. Three difficulty levels, a game score, and you take turns going first.",
       "symbol": "number",
       "path": "widgets/com.flywalk4.tictactoe",
       "files": {
-        "manifest.json": "60725fa0665c278502f2d47a3a5f4ee36fcd3f84db3e824c3f351b11b6684380",
-        "view.json": "48baac80318808aff7f5fac3ebf7ef491f57f95655722742c99fcf9bb7d22e60",
+        "manifest.json": "6f8c60c9b55a84da4d6b60ff1629ce39c9d5728d8ae0254aec4cdc0c1a8a7c89",
+        "view.json": "45f50545b694643299de6f3de6ffb4ec3592dd2a9d2b3d52e2f0bf03a3318b81",
         "provider.js": "f3bfb5fcb2d6210a292ae6827f28d1b836fee411baf69904617079e2a339699d",
         "strings.json": "ba89027d9f327a078a32ce6fb0ee1933d83eba57e07d2aa42d60118731bcf69a"
       },

@@ -1,9 +1,9 @@
 import CryptoKit
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
 /// Theme packages on disk, like `WidgetStore` for widgets: a theme is a folder with `theme.json` (the file alone
-/// works too). Installed copies live in `~/Library/Application Support/PhoneScreen/Themes/<id>.json`; a development
+/// works too). Installed copies live in `~/Library/Application Support/Qwovi/Themes/<id>.json`; a development
 /// install is `<id>.link` holding the path of the author's folder or file.
 enum ThemeStore {
     static let maxBytes = 64 * 1024
@@ -14,7 +14,7 @@ enum ThemeStore {
 
     static var root: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        let url = base.appendingPathComponent("PhoneScreen/Themes", isDirectory: true)
+        let url = base.appendingPathComponent("Qwovi/Themes", isDirectory: true)
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
     }

@@ -1,6 +1,6 @@
 import Foundation
 import Network
-import PhoneScreenKit
+import QwoviKit
 
 /// Talks to macOS's built-in `usbmuxd` to reach a TCP port on a USB-attached iPhone.
 ///
@@ -12,7 +12,7 @@ import PhoneScreenKit
 final class USBMuxClient: @unchecked Sendable {
     static let socketPath = "/var/run/usbmuxd"
 
-    private let queue = DispatchQueue(label: "phonescreen.usbmux")
+    private let queue = DispatchQueue(label: "qwovi.usbmux")
     private let port: UInt16
     private let onChannel: @Sendable (ByteChannel) -> Void
     private var listenConnection: NWConnection?
@@ -144,8 +144,8 @@ final class USBMuxClient: @unchecked Sendable {
 
     static func packet(_ body: [String: Any], tag: UInt32) -> Data {
         var plist = body
-        plist["ClientVersionString"] = "phonescreen"
-        plist["ProgName"] = "PhoneScreen"
+        plist["ClientVersionString"] = "qwovi"
+        plist["ProgName"] = "Qwovi"
         let payload = (try? PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)) ?? Data()
         var data = Data()
         for value in [UInt32(16 + payload.count), 1, 8, tag] {

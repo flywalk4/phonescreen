@@ -1,5 +1,5 @@
 import Charts
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// An installed JavaScript widget. Its code runs on the Mac; this only draws the resolved UI natively.
@@ -38,7 +38,23 @@ struct CustomWidgetView: View {
 
     @ViewBuilder
     private func content(_ node: WidgetNode) -> some View {
-        if size == .full, case .vstack(let spacing, let align, let children) = node {
+        if let backdrop = node.backdrop {
+            // The scene is drawn by the card (or the whole screen) behind; only what lies on it is laid out here —
+            // one layer the usual way (a column fills the page, flows into columns lying sideways), several stacked.
+            if case .layers(_, let layers) = backdrop.rest, layers.count == 1 {
+                AnyView(content(layers[0]))
+            } else {
+                NodeView(node: backdrop.rest, widgetID: id)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: NodeView.alignment(backdrop.align))
+                    .widgetPadding()
+            }
+        } else if case .vstack(let spacing, _, let children) = node, let b = children.firstIndex(where: \.hasBoard) {
+            // A game: the board as big as the card allows, whatever its shape (see `BoardPage`).
+            BoardPage(widgetID: id, spacing: CGFloat(spacing ?? 10),
+                      before: children[..<b].filter { $0 != .spacer }, board: children[b],
+                      after: children[(b + 1)...].filter { $0 != .spacer })
+                .widgetPadding()
+        } else if size == .full, case .vstack(let spacing, let align, let children) = node {
             // A whole page: the column fills the height (spacers spread it out), and lying sideways it
             // flows into two columns. Too tall even so → it scrolls.
             GeometryReader { geo in
@@ -208,32 +224,35 @@ struct NodeView: View {
             // `height` is what it needs; with room to spare (tall tiles, whole pages) it grows up to 3×.
             WidgetChart(values: values, color: tint(color), style: style ?? "line")
                 .frame(minHeight: height.map { CGFloat($0) } ?? 60, maxHeight: height.map { CGFloat($0) * 3 } ?? 240)
-        case .button(let title, let symbol, let action) where ascii:
+        case .button(let title, let symbol, let action, _) where ascii:
             Button { model.customAction(widgetID, action) } label: {
                 Text("[ \(title.isEmpty ? AsciiGlyphs.text(for: symbol ?? "") : title) ]").font(Ascii.font)
             }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.accent)
                 .pointerTarget { model.customAction(widgetID, action) }
-        case .button(let title, let symbol, let action):
-            Button { model.customAction(widgetID, action) } label: {
-                // One line, shrinking a little rather than breaking a word in half.
-                Group {
-                    if let symbol, title.isEmpty { Image(systemName: symbol).frame(minWidth: 14) } // icon-only button
-                    // No room for the title (narrow cards) → just the icon, rather than "▶ С…".
-                    else if let symbol {
-                        ViewThatFits(in: .horizontal) {
-                            Label(title, systemImage: symbol).fixedSize()
-                            Image(systemName: symbol).frame(minWidth: 14)
-                        }
+        case .button(let title, let symbol, let action, let color):
+            let run = { model.customAction(widgetID, action) }
+            let fill = WidgetColor.color(color, theme: theme)
+            Group {
+                if let symbol, !title.isEmpty {
+                    // No room for the title (narrow cards) → just the icon, rather than "▶ С…". Whole buttons are
+                    // compared, the pill's padding included.
+                    ViewThatFits(in: .horizontal) {
+                        Button(action: run) { Label(title, systemImage: symbol).lineLimit(1).fixedSize() }
+                            .buttonStyle(PillButtonStyle(fill: fill))
+                        Button(action: run) { Image(systemName: symbol) }
+                            .buttonStyle(PillButtonStyle(fill: fill, round: true))
                     }
-                    else { Text(title) }
+                } else if let symbol {
+                    Button(action: run) { Image(systemName: symbol) }.buttonStyle(PillButtonStyle(fill: fill, round: true))
+                } else {
+                    // One line, shrinking a little rather than breaking a word in half.
+                    Button(action: run) { Text(title).lineLimit(1).minimumScaleFactor(0.7) }
+                        .buttonStyle(PillButtonStyle(fill: fill))
                 }
-                    .lineLimit(1).minimumScaleFactor(0.7)
             }
-            .buttonStyle(.bordered)
-            .controlSize(title.isEmpty ? .small : .regular) // icon buttons sit in tight rows (game arrows)
-            .pointerTarget { model.customAction(widgetID, action) }
+            .pointerTarget(action: run)
         case .sprite(let frames, let palette, let fps):
             SpriteView(frames: frames, palette: palette, fps: fps ?? 4)
         case .spacer:
@@ -262,13 +281,11 @@ struct NodeView: View {
                 ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
             }
         case .layers(let align, let children):
-            ZStack(alignment: alignment(align)) {
+            ZStack(alignment: Self.alignment(align)) {
                 ForEach(children.indices, id: \.self) { AnyView(NodeView(node: children[$0], widgetID: widgetID)) }
             }
-        case .scene(let kind, let colors, let tints, let speed):
-            let base = (colors ?? theme.background.colors).map { Color(hex: $0, fallback: .black) }
-            let moving = (tints ?? theme.background.tints ?? [theme.colors.accent]).map { Color(hex: $0, fallback: theme.accent) }
-            SceneView(kind: SceneView.Kind(rawValue: kind) ?? .aurora, base: base, tints: moving, speed: speed ?? 1)
+        case .scene:
+            WidgetBackdrop(scene: node)
                 .frame(minWidth: 40, maxWidth: .infinity, minHeight: 40, maxHeight: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: innerRadius ?? max(0, min(CGFloat(theme.radius) - 6, 18)), style: .continuous))
         case .divider where ascii:
@@ -295,7 +312,7 @@ struct NodeView: View {
 
     private func tint(_ name: String?) -> Color { WidgetColor.color(name, theme: theme) ?? theme.accent }
 
-    private func alignment(_ a: String?) -> Alignment {
+    static func alignment(_ a: String?) -> Alignment {
         switch a {
         case "top": .top
         case "bottom": .bottom
@@ -721,5 +738,92 @@ struct SpriteView: View {
         }
         .aspectRatio(CGFloat(cols) / CGFloat(rows), contentMode: .fit)
         .frame(minWidth: 24, minHeight: 24)
+    }
+}
+
+extension WidgetNode {
+    /// A `layers` whose bottom layer is a `scene`: the scene is the widget's backdrop. It fills the whole card —
+    /// or the whole screen when the widget has it — instead of a panel inset by the padding; `rest` lies on top.
+    var backdrop: (scene: WidgetNode, rest: WidgetNode, align: String?)? {
+        guard case .layers(let align, let children) = self, let first = children.first, case .scene = first else { return nil }
+        return (first, .layers(align: align, children: Array(children.dropFirst())), align)
+    }
+}
+
+/// A `scene` node drawn edge to edge (clip it to the shape it fills).
+struct WidgetBackdrop: View {
+    let scene: WidgetNode
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        if case .scene(let kind, let colors, let tints, let speed) = scene {
+            // ASCII keeps to its own colours: a widget's coloured glows would break the terminal look.
+            let ascii = theme.style == .ascii
+            let base = ((ascii ? nil : colors) ?? theme.background.colors).map { Color(hex: $0, fallback: .black) }
+            let moving = ((ascii ? nil : tints) ?? theme.background.tints ?? [theme.colors.accent]).map { Color(hex: $0, fallback: theme.accent) }
+            SceneView(kind: SceneView.Kind(rawValue: kind) ?? .aurora, base: base, tints: moving, speed: speed ?? 1)
+        }
+    }
+}
+
+/// A widget built around a board (a grid of square cells: games). Whatever the card's shape, the board is drawn from
+/// one design at `reference` width and scaled as a whole to the biggest square that fits — so a 2×2 tile, a half page
+/// and the whole screen show the same board, only bigger or smaller.
+/// Upright: what comes before the board on top, what comes after it at the bottom, the board centred in between.
+/// Wide: the board on the left at full height, the rest in a column beside it, where a row of panels (scores)
+/// stands as a column too.
+struct BoardPage: View {
+    let widgetID: String
+    let spacing: CGFloat
+    let before: [WidgetNode]
+    let board: WidgetNode
+    let after: [WidgetNode]
+    static let reference: CGFloat = 320
+
+    var body: some View {
+        GeometryReader { geo in
+            if geo.size.width > geo.size.height * 1.2 {
+                HStack(spacing: spacing + 6) {
+                    fitted(side: min(geo.size.height, geo.size.width * 0.55, geo.size.width - 150))
+                    VStack(alignment: .leading, spacing: spacing) {
+                        parts(before, column: true)
+                        Spacer(minLength: 0)
+                        parts(after, column: true)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: spacing) {
+                    parts(before)
+                    GeometryReader { area in
+                        fitted(side: min(area.size.width, area.size.height))
+                            .frame(width: area.size.width, height: area.size.height)
+                    }
+                    parts(after)
+                }
+            }
+        }
+    }
+
+    private func parts(_ nodes: [WidgetNode], column: Bool = false) -> some View {
+        ForEach(nodes.indices, id: \.self) { i in
+            if column, case .hstack(_, _, let row) = nodes[i], row.contains(where: { if case .box = $0 { true } else { false } }) {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(row.indices.filter { row[$0] != .spacer }, id: \.self) { j in
+                        NodeView(node: row[j], widgetID: widgetID).frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            } else {
+                NodeView(node: nodes[i], widgetID: widgetID).frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    private func fitted(side: CGFloat) -> some View {
+        NodeView(node: board, widgetID: widgetID)
+            .frame(width: Self.reference)
+            .fixedSize(horizontal: false, vertical: true)
+            .scaleEffect(max(side, 1) / Self.reference)
+            .frame(width: side, height: side)
     }
 }

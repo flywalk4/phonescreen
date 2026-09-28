@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 struct MusicPage: View {
@@ -296,7 +296,7 @@ private struct SoundView: View {
                     level(title: "Mac", symbol: audio.muted ? "speaker.slash.fill" : "speaker.wave.2.fill",
                           value: audio.muted ? 0 : audio.systemVolume) { model.music(.setSystemVolume($0)) }
                     Button(audio.muted ? L("Unmute") : L("Mute")) { model.music(.toggleMute) }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(PillButtonStyle())
                         .pointerTarget { model.music(.toggleMute) }
                     if !audio.airPlay.isEmpty {
                         Text("Play on").font(.headline).padding(.top, 6)

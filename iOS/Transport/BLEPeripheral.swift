@@ -1,12 +1,12 @@
 import CoreBluetooth
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
 /// The phone's Bluetooth LE side: publishes an L2CAP channel (a byte stream, much faster than GATT writes),
 /// advertises a service whose characteristic tells the Mac the channel's PSM, and hands every opened channel
 /// to the pool. It's the fallback when there is no cable and no Wi-Fi.
 final class BLEPeripheral: NSObject, CBPeripheralManagerDelegate, @unchecked Sendable {
-    private let queue = DispatchQueue(label: "phonescreen.ble")
+    private let queue = DispatchQueue(label: "qwovi.ble")
     private var manager: CBPeripheralManager?
     private var psm: CBL2CAPPSM?
     private let name: String

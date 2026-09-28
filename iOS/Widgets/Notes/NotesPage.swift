@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// Apple Notes, via the Mac (iOS has no Notes API): recent notes, full text, quick new note, open on the Mac.
@@ -129,7 +129,7 @@ private struct NoteDetail: View {
                     .pointerTarget(action: back)
                 Spacer()
                 Button(action: showOnMac) { Label { Text("Open on the Mac") } icon: { Glyph("macbook") } }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(PillButtonStyle())
                     .pointerTarget(action: showOnMac)
             }
             ScrollView {

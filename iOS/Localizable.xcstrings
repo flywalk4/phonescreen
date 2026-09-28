@@ -145,12 +145,12 @@
         }
       }
     },
-    "Access denied. Allow it in Settings → PhoneScreen.": {
+    "Access denied. Allow it in Settings → Qwovi.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Доступ запрещён. Разрешите его в Настройках → PhoneScreen."
+            "value": "Доступ запрещён. Разрешите его в Настройках → Qwovi."
           }
         }
       }
@@ -205,12 +205,12 @@
         }
       }
     },
-    "Allow PhoneScreen access in Settings → Privacy & Security → Photos": {
+    "Allow Qwovi access in Settings → Privacy & Security → Photos": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Разрешите PhoneScreen доступ в Настройках → Конфиденциальность → Фото"
+            "value": "Разрешите Qwovi доступ в Настройках → Конфиденциальность → Фото"
           }
         }
       }
@@ -285,12 +285,12 @@
         }
       }
     },
-    "Connect the cable or open PhoneScreen on the Mac.\nA Wi-Fi network isn't required — a direct connection works too.": {
+    "Connect the cable or open Qwovi on the Mac.\nA Wi-Fi network isn't required — a direct connection works too.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Подключите кабель или откройте PhoneScreen на Mac.\nWi-Fi сеть не обязательна — сработает прямое соединение."
+            "value": "Подключите кабель или откройте Qwovi на Mac.\nWi-Fi сеть не обязательна — сработает прямое соединение."
           }
         }
       }
@@ -1081,6 +1081,146 @@
           "stringUnit": {
             "state": "translated",
             "value": "сейчас"
+          }
+        }
+      }
+    },
+    "Hi! I'm connected to your Mac": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Привет! Я подключился к вашему Mac"
+          }
+        }
+      }
+    },
+    "Carry on in the window on the Mac — the phone will join in.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продолжайте в окне на Mac — телефон подключится к делу."
+          }
+        }
+      }
+    },
+    "Bring the Mac's cursor here": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приведите сюда курсор Mac"
+          }
+        }
+      }
+    },
+    "Push it past the edge of the Mac's screen, then click the circle.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доведите его до края экрана Mac и кликните по кругу."
+          }
+        }
+      }
+    },
+    "The cursor is on the phone!": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Курсор на телефоне!"
+          }
+        }
+      }
+    },
+    "Click, scroll and type here. Esc brings the cursor back to the Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кликайте, листайте и печатайте здесь. Esc вернёт курсор на Mac."
+          }
+        }
+      }
+    },
+    "With the Mac's cursor this time — your finger is next": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сейчас — курсором Mac, пальцем будет следующим шагом"
+          }
+        }
+      }
+    },
+    "Now touch the screen": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Теперь коснитесь экрана"
+          }
+        }
+      }
+    },
+    "The same widgets answer your finger — tap the circle.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Те же виджеты слушаются пальца — нажмите на круг."
+          }
+        }
+      }
+    },
+    "Now with your finger": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "А теперь пальцем"
+          }
+        }
+      }
+    },
+    "Touch works too": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Касания тоже работают"
+          }
+        }
+      }
+    },
+    "Tap a card to open it, swipe to turn pages, hold a card to peek at it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите на карточку — она откроется, смахните — сменится страница, удерживайте — подсмотрите."
+          }
+        }
+      }
+    },
+    "All set!": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё готово!"
+          }
+        }
+      }
+    },
+    "Close the tour on the Mac and your pages come back.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закройте знакомство на Mac — и вернутся ваши страницы."
           }
         }
       }

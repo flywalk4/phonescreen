@@ -8,7 +8,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "PhoneScreen читает текущий трек, заметки и команды и показывает их на iPhone."
+            "value": "Qwovi читает текущий трек, заметки и команды и показывает их на iPhone."
           }
         }
       }
@@ -32,7 +32,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "PhoneScreen находит iPhone в локальной сети и по прямому Wi-Fi."
+            "value": "Qwovi находит iPhone в локальной сети и по прямому Wi-Fi."
           }
         }
       }

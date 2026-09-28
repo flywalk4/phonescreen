@@ -1,6 +1,6 @@
 import Foundation
 import JavaScriptCore
-import PhoneScreenKit
+import QwoviKit
 
 // Stops runaway scripts (`while (true) {}`): JavaScriptCore's execution time limit, exported by the framework
 // though declared in a private header.
@@ -62,7 +62,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         self.manifest = manifest
         self.source = source
         self.hooks = hooks
-        self.queue = DispatchQueue(label: "phonescreen.widget.\(manifest.id)", qos: .utility)
+        self.queue = DispatchQueue(label: "qwovi.widget.\(manifest.id)", qos: .utility)
     }
 
     /// Runs `refresh(ctx)`; the completion gets the returned data (JSON-compatible) or an error.

@@ -1,5 +1,5 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 import ScreenCaptureKit
 
 /// Small JPEG snapshots of each running app's front window, for the tiles of the apps page. Needs Screen

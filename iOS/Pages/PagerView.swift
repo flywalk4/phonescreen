@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 private struct AutoPageKey: Equatable {
@@ -15,12 +15,23 @@ struct PagerView: View {
     var body: some View {
         ZStack {
             ThemeBackground()
+            // A full-screen live wallpaper takes the whole screen, round corners and island included.
+            Group {
+                if let scene = model.screenBackdrop {
+                    WidgetBackdrop(scene: scene)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 0.4), value: model.screenBackdrop)
             OrientedContainer(orientation: model.layout.orientation) { island in
                 ZStack {
                     content(island: island)
                         // Keep content clear of the Dynamic Island and the rounded corners, whichever way the phone lies.
                         .padding(Edge.Set(island), PageMetrics.island)
                         .padding(PageMetrics(model.theme).edge)
+                        // Under the tour, the pages stop answering the Mac pointer.
+                        .environment(\.pointerInteractive, model.tour == nil)
                     // The band beside the Dynamic Island: time on one side, date on the other (upright or upside down).
                     if (island == .top || island == .bottom), model.theme.layout?.status ?? true, !model.overview {
                         IslandStatus(showsDate: !(island == .top && model.focused?.held == false))
@@ -36,7 +47,13 @@ struct PagerView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                             .transition(.scale(scale: 0.5).combined(with: .opacity))
                     }
-                    PointerOverlay()
+                    // The Mac's welcome tour, over everything but the pointer.
+                    if let step = model.tour {
+                        TourOverlay(step: step)
+                            .transition(.opacity.combined(with: .scale(scale: 1.06)))
+                            .zIndex(2)
+                    }
+                    PointerOverlay().zIndex(3)
                 }
                 .coordinateSpace(.named(pointerSpace))
                 .background(GeometryReader { geo in
@@ -80,9 +97,11 @@ struct PagerView: View {
                 } else {
                     PinchablePager()
                         // Under an opened widget the page fades away; its cards stop answering the Mac pointer.
-                        .opacity(model.focused == nil ? 1 : 0)
+                        // A blurred hint of it stays, so the opened widget reads as lying over the page it came from.
+                        .blur(radius: model.focused == nil ? 0 : 24)
+                        .opacity(model.focused == nil ? 1 : 0.18)
                         .scaleEffect(model.focused == nil ? 1 : 0.94)
-                        .environment(\.pointerInteractive, model.focused == nil)
+                        .environment(\.pointerInteractive, model.focused == nil && model.tour == nil)
                         .transition(.asymmetric(insertion: .opacity.combined(with: .scale(scale: 0.4)),
                                                 removal: .opacity.combined(with: .scale(scale: 0.4))))
                     if let focused = model.focused {
@@ -218,25 +237,46 @@ struct Pager<Page: View>: View {
     }
 }
 
+/// The page indicator: the current page a short capsule, the rest dots. Many pages show a sliding window of
+/// `window` dots whose outer ones shrink (more pages that way), as on the iPhone home screen, instead of a row of
+/// tiny dots across the whole screen.
 struct PageDots: View {
     let count: Int
     let current: Int
     var select: (Int) -> Void = { _ in }
+    private let window = 9
+    private let cell: CGFloat = 16
 
     var body: some View {
-        // Comfortable 22-pt targets for the Mac pointer, narrower when there are many pages.
-        let cell = min(22, 330 / CGFloat(max(count, 1)))
+        let first = count <= window ? 0 : min(max(current - window / 2, 0), count - window)
+        let last = min(count, first + window) - 1
         HStack(spacing: 0) {
-            ForEach(0..<count, id: \.self) { i in
-                Circle()
-                    .fill(i == current ? Color.primary : Color.primary.opacity(0.3))
-                    .frame(width: min(7, cell - 3), height: min(7, cell - 3))
-                    .frame(width: cell, height: 22)
+            ForEach(Array(first...max(first, last)), id: \.self) { i in
+                let active = i == current
+                Capsule()
+                    .fill(active ? Color.primary : Color.primary.opacity(0.3))
+                    .frame(width: active ? 16 : 6, height: 6)
+                    .scaleEffect(scale(i, first: first, last: last))
+                    .frame(width: active ? 24 : cell, height: 22)
                     .contentShape(Rectangle())
                     .pointerTarget { select(i) }
+                    .transition(.scale.combined(with: .opacity))
             }
         }
+        .padding(.horizontal, 6)
+        .background(Capsule().fill(Color.primary.opacity(count > 1 ? 0.06 : 0)).frame(height: 18))
+        .opacity(count > 1 ? 1 : 0)
         .animation(.snappy, value: current)
+    }
+
+    /// The window's outer dots are smaller when there are more pages beyond them.
+    private func scale(_ i: Int, first: Int, last: Int) -> CGFloat {
+        let fromEdge = min(first > 0 ? i - first : .max, last < count - 1 ? last - i : .max)
+        switch fromEdge {
+        case 0: return 0.5
+        case 1: return 0.75
+        default: return 1
+        }
     }
 }
 
@@ -268,7 +308,7 @@ private struct WaitingView: View {
         VStack(spacing: 16) {
             ThemedSpinner().controlSize(.large)
             Text("Waiting for the Mac").font(.title2.weight(.semibold))
-            Text("Connect the cable or open PhoneScreen on the Mac.\nA Wi-Fi network isn't required — a direct connection works too.")
+            Text("Connect the cable or open Qwovi on the Mac.\nA Wi-Fi network isn't required — a direct connection works too.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

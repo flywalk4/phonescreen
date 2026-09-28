@@ -68,7 +68,7 @@ def build() -> dict:
             print(f"    ⚠ {w}")
     if failed:
         sys.exit("the catalog wasn't built: fix the errors above")
-    return {"widgets": entries, "themes": themes}
+    return {"name": "Qwovi", "widgets": entries, "themes": themes}
 
 
 if __name__ == "__main__":

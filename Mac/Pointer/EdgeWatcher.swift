@@ -1,6 +1,6 @@
 import AppKit
 import CoreGraphics
-import PhoneScreenKit
+import QwoviKit
 
 /// Watches for the cursor being pushed against the portal (the part of a display edge the phone sits at).
 /// Pushing — not just resting — is what crosses over, so parking the cursor at the edge or dragging

@@ -1,7 +1,7 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
- "$id": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
- "title": "PhoneScreen widget manifest.json",
+ "$id": "https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/manifest.schema.json",
+ "title": "Qwovi widget manifest.json",
  "type": "object",
  "required": [
   "id",

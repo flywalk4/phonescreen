@@ -1,5 +1,5 @@
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
 /// The language of the whole product: the Mac app, the phone and every widget that has strings for it.
 /// English by default; "system" follows macOS's preferred languages.
@@ -24,7 +24,7 @@ enum AppLanguage {
     }
 
     /// Before anything is shown: on first launch pin the Mac's own UI to English (macOS reads AppleLanguages when the
-    /// app first looks up a text), and let PhoneScreenKit's texts go through this app's Localizable.xcstrings.
+    /// app first looks up a text), and let QwoviKit's texts go through this app's Localizable.xcstrings.
     static func bootstrap() {
         if UserDefaults.standard.string(forKey: key) == nil { choice = "en" }
         Localization.translate = { String(localized: String.LocalizationValue($0)) }

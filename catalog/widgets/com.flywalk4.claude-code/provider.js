@@ -6,10 +6,10 @@
 // published anywhere, but a token budget can be set in the settings — then there are bars.
 //
 // With the bridge (python3 scripts/claude-code-bridge.py install), more precise:
-//   ~/.claude/phonescreen/status.json — the official rate_limits from the status line (Pro/Max): % and reset time
-//   ~/.claude/phonescreen/state.json  — session state from hooks: working / waiting / idle
+//   ~/.claude/qwovi/status.json — the official rate_limits from the status line (Pro/Max): % and reset time
+//   ~/.claude/qwovi/state.json  — session state from hooks: working / waiting / idle
 
-const BRIDGE = "~/.claude/phonescreen/";
+const BRIDGE = "~/.claude/qwovi/";
 const ROOTS = ["~/.claude/projects/", "~/.config/claude/projects/"];
 const HOUR = 3600, WEEK = 7 * 86400;
 

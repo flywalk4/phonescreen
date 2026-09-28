@@ -1,4 +1,4 @@
-# PhoneScreen widget catalog
+# Qwovi widget catalog
 
 **English** · [Русский](README.ru.md)
 
@@ -16,7 +16,7 @@ catalog/widgets/com.author.mywidget/
 
 1. Create a folder `catalog/widgets/<id>/` (folder name = the manifest's `id`). The easiest start is the template: `node scripts/widget-dev.mjs new com.you.widget --name "Name"` (a working widget with all three sizes, a setting, `storage`, buttons and a scenario).
 2. Check it: `python3 scripts/validate-widget.py catalog/widgets/<id>` (with `--hints`, advice too: hex colours themes can't restyle, buttons in a small tile).
-3. Run it for real (needs a built Mac agent): `PhoneScreen --widget-test catalog/widgets/<id>` runs `refresh()` in the same sandbox as the app and prints the data and the final tree.
+3. Run it for real (needs a built Mac agent): `Qwovi --widget-test catalog/widgets/<id>` runs `refresh()` in the same sandbox as the app and prints the data and the final tree.
 4. Update the index: `python3 scripts/build-catalog.py` (SHA-256 hashes of every file; the app won't install a file with a different hash).
 5. Add scenarios to `fixtures/` (at least "all good" and "API down") and check them: `node scripts/widget-dev.mjs test catalog/widgets/<id>`.
 6. Open a pull request. The reviewer looks at `permissions` and where `fetch` goes first of all.
@@ -35,9 +35,13 @@ Add `--lang ru` to `run`, `preview`, `watch` or `bundle` to see the widget in an
 
 Scenarios live in `catalog/widgets/<id>/fixtures/*.json` (the app doesn't download them): API answers (`fetch`), settings, secrets, `storage`, files, taps (`actions`), time (`now`, `timezone`), language (`lang`) and what should come out (`expect` by paths in the data, or `error`). The format is described at the top of `scripts/widget-dev.mjs`. A pull request to the catalog is checked automatically: validators, an up-to-date `index.json` and every scenario. The emulation mirrors the sandbox's API and limits, but the final check is `--widget-test` on a Mac.
 
-**Editor hints.** `schemas/` holds JSON Schemas for `view.json`, `manifest.json` and `theme.json` (every node, field, style and colour). VS Code picks them up for `catalog/` through `.vscode/settings.json`; in your own file a first line is enough: `"$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json"`. The schemas are generated from the validator's rules: `python3 scripts/build-schemas.py`.
+**Editor hints.** `schemas/` holds JSON Schemas for `view.json`, `manifest.json` and `theme.json` (every node, field, style and colour). VS Code picks them up for `catalog/` through `.vscode/settings.json`; in your own file a first line is enough: `"$schema": "https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/view.schema.json"`. The schemas are generated from the validator's rules: `python3 scripts/build-schemas.py`.
 
 While developing on a Mac, **Settings → Widgets → "Development folder…"** is handier: save a file and the widget reloads on the iPhone by itself. The `console.log` and error log is there too.
+
+## Your own catalog
+
+The Mac app can use any number of catalogs next to this one: **Settings → Widgets → Catalogs**, paste an `index.json` address (https) or just a GitHub repository address (`https://github.com/you/repo` means `catalog/index.json` on its `main` branch; `…/tree/<branch>` picks another branch). The same list feeds the Themes tab. A catalog is a folder laid out like this one — `widgets/<id>/`, `themes/<id>/` and an `index.json` built by `python3 scripts/build-catalog.py`; an optional top-level `"name"` is what the settings call it. A widget or theme id found in several catalogs is shown once, in its newest version.
 
 ## manifest.json
 
@@ -209,6 +213,8 @@ Complete examples: [`widgets/com.flywalk4.markets`](widgets/com.flywalk4.markets
 
 **Games and anything interactive.** Every tap is `action(name)` on the Mac followed by `refresh()` by itself, so turn-based games fit well. Keep the state in `storage` and save a new game as soon as it's created (otherwise the board changes between refreshes). The board's cells are a `list` with `columns` and a template like `{"type": "box", "aspect": 1, "action": "tap:{{index}}", …}`.
 
+**Board layout.** When the root `vstack` holds a board (a `list` of `aspect` boxes, or a `box` around one), the phone lays it out itself: what comes before the board goes on top, what comes after at the bottom, and the board takes the biggest square in between; in a wide card the board sits on the left at full height and the rest in a column beside it (a row of `box` scores stands as a column there). The board is drawn 320 pt wide and scaled as a whole, so design it once for that width and reuse it in all three sizes; leave `spacer`s out. The main action is a `button` with a `color` (a solid pill); others are a plain `button` (a glass pill, a circle with only a `symbol`).
+
 ## Themes
 
 A theme changes the look of the whole phone: the page background, cards, text, accent, font — for built-in widgets and catalog widgets alike. It's chosen on the Mac: **"Themes…"** in the menu. Built in: **Dark**, **Light**, **Liquid Glass** (iOS 26 glass; frosted glass on older iOS), **ASCII** (everything as in a terminal).
@@ -222,9 +228,9 @@ catalog/themes/com.author.mytheme/
 
 ### Adding a theme to the catalog
 
-1. Create a folder `catalog/themes/<id>/` (folder name = the `id` from `theme.json`). The template [`skills/phonescreen-widget/template-theme`](../skills/phonescreen-widget/template-theme/theme.json) is a good start.
+1. Create a folder `catalog/themes/<id>/` (folder name = the `id` from `theme.json`). The template [`skills/qwovi-widget/template-theme`](../skills/qwovi-widget/template-theme/theme.json) is a good start.
 2. Check it: `python3 scripts/validate-theme.py catalog/themes/<id>`. Errors (✗) must be fixed; contrast warnings (⚠) very much should be: text must read both on the background and on the cards.
-3. Look at it on the phone: **Settings → Themes → "Development folder…"**: save `theme.json` and the iPhone recolours itself. A check without a phone: `PhoneScreen --theme-test catalog/themes/<id>` reads the theme exactly as the app does on install.
+3. Look at it on the phone: **Settings → Themes → "Development folder…"**: save `theme.json` and the iPhone recolours itself. A check without a phone: `Qwovi --theme-test catalog/themes/<id>` reads the theme exactly as the app does on install.
 4. Update the index: `python3 scripts/build-catalog.py` (the SHA-256 of `theme.json`; the app won't install a file with a different hash).
 5. Open a pull request. The theme shows up in the catalog with a preview, for everyone in **Themes → Catalog**.
 

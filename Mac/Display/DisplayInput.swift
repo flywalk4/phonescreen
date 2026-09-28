@@ -1,5 +1,5 @@
 import CoreGraphics
-import PhoneScreenKit
+import QwoviKit
 
 /// Fingers on the phone's second screen, turned into real mouse events on the virtual display: a tap clicks,
 /// dragging drags (windows included), a long press right-clicks, two fingers scroll. Needs Accessibility,

@@ -1,5 +1,5 @@
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
 /// Runs every installed JavaScript widget: refreshes it on its schedule and on button presses,
 /// resolves its `view.json` with the data, and sends the result to the phone.

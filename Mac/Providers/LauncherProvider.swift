@@ -1,5 +1,5 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 
 /// What the phone can launch on the Mac: Dock apps (with their real icons), the user's Shortcuts,
 /// and a few system actions. Only ids offered here are ever executed.
@@ -7,7 +7,7 @@ final class LauncherProvider: @unchecked Sendable {
     /// Called on the main thread.
     var onItems: (@MainActor ([LauncherItem]) -> Void)?
 
-    private let queue = DispatchQueue(label: "phonescreen.launcher", qos: .utility)
+    private let queue = DispatchQueue(label: "qwovi.launcher", qos: .utility)
     private let script = AppleScriptRunner()
     private var items: [LauncherItem] = []
 

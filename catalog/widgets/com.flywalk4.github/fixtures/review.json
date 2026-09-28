@@ -11,7 +11,7 @@
     "items": [
      {
       "title": "Add theme marketplace previews",
-      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "repository_url": "https://api.github.com/repos/flywalk4/qwovi",
       "number": 12,
       "updated_at": "2026-09-27T13:10:00Z",
       "draft": false,
@@ -19,7 +19,7 @@
      },
      {
       "title": "Fix BLE reconnect after sleep",
-      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "repository_url": "https://api.github.com/repos/flywalk4/qwovi",
       "number": 11,
       "updated_at": "2026-09-27T11:10:00Z",
       "draft": false,
@@ -43,7 +43,7 @@
     "items": [
      {
       "title": "Claude Code widget without the bridge",
-      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "repository_url": "https://api.github.com/repos/flywalk4/qwovi",
       "number": 1,
       "updated_at": "2026-09-27T12:10:00Z",
       "draft": false,
@@ -51,7 +51,7 @@
      },
      {
       "title": "WIP: mini-games",
-      "repository_url": "https://api.github.com/repos/flywalk4/phonescreen",
+      "repository_url": "https://api.github.com/repos/flywalk4/qwovi",
       "number": 14,
       "updated_at": "2026-09-27T14:10:00Z",
       "draft": true,
@@ -77,7 +77,7 @@
   "reviewCount": "3",
   "mineCount": "2",
   "unread": "7",
-  "review.0.repo": "flywalk4/phonescreen",
+  "review.0.repo": "flywalk4/qwovi",
   "mine.1.draft": true
  }
 }

@@ -191,16 +191,6 @@
         }
       }
     },
-    "Catalog": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Каталог"
-          }
-        }
-      }
-    },
     "Centre": {
       "localizations": {
         "ru": {
@@ -911,12 +901,12 @@
         }
       }
     },
-    "PhoneScreen Settings": {
+    "Qwovi Settings": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Настройки PhoneScreen"
+            "value": "Настройки Qwovi"
           }
         }
       }
@@ -1301,16 +1291,6 @@
         }
       }
     },
-    "The catalog is unavailable: %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Каталог недоступен: %@"
-          }
-        }
-      }
-    },
     "The cursor is on the iPhone — Esc brings it back": {
       "localizations": {
         "ru": {
@@ -1367,16 +1347,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Темы"
-          }
-        }
-      }
-    },
-    "There are no themes in this catalog yet.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "В этом каталоге пока нет тем."
           }
         }
       }
@@ -1711,16 +1681,6 @@
         }
       }
     },
-    "index.json address": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Адрес index.json"
-          }
-        }
-      }
-    },
     "light": {
       "localizations": {
         "ru": {
@@ -1877,6 +1837,906 @@
           "stringUnit": {
             "state": "translated",
             "value": "⌃⌥1…9 — страница"
+          }
+        }
+      }
+    },
+    "Welcome tour": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знакомство"
+          }
+        }
+      }
+    },
+    "Skip": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пропустить"
+          }
+        }
+      }
+    },
+    "Back": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Назад"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Далее"
+          }
+        }
+      }
+    },
+    "Get started": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начать"
+          }
+        }
+      }
+    },
+    "Wake it up": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разбудить"
+          }
+        }
+      }
+    },
+    "Meet Qwovi": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знакомьтесь, Qwovi"
+          }
+        }
+      }
+    },
+    "Your iPhone is lying by the Mac. Doing nothing.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш iPhone лежит рядом с Mac. И ничего не делает."
+          }
+        }
+      }
+    },
+    "Face down on the desk or up on a stand, it lights up only for notifications. The rest of the day it's a black rectangle within arm's reach.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экраном вниз на столе или на подставке — он загорается только ради уведомлений. Остальное время это чёрный прямоугольник на расстоянии вытянутой руки."
+          }
+        }
+      }
+    },
+    "Now it's a screen for your Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Теперь это экран для вашего Mac."
+          }
+        }
+      }
+    },
+    "Music, your calendar, the weather and the Mac's load at a glance. The cursor moves onto it, and so do windows. Nothing to buy — it's already on your desk.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Музыка, календарь, погода и нагрузка Mac — одним взглядом. Курсор переходит на него, окна тоже. Ничего не нужно покупать — он уже лежит на столе."
+          }
+        }
+      }
+    },
+    "Open Qwovi on the iPhone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте Qwovi на iPhone"
+          }
+        }
+      }
+    },
+    "A cable is quickest. Wi-Fi and Bluetooth work too — nothing to set up. The rest of the tour happens on the phone as well.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Быстрее всего по кабелю, но Wi-Fi и Bluetooth тоже подойдут — ничего настраивать не нужно. Дальше знакомство продолжится и на телефоне."
+          }
+        }
+      }
+    },
+    "Connected · %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключено · %@"
+          }
+        }
+      }
+    },
+    "Look at your phone — it says hi 👋": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Посмотрите на телефон — он здоровается 👋"
+          }
+        }
+      }
+    },
+    "Looking for the iPhone…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ищем iPhone…"
+          }
+        }
+      }
+    },
+    "How to install it on the iPhone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как установить на iPhone"
+          }
+        }
+      }
+    },
+    "At a glance": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Одним взглядом"
+          }
+        }
+      }
+    },
+    "Everything you check a hundred times a day": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё, что вы проверяете сто раз в день"
+          }
+        }
+      }
+    },
+    "What's playing, the next meeting, the weather, CPU and memory — on the phone, without covering your windows or switching apps.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что играет, ближайшая встреча, погода, процессор и память — на телефоне, не закрывая окна и не переключая приложения."
+          }
+        }
+      }
+    },
+    "Look at the phone: the Mac is turning its pages right now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Посмотрите на телефон: Mac сейчас листает его страницы"
+          }
+        }
+      }
+    },
+    "Swipe between pages, or let them turn by themselves": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Листайте страницы — или пусть листаются сами"
+          }
+        }
+      }
+    },
+    "Over a cable, Wi-Fi or Bluetooth — whatever's at hand": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По кабелю, Wi-Fi или Bluetooth — как удобнее"
+          }
+        }
+      }
+    },
+    "Try it · the cursor": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попробуйте · курсор"
+          }
+        }
+      }
+    },
+    "The cursor walks onto the phone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Курсор переходит на телефон"
+          }
+        }
+      }
+    },
+    "Push it past the edge of the screen and it appears on the iPhone. Click, scroll, type — and Esc brings it back to the Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доведите его до края экрана — и он окажется на iPhone. Кликайте, листайте, печатайте, а Esc вернёт курсор на Mac."
+          }
+        }
+      }
+    },
+    "First, allow Accessibility — it lets the cursor leave the screen": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сначала разрешите Универсальный доступ — без него курсор не выйдет за экран"
+          }
+        }
+      }
+    },
+    "Where's the phone?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Где телефон?"
+          }
+        }
+      }
+    },
+    "Clicked on the iPhone! Now press Esc": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Есть клик на iPhone! Теперь нажмите Esc"
+          }
+        }
+      }
+    },
+    "Push the cursor past the edge (%@) and click the circle on the phone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доведите курсор до края (%@) и кликните по кругу на телефоне"
+          }
+        }
+      }
+    },
+    "Try it · touch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попробуйте · касание"
+          }
+        }
+      }
+    },
+    "And it's still a touchscreen": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "И это всё ещё сенсорный экран"
+          }
+        }
+      }
+    },
+    "Every card answers your finger as well as the Mac's cursor: tap to open, swipe to turn pages, hold to peek. Use whichever hand is closer.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каждая карточка слушается и пальца, и курсора Mac: нажмите — откроется, смахните — сменится страница, удерживайте — подсмотрите. Чем удобнее, тем и пользуйтесь."
+          }
+        }
+      }
+    },
+    "Tapped on the iPhone!": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Есть касание на iPhone!"
+          }
+        }
+      }
+    },
+    "Tap the pink circle on the phone with your finger": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Коснитесь пальцем розового круга на телефоне"
+          }
+        }
+      }
+    },
+    "Connect the iPhone to try it for real": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключите iPhone, чтобы попробовать вживую"
+          }
+        }
+      }
+    },
+    "Until then, watch the animation on the right": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "А пока — смотрите анимацию справа"
+          }
+        }
+      }
+    },
+    "Drag a window onto it": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перетащите на него окно"
+          }
+        }
+      }
+    },
+    "The iPhone becomes a real display for macOS. Park a chat, a terminal or a player there and keep the big screen for work.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPhone становится настоящим дисплеем для macOS. Отправьте туда чат, терминал или плеер — а большой экран оставьте для работы."
+          }
+        }
+      }
+    },
+    "Tap, drag and scroll right on the phone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажимайте, перетаскивайте и листайте прямо на телефоне"
+          }
+        }
+      }
+    },
+    "Windows stay normal Mac windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окна остаются обычными окнами Mac"
+          }
+        }
+      }
+    },
+    "Turns on as a page, like any widget": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включается страницей, как любой виджет"
+          }
+        }
+      }
+    },
+    "Make it yours": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Под себя"
+          }
+        }
+      }
+    },
+    "Your desk, your look": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш стол — ваш стиль"
+          }
+        }
+      }
+    },
+    "Themes, layouts and pages are set up on the Mac and show up on the phone instantly. Missing a widget? Take one from the catalog or write your own.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Темы, раскладки и страницы настраиваются на Mac и сразу видны на телефоне. Не хватает виджета? Возьмите из каталога или напишите свой."
+          }
+        }
+      }
+    },
+    "Ready-made themes, or one of your own": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовые темы — или своя"
+          }
+        }
+      }
+    },
+    "Layouts for upright and sideways": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Раскладки для вертикали и горизонтали"
+          }
+        }
+      }
+    },
+    "Widgets in JavaScript, reloaded as you save": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виджеты на JavaScript, обновляются при сохранении"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        }
+      }
+    },
+    "That's it — the phone is working now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вот и всё — телефон уже работает"
+          }
+        }
+      }
+    },
+    "The iPhone is connected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPhone подключён"
+          }
+        }
+      }
+    },
+    "Keep Qwovi open on it: the screen stays on while it's connected.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Держите Qwovi открытым: пока он подключён, экран не гаснет."
+          }
+        }
+      }
+    },
+    "The cursor can cross": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Курсор может переходить"
+          }
+        }
+      }
+    },
+    "Accessibility lets the cursor move onto the iPhone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Универсальный доступ позволяет курсору переходить на iPhone."
+          }
+        }
+      }
+    },
+    "Fine-tune where the phone lies": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уточните, где лежит телефон"
+          }
+        }
+      }
+    },
+    "Drag it to the exact spot along the edge — that's where the cursor will cross.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перетащите его точно на место вдоль края — там курсор и будет переходить."
+          }
+        }
+      }
+    },
+    "Opens right after this window": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откроется сразу после этого окна"
+          }
+        }
+      }
+    },
+    "The tour is always in the menu bar: Qwovi → Welcome tour.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знакомство всегда есть в строке меню: Qwovi → Знакомство."
+          }
+        }
+      }
+    },
+    "All set": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё готово"
+          }
+        }
+      }
+    },
+    "Connected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключено"
+          }
+        }
+      }
+    },
+    "iPhone connected": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPhone подключён"
+          }
+        }
+      }
+    },
+    "Tap to open": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите — откроется"
+          }
+        }
+      }
+    },
+    "Swipe to turn": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Смахните — листается"
+          }
+        }
+      }
+    },
+    "Mac load": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нагрузка Mac"
+          }
+        }
+      }
+    },
+    "Mac apps": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложения Mac"
+          }
+        }
+      }
+    },
+    "Waiting for the Mac": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Жду Mac"
+          }
+        }
+      }
+    },
+    "Graphite": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графит"
+          }
+        }
+      }
+    },
+    "Pastel": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пастель"
+          }
+        }
+      }
+    },
+    "Ocean": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Океан"
+          }
+        }
+      }
+    },
+    "Standup": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Планёрка"
+          }
+        }
+      }
+    },
+    "Sunny": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Солнечно"
+          }
+        }
+      }
+    },
+    "Call Anna": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Позвонить Ане"
+          }
+        }
+      }
+    },
+    "Buy coffee beans": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Купить кофе"
+          }
+        }
+      }
+    },
+    "Send the invoice": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправить счёт"
+          }
+        }
+      }
+    },
+    "Memory": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Память"
+          }
+        }
+      }
+    },
+    "Load": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нагрузка"
+          }
+        }
+      }
+    },
+    "Network": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сеть"
+          }
+        }
+      }
+    },
+    "Battery": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Батарея"
+          }
+        }
+      }
+    },
+    "CPU": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ЦП"
+          }
+        }
+      }
+    },
+    "Below 11 pt, close cards melt into one another": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Меньше 11 pt — соседние карточки перетекают друг в друга"
+          }
+        }
+      }
+    },
+    "Catalogs": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каталоги"
+          }
+        }
+      }
+    },
+    "official": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "официальный"
+          }
+        }
+      }
+    },
+    "index.json address or a GitHub repository": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Адрес index.json или репозиторий GitHub"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить"
+          }
+        }
+      }
+    },
+    "Remove this catalog": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Убрать этот каталог"
+          }
+        }
+      }
+    },
+    "Widgets: %lld · themes: %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Виджетов: %lld · тем: %lld"
+          }
+        }
+      }
+    },
+    "Unavailable": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недоступен"
+          }
+        }
+      }
+    },
+    "Enter an https:// address of an index.json or a GitHub repository": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введите https://-адрес index.json или репозитория GitHub"
+          }
+        }
+      }
+    },
+    "This catalog is already added": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот каталог уже добавлен"
+          }
+        }
+      }
+    },
+    "There are no themes in these catalogs yet.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этих каталогах пока нет тем."
           }
         }
       }

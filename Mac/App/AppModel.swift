@@ -1,11 +1,11 @@
 import AppKit
 import os
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 @MainActor
 final class AppModel: ObservableObject {
-    static let log = Logger(subsystem: "com.flywalk4.phonescreen", category: "connection")
+    static let log = Logger(subsystem: "com.flywalk4.qwovi", category: "connection")
 
     @Published private(set) var status = ChannelPool.Status(active: nil, available: [])
     /// Remembered across launches, so restarting the Mac app doesn't send the phone back to the first page.
@@ -65,6 +65,34 @@ final class AppModel: ObservableObject {
     @Published private(set) var languageChoice = AppLanguage.choice
 
     enum SettingsTab: Hashable { case pages, widgets, themes, arrangement }
+
+    /// What the welcome tour shows on the phone; sent again on every connection.
+    private(set) var tourStep: TourStep?
+    /// What the user has done on the phone during the tour.
+    @Published private(set) var tourEvents: Set<TourEvent> = []
+
+    /// How the phone is connected, as the tour shows it ("USB", "Wi-Fi"…); nil while it's not.
+    var tourLink: String? {
+        #if DEBUG
+        if let demoTourLink { return demoTourLink }
+        #endif
+        return status.active?.label
+    }
+
+    #if DEBUG
+    /// The recorded walkthrough (`--record-tour`): shown as connected even with the phone locked in a drawer.
+    var demoTourLink: String?
+    /// The recorded walkthrough: a try-it step done without a hand on the phone.
+    func demoTourEvent(_ event: TourEvent) { tourEvents.insert(event) }
+    #endif
+
+    func setTour(_ step: TourStep?) {
+        guard step != tourStep else { return }
+        if step == nil || tourStep == nil { tourEvents = [] } // a tour starts or ends: nothing done yet
+        tourStep = step
+        Self.log.info("tour: step \(step?.rawValue ?? "none", privacy: .public)")
+        pool.send(.tour(step))
+    }
 
     private static let pagesKey = "phonePages"
 
@@ -368,6 +396,9 @@ final class AppModel: ObservableObject {
 
     private func handle(_ message: Message) {
         switch message {
+        case .tourEvent(let event):
+            Self.log.info("tour: \(event.rawValue, privacy: .public) on the phone")
+            tourEvents.insert(event)
         case .pageChanged(let index) where pages.indices.contains(index):
             currentPage = index
             pageBecameVisible()
@@ -425,6 +456,7 @@ final class AppModel: ObservableObject {
         if !pages.indices.contains(currentPage) { currentPage = 0 }
         pool.send(.layout(arrangement.layout))
         pool.send(.language(AppLanguage.current))
+        pool.send(.tour(tourStep))
         themes.sendCurrent()
         pool.send(.pages(list: pages, current: currentPage))
         sendNowPlaying()

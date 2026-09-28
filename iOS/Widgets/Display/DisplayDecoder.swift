@@ -1,6 +1,6 @@
 import AVFoundation
 import CoreMedia
-import PhoneScreenKit
+import QwoviKit
 
 /// The Mac's virtual display arrives as H.264 access units (Annex B). They go straight to an
 /// `AVSampleBufferDisplayLayer`, which decodes in hardware and shows each frame at once — no SwiftUI state

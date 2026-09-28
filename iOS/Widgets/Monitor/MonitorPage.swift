@@ -1,5 +1,5 @@
 import Charts
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// Mac load at a glance: gauges, per-core bars and the last minute as charts.
@@ -18,22 +18,41 @@ struct MonitorPage: View {
             if let stats = model.stats {
                 GeometryReader { geo in
                     let wide = geo.size.width > geo.size.height
-                    let side = min(size == .small ? 58 : 70, (wide ? geo.size.width / 3 : geo.size.height / 3) - 18)
-                    let layout = wide || size == .medium ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 6))
-                    VStack(spacing: 10) {
-                        layout {
-                            Gauge(title: "CPU", value: stats.cpu, diameter: side)
-                            Gauge(title: "GPU", value: stats.gpu, diameter: side)
-                            Gauge(title: "RAM", value: Double(stats.memoryUsed) / Double(max(stats.memoryTotal, 1)), diameter: side)
+                    if size == .small, !wide, geo.size.height > 200 {
+                        tile(stats, size: geo.size)
+                    } else {
+                        // A half-page card also holds the load chart: the rings get what the chart (60 pt at least,
+                        // its legend and the ring captions) leaves, so nothing runs past the card's padding.
+                        let room = size == .medium ? geo.size.height - LoadChart.cardMinHeight - 70 : geo.size.height / 3 - 18
+                        let side = max(36, min(size == .small ? 58 : 70, wide && size != .medium ? geo.size.width / 3 - 18 : room))
+                        let layout = wide || size == .medium ? AnyLayout(HStackLayout(spacing: 8)) : AnyLayout(VStackLayout(spacing: 6))
+                        VStack(spacing: 10) {
+                            layout {
+                                Gauge(title: "CPU", value: stats.cpu, diameter: side)
+                                Gauge(title: "GPU", value: stats.gpu, diameter: side)
+                                Gauge(title: "RAM", value: Double(stats.memoryUsed) / Double(max(stats.memoryTotal, 1)), diameter: side)
+                            }
+                            if size == .medium { LoadChart(history: model.statsHistory, minHeight: LoadChart.cardMinHeight) }
                         }
-                        if size == .medium { LoadChart(history: model.statsHistory) }
+                        .frame(width: geo.size.width, height: geo.size.height)
                     }
-                    .frame(width: geo.size.width, height: geo.size.height)
                 }
             } else {
                 ThemedSpinner().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+    }
+
+    /// A tall small tile: CPU as the big ring, GPU and memory as bars, the last minute of CPU under them —
+    /// instead of three small rings stacked in a column with empty space around them.
+    private func tile(_ stats: SystemStats, size: CGSize) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Gauge(title: "CPU", value: stats.cpu, diameter: min(96, size.width - 24, size.height * 0.4))
+            LoadRow(title: "GPU", value: stats.gpu)
+            LoadRow(title: "RAM", value: Double(stats.memoryUsed) / Double(max(stats.memoryTotal, 1)))
+            if size.height > 280 { CPUSparkline(history: model.statsHistory) }
+        }
+        .frame(width: size.width, height: size.height, alignment: .top)
     }
 
     /// Whole page: upright a single column; lying sideways gauges on the left, charts on the right.
@@ -120,12 +139,71 @@ private struct Gauge: View {
         .frame(maxWidth: .infinity)
     }
 
-    private var color: Color {
+    private var color: Color { theme.loadColor(value) }
+}
+
+extension Theme {
+    /// Green while the Mac is fine, yellow when busy, red near the limit.
+    func loadColor(_ value: Double?) -> Color {
         switch value ?? 0 {
-        case ..<0.6: theme.named("green", .green)
-        case ..<0.85: theme.named("yellow", .yellow)
-        default: theme.named("red", .red)
+        case ..<0.6: named("green", .green)
+        case ..<0.85: named("yellow", .yellow)
+        default: named("red", .red)
         }
+    }
+}
+
+/// "GPU   20%" over a bar in the load's colour.
+private struct LoadRow: View {
+    let title: String
+    let value: Double?
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(title).foregroundStyle(.secondary)
+                Spacer(minLength: 4)
+                Text(value.map { "\(Int(($0 * 100).rounded()))%" } ?? "—").fontWeight(.semibold).monospacedDigit()
+                    .contentTransition(.numericText())
+            }
+            .font(.caption)
+            ThemedBar(value: value ?? 0, color: theme.loadColor(value), animated: true)
+        }
+    }
+}
+
+/// CPU over the last minute, no axes: fills whatever height the tile has left.
+private struct CPUSparkline: View {
+    let history: [SystemStats]
+    @Environment(\.theme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("CPU, last minute").font(.caption2).foregroundStyle(.secondary)
+            if theme.style == .ascii {
+                AsciiChart(values: history.map { $0.cpu * 100 }, color: theme.text)
+            } else {
+                let color = theme.named("cyan", .cyan)
+                Chart {
+                    ForEach(Array(history.enumerated()), id: \.offset) { i, s in
+                        AreaMark(x: .value("t", i), y: .value("%", s.cpu * 100))
+                            .foregroundStyle(LinearGradient(colors: [color.opacity(0.45), color.opacity(0.02)],
+                                                            startPoint: .top, endPoint: .bottom))
+                            .interpolationMethod(.monotone)
+                        LineMark(x: .value("t", i), y: .value("%", s.cpu * 100))
+                            .foregroundStyle(color)
+                            .interpolationMethod(.monotone)
+                    }
+                }
+                .chartYScale(domain: 0...100)
+                .chartXScale(domain: 0...59)
+                .chartXAxis(.hidden)
+                .chartYAxis(.hidden)
+                .animation(.linear(duration: 0.3), value: history.count)
+            }
+        }
+        .frame(maxHeight: .infinity)
     }
 }
 
@@ -153,7 +231,9 @@ private struct CoreBars: View {
 
 /// CPU and GPU over the last minute.
 private struct LoadChart: View {
+    static let cardMinHeight: CGFloat = 60
     let history: [SystemStats]
+    var minHeight: CGFloat = 110
     @Environment(\.theme) private var theme
 
     var body: some View {
@@ -168,13 +248,28 @@ private struct LoadChart: View {
     }
 
     private var chart: some View {
+        let cpu = theme.named("cyan", .cyan), gpu = theme.named("purple", .purple)
+        // The legend above the plot, not over it: on top it sat on the 100% grid line.
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Label { Text("CPU") } icon: { Glyph("circle.fill") }.foregroundStyle(cpu)
+                Label { Text("GPU") } icon: { Glyph("circle.fill") }.foregroundStyle(gpu)
+            }
+            .font(.caption2).labelStyle(.titleAndIcon)
+            plot(cpu: cpu, gpu: gpu)
+        }
+        .frame(minHeight: minHeight, maxHeight: .infinity)
+        .animation(.linear(duration: 0.3), value: history.count)
+    }
+
+    private func plot(cpu: Color, gpu: Color) -> some View {
         Chart {
             ForEach(Array(history.enumerated()), id: \.offset) { i, s in
                 LineMark(x: .value("t", i), y: .value("%", s.cpu * 100), series: .value("", "CPU"))
-                    .foregroundStyle(.cyan)
-                if let gpu = s.gpu {
-                    LineMark(x: .value("t", i), y: .value("%", gpu * 100), series: .value("", "GPU"))
-                        .foregroundStyle(.purple)
+                    .foregroundStyle(cpu)
+                if let load = s.gpu {
+                    LineMark(x: .value("t", i), y: .value("%", load * 100), series: .value("", "GPU"))
+                        .foregroundStyle(gpu)
                 }
             }
         }
@@ -188,15 +283,6 @@ private struct LoadChart: View {
             }
         }
         .chartLegend(.hidden)
-        .overlay(alignment: .topLeading) {
-            HStack(spacing: 10) {
-                Label { Text("CPU") } icon: { Glyph("circle.fill") }.foregroundStyle(.cyan)
-                Label { Text("GPU") } icon: { Glyph("circle.fill") }.foregroundStyle(.purple)
-            }
-            .font(.caption2).labelStyle(.titleAndIcon)
-        }
-        .frame(minHeight: 110, maxHeight: .infinity)
-        .animation(.linear(duration: 0.3), value: history.count)
     }
 }
 
@@ -220,11 +306,12 @@ private struct NetworkChart: View {
         Chart {
             ForEach(Array(history.enumerated()), id: \.offset) { i, s in
                 AreaMark(x: .value("t", i), y: .value("B/s", s.netInBytesPerSec))
-                    .foregroundStyle(LinearGradient(colors: [.green.opacity(0.6), .green.opacity(0.05)],
+                    .foregroundStyle(LinearGradient(colors: [theme.named("green", .green).opacity(0.6),
+                                                             theme.named("green", .green).opacity(0.05)],
                                                     startPoint: .top, endPoint: .bottom))
                     .interpolationMethod(.monotone)
                 LineMark(x: .value("t", i), y: .value("B/s", s.netOutBytesPerSec), series: .value("", "out"))
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(theme.named("orange", .orange))
                     .interpolationMethod(.monotone)
             }
         }

@@ -1,7 +1,7 @@
 import Darwin
 import Foundation
 import IOKit
-import PhoneScreenKit
+import QwoviKit
 
 /// CPU (total + per core), RAM, GPU utilisation and network throughput, sampled once per second.
 @MainActor

@@ -2,7 +2,7 @@
 // Builds the README pictures (docs/images/*.png) from real Simulator screenshots made by scripts/screenshots.sh
 // (or published by CI to the branch screenshots/<branch>):
 //
-//   git clone -b screenshots/main --depth 1 https://github.com/flywalk4/phonescreen.git /tmp/shots
+//   git clone -b screenshots/main --depth 1 https://github.com/flywalk4/qwovi.git /tmp/shots
 //   node scripts/readme-images.mjs /tmp/shots        # needs Playwright (npm i -g playwright)
 
 import fs from "node:fs";

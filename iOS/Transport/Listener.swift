@@ -1,12 +1,12 @@
 import Foundation
 import Network
-import PhoneScreenKit
+import QwoviKit
 
 /// Accepts connections from the Mac agent on one TCP port:
 /// - USB: usbmuxd on the phone tunnels the Mac's `Connect` to this port on loopback;
 /// - Wi-Fi LAN and peer-to-peer Wi-Fi (AWDL): discovered through the Bonjour advertisement.
 final class Listener: @unchecked Sendable {
-    private let queue = DispatchQueue(label: "phonescreen.listener")
+    private let queue = DispatchQueue(label: "qwovi.listener")
     private var listener: NWListener?
     private let name: String
     private let onChannel: @Sendable (ByteChannel) -> Void
@@ -20,7 +20,7 @@ final class Listener: @unchecked Sendable {
         queue.async { [self] in
             guard listener == nil else { return }
             do {
-                let listener = try NWListener(using: .phoneScreen(peerToPeer: true),
+                let listener = try NWListener(using: .qwovi(peerToPeer: true),
                                               on: NWEndpoint.Port(rawValue: Protocol.tcpPort)!)
                 listener.service = NWListener.Service(name: name, type: Protocol.bonjourType)
                 listener.newConnectionHandler = { [weak self] in self?.accept($0) }

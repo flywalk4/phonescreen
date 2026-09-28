@@ -208,7 +208,7 @@ struct WeatherPage: View {
                     if let error = model.error {
                         Glyph(systemName: "cloud.fill").font(.system(size: 36)).foregroundStyle(.secondary)
                         Text(L(error)).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                        Button("Retry") { model.start() }.buttonStyle(.bordered)
+                        Button("Retry") { model.start() }.buttonStyle(PillButtonStyle())
                     } else {
                         ThemedSpinner()
                         Text("Loading weather…").foregroundStyle(.secondary)
@@ -319,6 +319,7 @@ struct WeatherPage: View {
                         VStack(spacing: 3) {
                             Text(i == 0 ? L("Now") : h.time.hour24)
                                 .font(.caption2).foregroundStyle(.secondary)
+                                .lineLimit(1).minimumScaleFactor(0.6) // "Сейчас" in a narrow column: smaller, not "Сейча/с"
                             Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.caption)
                             Text("\(Int(h.temp.rounded()))°").font(.caption.weight(.medium))
                         }
@@ -381,6 +382,7 @@ struct WeatherPage: View {
                     VStack(spacing: 6) {
                         Text(i == 0 ? L("Now") : h.time.hour24)
                             .font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(1).minimumScaleFactor(0.6)
                         Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.title3)
                         Text("\(Int(h.temp.rounded()))°").font(.callout.weight(.medium))
                     }

@@ -1,20 +1,15 @@
 import AppKit
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
-/// Settings → Widgets: installed JavaScript widgets (permissions, secrets, settings, log), the GitHub catalog,
+/// Settings → Widgets: installed JavaScript widgets (permissions, secrets, settings, log), the catalogs,
 /// and installing from a folder (copy, or link for development with live reload).
 struct WidgetsSettings: View {
     @EnvironmentObject private var model: AppModel
     @ObservedObject private var widgets: WidgetManager
-    @AppStorage("widgetCatalogURL") private var catalogURL = WidgetsSettings.defaultCatalog
-    @State private var catalog: WidgetCatalog?
-    @State private var catalogError: String?
-    @State private var loadingCatalog = false
+    @ObservedObject private var sources = CatalogSources.shared
     @State private var pending: Pending?
     @State private var message: String?
-
-    static let defaultCatalog = "https://raw.githubusercontent.com/flywalk4/phonescreen/main/catalog/index.json"
 
     /// A downloaded package waiting for the user to accept its permissions.
     struct Pending: Identifiable {
@@ -46,7 +41,7 @@ struct WidgetsSettings: View {
             .padding(24)
         }
         .sheet(item: $pending) { p in PermissionsSheet(widget: p.widget, install: { confirm(p) }, cancel: { pending = nil }) }
-        .task { if catalog == nil { await loadCatalog() } }
+        .task { await sources.loadIfNeeded() }
     }
 
     // MARK: - Installed
@@ -84,20 +79,19 @@ struct WidgetsSettings: View {
     private var catalogSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Catalog").font(.headline)
+                Text("Catalogs").font(.headline)
                 Spacer()
-                Button { Task { await loadCatalog() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
-                    .disabled(loadingCatalog)
+                Button { Task { await sources.reloadAll() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
+                    .disabled(sources.loading)
             }
-            TextField("index.json address", text: $catalogURL)
-                .textFieldStyle(.roundedBorder).font(.caption.monospaced())
-            if loadingCatalog { ProgressView().controlSize(.small) }
-            if let catalogError { Text(catalogError).font(.caption).foregroundStyle(.red) }
+            CatalogSourcesView(sources: sources)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 16)], alignment: .leading, spacing: 16) {
-                ForEach(catalog?.widgets ?? []) { entry in
-                    let installed = widgets.installed.first { $0.id == entry.id }
-                    CatalogCard(entry: entry, installedVersion: installed?.manifest.version) {
-                        Task { await download(entry) }
+                ForEach(sources.widgets) { item in
+                    let installed = widgets.installed.first { $0.id == item.id }
+                    // Only a second catalog's widgets say where they're from.
+                    let from = sources.urls.count > 1 ? sources.name(of: item.source.absoluteString) : nil
+                    CatalogCard(entry: item.entry, source: from, installedVersion: installed?.manifest.version) {
+                        Task { await download(item) }
                     }
                 }
             }
@@ -106,23 +100,10 @@ struct WidgetsSettings: View {
 
     // MARK: - Actions
 
-    private func loadCatalog() async {
-        guard let url = URL(string: catalogURL) else { catalogError = String(localized: "Invalid address"); return }
-        loadingCatalog = true
-        defer { loadingCatalog = false }
+    private func download(_ item: CatalogSources.Item) async {
+        let entry = item.entry
         do {
-            catalog = try await WidgetStore.loadCatalog(url)
-            catalogError = nil
-        } catch {
-            catalog = nil
-            catalogError = String(localized: "The catalog is unavailable: \(error.localizedDescription)")
-        }
-    }
-
-    private func download(_ entry: WidgetCatalog.Entry) async {
-        guard let url = URL(string: catalogURL) else { return }
-        do {
-            let folder = try await WidgetStore.download(entry, indexURL: url)
+            let folder = try await WidgetStore.download(entry, indexURL: item.source)
             pending = Pending(folder: folder, widget: try WidgetStore.read(package: folder))
         } catch {
             message = String(localized: "Couldn't download “\(entry.text(in: AppLanguage.current).name)”: \(String(describing: error))")
@@ -386,6 +367,8 @@ private struct SettingControl: View {
 /// A catalog widget as a gallery card: icon, name, what it does, one button.
 private struct CatalogCard: View {
     let entry: WidgetCatalog.Entry
+    /// The catalog it comes from, when there are several.
+    var source: String?
     let installedVersion: String?
     let install: () -> Void
     @State private var hovering = false
@@ -412,7 +395,8 @@ private struct CatalogCard: View {
             Text(text.description ?? "").font(.caption).foregroundStyle(.secondary)
                 .lineLimit(4).fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-            Text("v\(entry.version) · \(entry.author)").font(.caption2).foregroundStyle(.tertiary)
+            Text(["v\(entry.version)", entry.author, source].compactMap { $0 }.joined(separator: " · "))
+                .font(.caption2).foregroundStyle(.tertiary).lineLimit(1)
         }
         .padding(14)
         .frame(maxWidth: .infinity, minHeight: 190, alignment: .topLeading)

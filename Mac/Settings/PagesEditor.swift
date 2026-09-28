@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// Settings → Pages: which pages the phone shows, in what order, and which widgets sit on each.
@@ -213,8 +213,10 @@ private struct PagePreview: View {
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: symbol).font(.title2)
-                Text(title).font(.caption).lineLimit(1)
+                // Narrow slots (a 2×2 or 2×3 grid): the name shrinks to fit rather than "Календа…".
+                Text(title).font(.caption).lineLimit(1).minimumScaleFactor(0.6)
             }
+            .padding(.horizontal, 4)
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // A bare page shows its slots as outlines: the widgets sit on the background, with no card.
@@ -385,7 +387,7 @@ private struct SidebarHeader: View {
                 .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(LinearGradient(colors: [.indigo, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)))
             VStack(alignment: .leading, spacing: 2) {
-                Text("PhoneScreen").font(.headline)
+                Text("Qwovi").font(.headline)
                 HStack(spacing: 5) {
                     Circle().fill(model.status.active == nil ? Color.orange : Color.green).frame(width: 6, height: 6)
                     Text(model.status.active.map { "iPhone · \($0.label)" } ?? String(localized: "iPhone not connected")).font(.caption).foregroundStyle(.secondary).lineLimit(1)

@@ -1,31 +1,47 @@
 <div align="center">
 
-<img src="iOS/Assets.xcassets/AppIcon.appiconset/icon-1024.png" alt="PhoneScreen icon" width="128" height="128">
+<img src="iOS/Assets.xcassets/AppIcon.appiconset/icon-1024.png" alt="Qwovi icon" width="128" height="128">
 
-# PhoneScreen
+# Qwovi
 
 **Turn your iPhone into a side screen for your Mac.**
 
 Live widgets for music, system load, calendar, weather, crypto, your Claude Code limits, a photo frame and small games.<br>
 Move the Mac's cursor off the edge of your display and it lands on the phone.
 
-[![Build](https://github.com/flywalk4/phonescreen/actions/workflows/build.yml/badge.svg)](https://github.com/flywalk4/phonescreen/actions/workflows/build.yml)
-[![Catalog](https://github.com/flywalk4/phonescreen/actions/workflows/catalog.yml/badge.svg)](https://github.com/flywalk4/phonescreen/actions/workflows/catalog.yml)
+[![Build](https://github.com/flywalk4/qwovi/actions/workflows/build.yml/badge.svg)](https://github.com/flywalk4/qwovi/actions/workflows/build.yml)
+[![Catalog](https://github.com/flywalk4/qwovi/actions/workflows/catalog.yml/badge.svg)](https://github.com/flywalk4/qwovi/actions/workflows/catalog.yml)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white)
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-F05138?logo=swift&logoColor=white)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-blue.svg)](LICENSE)
-[![Download](https://img.shields.io/github/v/release/flywalk4/phonescreen?label=download&color=brightgreen)](https://github.com/flywalk4/phonescreen/releases/latest)
+[![Download](https://img.shields.io/github/v/release/flywalk4/qwovi?label=download&color=brightgreen)](https://github.com/flywalk4/qwovi/releases/latest)
 
 **English** · [Русский](README.ru.md)
 
-[Features](#-features) · [Widgets](#-widgets) · [Themes](#-themes) · [Second screen](#-second-screen) · [Install](#-install) · [Getting started](#-getting-started) · [Write a widget](#-write-a-widget) · [How it works](#-how-it-works)
+[Welcome tour](#-welcome-tour) · [Features](#-features) · [Widgets](#-widgets) · [Themes](#-themes) · [Second screen](#-second-screen) · [Install](#-install) · [Getting started](#-getting-started) · [Write a widget](#-write-a-widget) · [How it works](#-how-it-works)
 
 <br>
 
-<img src="docs/images/hero.png" alt="PhoneScreen in the dark, Liquid Glass, light and ASCII themes" width="100%">
+<img src="docs/images/hero.png" alt="Qwovi in the dark, Liquid Glass, light and ASCII themes" width="100%">
 
 </div>
+
+## 👋 Welcome tour
+
+Most of the day your iPhone just lies next to the keyboard — face down on the desk or up on a stand, lighting up only for notifications. On first launch Qwovi opens a tour that wakes it up, and **the phone takes part**: it says hi as soon as it connects, asks you to bring the Mac's cursor over and click, then to tap with your finger — and the Mac ticks each step off as you do it.
+
+<a href="docs/images/tour/tour.mp4"><img src="docs/images/tour/tour.webp" alt="The Qwovi welcome tour: the phone wakes up, connects, the cursor crosses onto it, a finger taps it, a window moves onto it, themes change" width="100%"></a>
+
+<sub>▶ [The same tour as a full-quality video](docs/images/tour/tour.mp4)</sub>
+
+<img src="docs/images/tour/steps.webp" alt="Every step of the tour: asleep, awake, connect, at a glance, the cursor, touch, second screen, themes, ready" width="100%">
+
+**Meanwhile on the phone** — a hello, a target for the Mac's cursor, one for your finger, and confetti:
+
+<img src="docs/images/tour/phone.webp" alt="The tour on the iPhone: hello, click with the Mac's cursor, tap with a finger, done" width="100%">
+
+The tour speaks English and Russian (switch in its corner) and is always in the menu bar: **Qwovi → Welcome tour**.
 
 ## ✨ Features
 
@@ -168,34 +184,34 @@ Not a mirror and not a widget: macOS gets a **real extra display** right where t
 <summary><b>How it works</b></summary>
 <br>
 
-The Mac creates the display with the private `CGVirtualDisplay` API at the phone's shape (at least 640 points across, the smallest size macOS offers a HiDPI mode for), captures it with ScreenCaptureKit, encodes frames with VideoToolbox and sends them over the same USB / Wi-Fi link as the widgets. The phone decodes them with `AVSampleBufferDisplayLayer` and sends raw touches back, which the Mac turns into mouse events on that display. The private API is also why PhoneScreen can't be in the Mac App Store.
+The Mac creates the display with the private `CGVirtualDisplay` API at the phone's shape (at least 640 points across, the smallest size macOS offers a HiDPI mode for), captures it with ScreenCaptureKit, encodes frames with VideoToolbox and sends them over the same USB / Wi-Fi link as the widgets. The phone decodes them with `AVSampleBufferDisplayLayer` and sends raw touches back, which the Mac turns into mouse events on that display. The private API is also why Qwovi can't be in the Mac App Store.
 
 </details>
 
 ## 📦 Install
 
-Ready-made builds are on the [**Releases**](https://github.com/flywalk4/phonescreen/releases/latest) page. They aren't signed by Apple (that takes a paid developer account), so each platform needs one extra step. To build it yourself instead, see [Getting started](#-getting-started).
+Ready-made builds are on the [**Releases**](https://github.com/flywalk4/qwovi/releases/latest) page. They aren't signed by Apple (that takes a paid developer account), so each platform needs one extra step. To build it yourself instead, see [Getting started](#-getting-started).
 
 <details open>
-<summary><b>💻 Mac</b> — <code>PhoneScreen-x.y.z.dmg</code>, macOS 14+, Apple silicon and Intel</summary>
+<summary><b>💻 Mac</b> — <code>Qwovi-x.y.z.dmg</code>, macOS 14+, Apple silicon and Intel</summary>
 <br>
 
-1. Open the `.dmg` and drag **PhoneScreen** to **Applications**.
-2. Open PhoneScreen. macOS says it can't check the app for malicious software: click **Done**.
-3. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to PhoneScreen, then confirm. From now on it opens normally.
+1. Open the `.dmg` and drag **Qwovi** to **Applications**.
+2. Open Qwovi. macOS says it can't check the app for malicious software: click **Done**.
+3. Open **System Settings → Privacy & Security**, scroll down and click **Open Anyway** next to Qwovi, then confirm. From now on it opens normally.
 
 Or in Terminal, before the first launch:
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/PhoneScreen.app
+xattr -dr com.apple.quarantine /Applications/Qwovi.app
 ```
 
-After an update macOS may ask for **Accessibility** and **Screen Recording** again: switch PhoneScreen off and on in that list.
+After an update macOS may ask for **Accessibility** and **Screen Recording** again: switch Qwovi off and on in that list.
 
 </details>
 
 <details open>
-<summary><b>📱 iPhone</b> — <code>PhoneScreen-x.y.z.ipa</code>, iOS 18+</summary>
+<summary><b>📱 iPhone</b> — <code>Qwovi-x.y.z.ipa</code>, iOS 18+</summary>
 <br>
 
 Install it with your own Apple ID using [Sideloadly](https://sideloadly.io) or [AltStore](https://altstore.io):
@@ -214,13 +230,13 @@ Then place the phone and add widgets: steps 3–5 of [Getting started](#-getting
 
 ```bash
 brew install xcodegen
-git clone https://github.com/flywalk4/phonescreen.git && cd phonescreen
+git clone https://github.com/flywalk4/qwovi.git && cd qwovi
 xcodegen generate
-open PhoneScreen.xcodeproj
+open Qwovi.xcodeproj
 ```
 
-1. **Mac:** run the `PhoneScreenMac` scheme. A menu bar icon appears. The first time it fetches a track, macOS asks for permission to control Music or Spotify.
-2. **iPhone:** run the `PhoneScreeniOS` scheme on your phone. Set your team in Xcode → Signing, or run `DEVELOPMENT_TEAM=XXXXXXXXXX xcodegen generate`. Allow **Local Network** access when iOS asks (USB works without it).
+1. **Mac:** run the `QwoviMac` scheme. A menu bar icon appears. The first time it fetches a track, macOS asks for permission to control Music or Spotify.
+2. **iPhone:** run the `QwoviiOS` scheme on your phone. Set your team in Xcode → Signing, or run `DEVELOPMENT_TEAM=XXXXXXXXXX xcodegen generate`. Allow **Local Network** access when iOS asks (USB works without it).
 3. **Place the phone:** menu bar → **Arrangement**. Drag the phone to any edge of any screen. The cursor crosses over the green segment. Press `R` to rotate it.
 4. **Add widgets and themes:** menu bar → **Widgets** / **Themes**.
 5. **Second screen (optional):** put the **Second screen** widget on a single-widget page. The first time, macOS asks for **Screen Recording** (to stream the display) and **Accessibility** (to turn taps into clicks). The display appears while that page is on the phone and goes away 5 s after you leave it; windows on it move back and return next time.
@@ -293,7 +309,7 @@ async function refresh(ctx) {
 
 </details>
 
-📖 Full reference: [`catalog/README.md`](catalog/README.md) · 🤖 Skill for AI agents: [`skills/phonescreen-widget`](skills/phonescreen-widget/SKILL.md)
+📖 Full reference: [`catalog/README.md`](catalog/README.md) · 🤖 Skill for AI agents: [`skills/qwovi-widget`](skills/qwovi-widget/SKILL.md)
 
 ## 🔍 How it works
 
@@ -309,13 +325,13 @@ Mac (menu bar agent)                                   iPhone
 
 | Path | What's inside |
 | --- | --- |
-| [`Packages/PhoneScreenKit`](Packages/PhoneScreenKit) | The shared protocol (`Message`, length-prefixed JSON frames), channels, widget templates and themes |
+| [`Packages/QwoviKit`](Packages/QwoviKit) | The shared protocol (`Message`, length-prefixed JSON frames), channels, widget templates and themes |
 | [`Mac/`](Mac) | The menu bar agent: usbmuxd, Bonjour and BLE links, data providers, the widget runtime, pointer handoff and hotkeys. `Mac/Display` is the second screen: a virtual display (private `CGVirtualDisplay`), ScreenCaptureKit + VideoToolbox H.264, taps → mouse events |
 | [`iOS/`](iOS) | The phone app: the listener, pages, built-in widgets, the themed renderer for custom widgets, animated scenes |
 | [`catalog/`](catalog) | Widgets and themes with an `index.json` of SHA-256 hashes. The app refuses any file whose hash doesn't match |
 
 ```bash
-cd Packages/PhoneScreenKit && swift test        # protocol, templates, themes
+cd Packages/QwoviKit && swift test        # protocol, templates, themes
 node scripts/widget-dev.mjs test                # every widget scenario, no Mac needed
 ```
 

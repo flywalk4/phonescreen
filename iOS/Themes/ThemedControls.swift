@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 import UIKit
 
@@ -111,6 +111,44 @@ struct ThemedRing: View {
 }
 
 /// Buttons that dip under the finger and spring back (with a soft highlight behind them).
+/// Buttons as in the welcome tour: a flat glass pill with a hairline edge (a circle when it's just an icon); with a
+/// `fill`, a solid pill — the main action. Text turns dark on a light fill. No gradients or glows: flat reads cleaner.
+struct PillButtonStyle: ButtonStyle {
+    var fill: Color?
+    var round = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = Capsule()
+        configuration.label
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(fill.map { $0.isLight ? AnyShapeStyle(Color.black.opacity(0.85)) : AnyShapeStyle(Color.white) }
+                             ?? AnyShapeStyle(.primary))
+            .padding(.horizontal, round ? 9 : 16)
+            .padding(.vertical, 8)
+            .frame(minWidth: round ? 34 : nil, minHeight: 34)
+            .background {
+                if let fill {
+                    shape.fill(fill.opacity(configuration.isPressed ? 0.8 : 1))
+                } else {
+                    shape.fill(Color.primary.opacity(configuration.isPressed ? 0.16 : 0.1))
+                }
+            }
+            .overlay(shape.strokeBorder(Color.primary.opacity(fill == nil ? 0.12 : 0), lineWidth: 1))
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+            .contentShape(shape)
+    }
+}
+
+extension Color {
+    /// Bright enough that white text on it would be hard to read (yellow, mint, light blue).
+    var isLight: Bool {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        guard UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a) else { return false }
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.62
+    }
+}
+
 struct PressScale: ButtonStyle {
     var scale: CGFloat = 0.84
 

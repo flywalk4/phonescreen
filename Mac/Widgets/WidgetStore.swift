@@ -1,6 +1,6 @@
 import CryptoKit
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 import Security
 
 /// An installed JavaScript widget package.
@@ -18,7 +18,7 @@ struct InstalledWidget: Identifiable {
     let modified: Date
 }
 
-/// Widget packages on disk: `~/Library/Application Support/PhoneScreen/Widgets/<id>/`.
+/// Widget packages on disk: `~/Library/Application Support/Qwovi/Widgets/<id>/`.
 /// A development install is a folder holding only `dev-link` (the path of the author's working folder),
 /// which is re-read whenever its files change.
 enum WidgetStore {
@@ -33,7 +33,7 @@ enum WidgetStore {
 
     static var root: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        let url = base.appendingPathComponent("PhoneScreen/Widgets", isDirectory: true)
+        let url = base.appendingPathComponent("Qwovi/Widgets", isDirectory: true)
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
     }
@@ -121,7 +121,7 @@ enum WidgetStore {
     /// Returns the folder (not yet installed): the caller shows the permissions first.
     static func download(_ entry: WidgetCatalog.Entry, indexURL: URL) async throws -> URL {
         let base = indexURL.deletingLastPathComponent().appendingPathComponent(entry.path, isDirectory: true)
-        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("phonescreen-\(UUID().uuidString)")
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("qwovi-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: temp, withIntermediateDirectories: true)
         for name in requiredFiles + optionalFiles.filter({ entry.files[$0] != nil }) {
             guard let expected = entry.files[name]?.lowercased() else { throw Failure(description: "The catalog has no hash for \(name)") }
@@ -159,7 +159,7 @@ enum WidgetStore {
 
 /// Widget secrets (API keys…) in the login Keychain, one item per widget + key.
 enum WidgetSecrets {
-    private static func service(_ widget: String) -> String { "com.flywalk4.phonescreen.widget.\(widget)" }
+    private static func service(_ widget: String) -> String { "com.flywalk4.qwovi.widget.\(widget)" }
 
     static func get(widget: String, key: String) -> String? {
         let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service(widget),

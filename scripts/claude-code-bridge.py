@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Optional bridge from Claude Code to the PhoneScreen "Claude Code" widget.
+"""Optional bridge from Claude Code to the Qwovi "Claude Code" widget.
 
 The widget works without it (it reads Claude Code's session logs: activity and token counts). The bridge adds
 the official plan limits in % with reset times, and exact working / waiting state from hooks.
@@ -11,10 +11,10 @@ the official plan limits in % with reset times, and exact working / waiting stat
 What it adds (and nothing else):
   * a status line wrapper: Claude Code gives status line commands `rate_limits.five_hour` / `seven_day`
     (used_percentage, resets_at — Pro/Max plans, after the first reply in a session). The wrapper saves that to
-    ~/.claude/phonescreen/status.json, then runs your previous status line command with the same input, so
+    ~/.claude/qwovi/status.json, then runs your previous status line command with the same input, so
     your status line looks exactly as before;
   * hooks that record whether Claude is working, waiting for you, or idle, per session, in
-    ~/.claude/phonescreen/state.json (next to your existing hooks, not instead of them).
+    ~/.claude/qwovi/state.json (next to your existing hooks, not instead of them).
 The widget reads those two files when present (read-only, like the session logs).
 """
 import json
@@ -24,9 +24,9 @@ import sys
 import time
 
 HOME = os.path.expanduser("~")
-DIR = os.path.join(HOME, ".claude", "phonescreen")
+DIR = os.path.join(HOME, ".claude", "qwovi")
 SETTINGS = os.path.join(HOME, ".claude", "settings.json")
-MARK = "/.claude/phonescreen/"
+MARK = "/.claude/qwovi/"
 PREVIOUS = os.path.join(DIR, "previous-statusline.json")
 
 HOOKS = {
@@ -42,9 +42,9 @@ HOOKS = {
 TOOL_EVENTS = {"PreToolUse", "PostToolUse", "PermissionRequest"}
 
 STATUSLINE = r'''#!/usr/bin/env python3
-# PhoneScreen: saves Claude Code's rate limits for the widget, then shows your previous status line.
+# Qwovi: saves Claude Code's rate limits for the widget, then shows your previous status line.
 import json, os, subprocess, sys, time
-D = os.path.expanduser("~/.claude/phonescreen")
+D = os.path.expanduser("~/.claude/qwovi")
 raw = sys.stdin.read()
 try:
     data = json.loads(raw)
@@ -87,9 +87,9 @@ else:
 '''
 
 STATE = r'''#!/usr/bin/env python3
-# PhoneScreen: records whether Claude Code is working / waiting / idle, per session.
+# Qwovi: records whether Claude Code is working / waiting / idle, per session.
 import json, os, sys, time
-D = os.path.expanduser("~/.claude/phonescreen")
+D = os.path.expanduser("~/.claude/qwovi")
 state = sys.argv[1] if len(sys.argv) > 1 else "idle"
 try:
     event = json.loads(sys.stdin.read() or "{}")
@@ -124,7 +124,7 @@ def load_settings():
 
 
 def save_settings(s):
-    tmp = SETTINGS + ".phonescreen.tmp"
+    tmp = SETTINGS + ".qwovi.tmp"
     with open(tmp, "w") as f:
         json.dump(s, f, indent=2, ensure_ascii=False)
         f.write("\n")
@@ -193,7 +193,7 @@ def uninstall():
     if not hooks:
         s.pop("hooks", None)
     save_settings(s)
-    print("the bridge is removed from ~/.claude/settings.json (files in ~/.claude/phonescreen/ can be deleted by hand)")
+    print("the bridge is removed from ~/.claude/settings.json (files in ~/.claude/qwovi/ can be deleted by hand)")
 
 
 def status():

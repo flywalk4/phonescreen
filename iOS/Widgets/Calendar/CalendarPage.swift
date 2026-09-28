@@ -57,26 +57,37 @@ struct CalendarPage: View {
             if upcoming.isEmpty {
                 Text(model.tomorrow.isEmpty ? L("A free day") : L("That's all for today. Tomorrow: %@", model.tomorrow[0].title ?? ""))
                     .font(.caption).foregroundStyle(.secondary)
-                MonthGrid(now: now, compact: true).frame(maxHeight: .infinity, alignment: .center)
+                // The month takes the whole card: no empty event list under it.
+                // Big days when they fit (a tall tile too), small ones in a short tile.
+                ViewThatFits(in: .vertical) {
+                    MonthGrid(now: now, compact: true, roomy: true)
+                    MonthGrid(now: now, compact: true, roomy: false)
+                }
+                .frame(maxHeight: .infinity, alignment: .center)
+            } else {
+                events(upcoming, now: now)
             }
-            ScrollView {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(upcoming, id: \.eventIdentifier) { event in
-                        let ongoing = !event.isAllDay && event.startDate <= now
-                        HStack(spacing: 6) {
-                            RoundedRectangle(cornerRadius: 1.5).fill(Color(cgColor: event.calendar.cgColor)).frame(width: 3)
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(event.title ?? "").font(.caption.weight(ongoing ? .bold : .medium)).lineLimit(1)
-                                Text(event.isAllDay ? L("all day") : ongoing ? L("now")
-                                     : event.startDate.text(date: .omitted, time: .shortened))
-                                    .font(.caption2.monospacedDigit()).foregroundStyle(ongoing ? .green : .secondary)
-                            }
+        }
+    }
+
+    private func events(_ upcoming: [EKEvent], now: Date) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(upcoming, id: \.eventIdentifier) { event in
+                    let ongoing = !event.isAllDay && event.startDate <= now
+                    HStack(spacing: 6) {
+                        RoundedRectangle(cornerRadius: 1.5).fill(Color(cgColor: event.calendar.cgColor)).frame(width: 3)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(event.title ?? "").font(.caption.weight(ongoing ? .bold : .medium)).lineLimit(1)
+                            Text(event.isAllDay ? L("all day") : ongoing ? L("now")
+                                 : event.startDate.text(date: .omitted, time: .shortened))
+                                .font(.caption2.monospacedDigit()).foregroundStyle(ongoing ? .green : .secondary)
                         }
                     }
                 }
             }
-            .pointerScrollable()
         }
+        .pointerScrollable()
     }
 
     private func content(now: Date, tall: Bool) -> some View {
@@ -180,7 +191,8 @@ private struct NowLine: View {
 struct MonthGrid: View {
     let now: Date
     var compact = false
-    /// Big rows for an upright whole page; lying sideways the grid must fit the short height.
+    /// Big rows for an upright whole page (lying sideways the grid must fit the short height);
+    /// in a card: bigger days when the card has the height for them.
     var roomy = true
     @Environment(\.theme) private var theme
 
@@ -194,7 +206,7 @@ struct MonthGrid: View {
         let today = cal.component(.day, from: now)
         let cells = Array(repeating: 0, count: lead) + Array(1...days)
         let symbols = L("Mo,Tu,We,Th,Fr,Sa,Su").components(separatedBy: ",")
-        let font: Font = compact ? .caption : roomy ? .title3 : .callout
+        let font: Font = compact ? (roomy ? .footnote : .caption) : roomy ? .title3 : .callout
         return VStack(alignment: .leading, spacing: compact ? 4 : 10) {
             if !compact {
                 Text(now.text(.dateTime.month(.wide).year()).capitalizedFirst).font(.headline)
@@ -214,9 +226,9 @@ struct MonthGrid: View {
                             let day = i < cells.count ? cells[i] : 0
                             Text(day == 0 ? "" : "\(day)")
                                 .font(font.monospacedDigit().weight(day == today ? .bold : .regular))
-                                .foregroundStyle(day == today ? AnyShapeStyle(.white) : d >= 5 ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.primary))
+                                .foregroundStyle(day == today ? AnyShapeStyle(theme.onAccent) : d >= 5 ? AnyShapeStyle(.tertiary) : AnyShapeStyle(.primary))
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, compact ? 4 : roomy ? 12 : 2)
+                                .padding(.vertical, compact ? (roomy ? 8 : 4) : roomy ? 12 : 2)
                                 .background {
                                     if day == today { Circle().fill(theme.accent).aspectRatio(1, contentMode: .fit) }
                                 }

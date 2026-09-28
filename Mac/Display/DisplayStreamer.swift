@@ -1,5 +1,5 @@
 import CoreMedia
-import PhoneScreenKit
+import QwoviKit
 import ScreenCaptureKit
 import VideoToolbox
 
@@ -10,7 +10,7 @@ final class DisplayStreamer: NSObject, SCStreamOutput, SCStreamDelegate, @unchec
     /// Sends a message to the phone. Must be thread-safe (`ChannelPool.send` is).
     var send: (@Sendable (Message) -> Void)?
 
-    private let queue = DispatchQueue(label: "phonescreen.display", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "qwovi.display", qos: .userInteractive)
     private let lock = NSLock()
     private var stream: SCStream?
     private var session: VTCompressionSession?

@@ -1,5 +1,5 @@
 import CoreMotion
-import PhoneScreenKit
+import QwoviKit
 
 /// Reads how the phone is held from the accelerometer. Reports an orientation only when the phone is
 /// tilted up enough to tell (on a stand, in a hand); lying flat on the desk it stays silent, so the

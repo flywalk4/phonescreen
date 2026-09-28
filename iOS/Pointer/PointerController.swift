@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 import UIKit
 
@@ -141,7 +141,7 @@ final class PointerController: ObservableObject {
         layerView?.setPressed(down)
     }
 
-    func scroll(dx: Double, dy: Double, phase: PhoneScreenKit.ScrollPhase) {
+    func scroll(dx: Double, dy: Double, phase: QwoviKit.ScrollPhase) {
         guard isVisible else { return }
         if phase == .began {
             onActivity()
@@ -184,7 +184,7 @@ final class PointerController: ObservableObject {
         }
     }
 
-    func pinch(magnification: Double, phase: PhoneScreenKit.ScrollPhase) {
+    func pinch(magnification: Double, phase: QwoviKit.ScrollPhase) {
         guard isVisible else { return }
         switch phase {
         case .began:

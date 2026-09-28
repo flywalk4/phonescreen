@@ -12,7 +12,7 @@
 //   node scripts/widget-dev.mjs bundle demo.json [--theme catalog/themes/<id>]  # all widgets + pages for the phone's
 //                                                        # `--demo --demo-bundle demo.json` (screenshots of the real UI)
 //
-// The real check is still `PhoneScreen --widget-test` on a Mac (JavaScriptCore, the real sandbox and SwiftUI);
+// The real check is still `Qwovi --widget-test` on a Mac (JavaScriptCore, the real sandbox and SwiftUI);
 // this emulation mirrors the sandbox API and limits closely enough to catch script, template and layout mistakes.
 //
 // Fixture (catalog/widgets/<id>/fixtures/<name>.json; the app never downloads these):
@@ -238,7 +238,7 @@ function node(t, scope, budget) {
     case "button": {
       const action = str("action");
       if (!action) throw new Error("The button has no action");
-      return { type: "button", title: str("title") ?? "", symbol: str("symbol"), action };
+      return { type: "button", title: str("title") ?? "", symbol: str("symbol"), action, color: str("color") };
     }
     case "sprite": {
       const frames = (value(t.frames, scope) || []).slice(0, 16).filter(Array.isArray).map((f) => f.slice(0, 48).map((r) => text(r).slice(0, 48)));
@@ -402,7 +402,12 @@ function renderHTML(tree, themeName) {
         return `<div class="track"><div style="width:${n.value * 100}%;height:100%;border-radius:2px;background:${c}"></div></div>`;
       }
       case "chart": return chart(n.values, color(n.color) || T.accent, n.style || "line", n.height, T);
-      case "button": return `<div class="button" style="color:${T.accent}">${SYMBOLS[n.symbol] ? SYMBOLS[n.symbol] + " " : ""}${esc(T.style === "ascii" ? `[ ${n.title || SYMBOLS[n.symbol] || ""} ]` : n.title)}</div>`;
+      case "button": { // as on the phone: a glass pill (a circle with only a symbol), filled and glowing with a colour
+        if (T.style === "ascii") return `<div class="button" style="color:${T.accent};background:none">[ ${esc(n.title || SYMBOLS[n.symbol] || "")} ]</div>`;
+        const fill = color(n.color), label = `${SYMBOLS[n.symbol] ? SYMBOLS[n.symbol] + (n.title ? " " : "") : ""}${esc(n.title)}`;
+        return fill ? `<div class="button" style="background:${fill};color:#fff;box-shadow:0 0 14px ${fill}88">${label}</div>`
+                    : `<div class="button${n.title ? "" : " round"}">${label}</div>`;
+      }
       case "sprite": {
         const f = n.frames[0], cols = Math.max(...f.map((row) => row.length)), cell = 6;
         let px = "";
@@ -450,7 +455,7 @@ body{margin:0;background:#1c1c1e;font-family:${({ monospaced: "'DejaVu Sans Mono
 .scene{width:100%;height:100%;min-height:60px;border-radius:14px}
 .track{width:100%;height:4px;border-radius:2px;background:${T.light ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.18)"}}
 .divider{height:1px;width:100%;background:${T.light ? "rgba(0,0,0,.12)" : "rgba(255,255,255,.15)"}}
-.button{padding:7px 12px;border-radius:9px;background:${T.light ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.12)"};font-size:15px;font-weight:500;white-space:nowrap;align-self:flex-start}
+.button{padding:8px 16px;border-radius:999px;background:${T.light ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.1)"};border:1px solid ${T.light ? "rgba(0,0,0,.1)" : "rgba(255,255,255,.15)"};font-size:15px;font-weight:600;white-space:nowrap;align-self:flex-start}.button.round{padding:8px 11px}
 .card{border-radius:${T.radius}px;background:${T.card};${T.style === "glass" ? `border:1px solid ${T.border || "rgba(255,255,255,.22)"};backdrop-filter:blur(30px);` : T.border && T.style === "flat" ? `border:1px solid ${T.border};` : ""}${T.style === "ascii" ? `outline:1px dashed ${T.sec};` : ""}overflow:hidden;box-sizing:border-box;padding:14px;display:flex;${T.style === "ascii" ? "font-family:'DejaVu Sans Mono',monospace;" : ""}}
 .card>.inner{display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden}.card>.inner>.v{flex:1}
 .card.full{background:none;border:none;outline:none;padding:18px 2px}
@@ -551,7 +556,7 @@ function fixtureFor(dir, args) {
 /** A small but complete widget: settings, storage, an action, all three sizes, adaptive to every theme. */
 function scaffold(dir, id, name) {
   const json = (v) => JSON.stringify(v, null, 2) + "\n";
-  const schema = (n) => `https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/${n}.schema.json`;
+  const schema = (n) => `https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/${n}.schema.json`;
   fs.mkdirSync(path.join(dir, "fixtures"), { recursive: true });
   fs.writeFileSync(path.join(dir, "manifest.json"), json({
     $schema: schema("manifest"), id, name, version: "1.0.0", author: id.split(".")[1] || "me",
@@ -678,7 +683,7 @@ async function main() {
     console.log(`${rel}: manifest.json, view.json, provider.js, fixtures/ok.json\n` +
       `next:    node scripts/widget-dev.mjs watch ${rel}   (edit the files — preview.png updates)\n` +
       `         node scripts/widget-dev.mjs test ${rel}\n` +
-      `on a Mac: the PhoneScreen menu → “Widgets…” → “Development folder…” (live reload)`);
+      `on a Mac: the Qwovi menu → “Widgets…” → “Development folder…” (live reload)`);
   } else if (command === "watch") {
     const dir = widgetDir(args._[0] || ".");
     const out = args.out || path.join(dir, "preview.png");

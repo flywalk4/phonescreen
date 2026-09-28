@@ -1,11 +1,11 @@
 import CoreBluetooth
 import Foundation
-import PhoneScreenKit
+import QwoviKit
 
 /// The Mac's Bluetooth LE side: finds the phone's service, reads the L2CAP PSM and opens the channel.
 /// Kept connected in the background as a standby, so losing the cable and Wi-Fi switches over instantly.
 final class BLECentral: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, @unchecked Sendable {
-    private let queue = DispatchQueue(label: "phonescreen.ble")
+    private let queue = DispatchQueue(label: "qwovi.ble")
     private var manager: CBCentralManager?
     /// Peripherals we're connecting / connected to (CoreBluetooth needs strong references).
     private var peripherals: [UUID: CBPeripheral] = [:]

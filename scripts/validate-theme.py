@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks a PhoneScreen theme (a folder with theme.json, or the file itself) the way the app does.
+"""Checks a Qwovi theme (a folder with theme.json, or the file itself) the way the app does.
 
     python3 scripts/validate-theme.py catalog/themes/com.author.theme
 """

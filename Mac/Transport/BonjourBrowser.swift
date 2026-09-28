@@ -1,11 +1,11 @@
 import Foundation
 import Network
-import PhoneScreenKit
+import QwoviKit
 
 /// Finds the phone over Bonjour on the LAN and over peer-to-peer Wi-Fi (AWDL, no shared network needed)
 /// and hands ready TCP channels to the pool.
 final class BonjourBrowser: @unchecked Sendable {
-    private let queue = DispatchQueue(label: "phonescreen.bonjour")
+    private let queue = DispatchQueue(label: "qwovi.bonjour")
     private var browser: NWBrowser?
     private var pending: [NWEndpoint: NWConnection] = [:]
     private var connected: Set<NWEndpoint> = []
@@ -17,7 +17,7 @@ final class BonjourBrowser: @unchecked Sendable {
 
     func start() {
         queue.async { [self] in
-            let browser = NWBrowser(for: .bonjour(type: Protocol.bonjourType, domain: nil), using: .phoneScreen())
+            let browser = NWBrowser(for: .bonjour(type: Protocol.bonjourType, domain: nil), using: .qwovi())
             browser.browseResultsChangedHandler = { [weak self] results, _ in
                 self?.update(results)
             }
@@ -42,7 +42,7 @@ final class BonjourBrowser: @unchecked Sendable {
     }
 
     private func connect(to endpoint: NWEndpoint) {
-        let connection = NWConnection(to: endpoint, using: .phoneScreen())
+        let connection = NWConnection(to: endpoint, using: .qwovi())
         pending[endpoint] = connection
         connection.stateUpdateHandler = { [weak self, weak connection] state in
             guard let self, let connection else { return }

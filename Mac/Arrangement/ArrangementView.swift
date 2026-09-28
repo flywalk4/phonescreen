@@ -1,4 +1,4 @@
-import PhoneScreenKit
+import QwoviKit
 import SwiftUI
 
 /// "Displays"-style editor: every Mac display plus the phone at true physical proportions.

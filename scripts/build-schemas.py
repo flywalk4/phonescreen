@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Writes schemas/*.schema.json (JSON Schema for view.json, manifest.json, theme.json) from the validator's rules,
 so editors (VS Code etc.) autocomplete and check widget files. Add "$schema" to a file to use it:
-    "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json"
+    "$schema": "https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/view.schema.json"
 
     python3 scripts/build-schemas.py          # write
     python3 scripts/build-schemas.py --check  # fail if the committed schemas are stale (CI)
@@ -19,10 +19,10 @@ boolv={"anyOf":[{"type":"boolean"},binding]}
 color={"type":"string","description":"primary, secondary, tertiary, accent, red, orange, yellow, green, mint, teal, cyan, blue, indigo, purple, pink, brown, gray, white, clear (no surface), #RRGGBB(AA) or a {{binding}}","examples":["secondary","accent","green","#FF6600"]}
 desc={
  "vstack":"Children stacked vertically.","hstack":"Children side by side.","text":"Text; style or size/weight/design.","symbol":"An SF Symbol.",
- "gauge":"Ring, value 0…1.","progress":"Bar, value 0…1.","chart":"Chart of values: line, area or bar.","button":"Calls action(name) in provider.js.",
+ "gauge":"Ring, value 0…1.","progress":"Bar, value 0…1.","chart":"Chart of values: line, area or bar.","button":"Calls action(name) in provider.js. A glass pill (a circle with only a symbol); with a color, a filled glowing pill for the main action.",
  "sprite":"Pixel animation: frames of equal-length strings, palette char → colour.","spacer":"Flexible space.","divider":"A line.",
  "list":"Repeats template for each of items (item / index bound); columns for a grid.","box":"A rounded panel on the theme's surface; fit hugs content; action makes it tappable; aspect keeps proportions.",
- "grid":"Children in columns.","layers":"Children on top of each other (first at the back).","scene":"Animated scene drawn by the phone (live wallpaper).",
+ "grid":"Children in columns.","layers":"Children on top of each other (first at the back).","scene":"Animated scene drawn by the phone (live wallpaper). As the first child of a root `layers` it fills the whole card, or the whole screen when the widget has it.",
 }
 props={
  "spacing":num,"align":strv,"children":{"type":"array","items":{"$ref":"#/$defs/node"}},"text":strv,
@@ -41,13 +41,13 @@ for t,keys in sorted(v.NODES.items()):
     for k in sorted(keys): p[k]=props.get(k,{})
     req=["type"]+(["action"] if t=="button" else [])+(["template"] if t=="list" else [])
     nodes.append({"title":t,"description":desc.get(t,""),"type":"object","properties":p,"required":req,"additionalProperties":False})
-view={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json",
- "title":"PhoneScreen widget view.json","description":"Declarative UI for sizes full / medium / small. Any string may contain {{path}} bindings to refresh() data.",
+view={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/view.schema.json",
+ "title":"Qwovi widget view.json","description":"Declarative UI for sizes full / medium / small. Any string may contain {{path}} bindings to refresh() data.",
  "type":"object","properties":{"$schema":{"type":"string"},"full":{"$ref":"#/$defs/node"},"medium":{"$ref":"#/$defs/node"},"small":{"$ref":"#/$defs/node"}},
  "additionalProperties":False,"$defs":{"node":{"oneOf":nodes}}}
 OUT["view"]=view
-manifest={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
- "title":"PhoneScreen widget manifest.json","type":"object","required":["id","name","version","author"],
+manifest={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/manifest.schema.json",
+ "title":"Qwovi widget manifest.json","type":"object","required":["id","name","version","author"],
  "properties":{"$schema":{"type":"string"},
   "id":{"type":"string","pattern":"^[a-z0-9]+(\\.[a-z0-9-]+)+$","description":"Reverse DNS, same as the folder name: com.author.widget"},
   "name":{"type":"string","maxLength":40},"version":{"type":"string","pattern":"^\\d+\\.\\d+\\.\\d+$"},"author":{"type":"string"},
@@ -67,8 +67,8 @@ manifest={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https:
  "additionalProperties":False}
 OUT["manifest"]=manifest
 hexc={"type":"string","pattern":"^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"}
-theme={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/theme.schema.json",
- "title":"PhoneScreen theme.json","type":"object","required":["id","name","version","author","style","appearance","font","radius","background","colors"],
+theme={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://raw.githubusercontent.com/flywalk4/qwovi/main/schemas/theme.schema.json",
+ "title":"Qwovi theme.json","type":"object","required":["id","name","version","author","style","appearance","font","radius","background","colors"],
  "properties":{"$schema":{"type":"string"},"id":{"type":"string","pattern":"^[a-z0-9]+(\\.[a-z0-9-]+)+$"},"name":{"type":"string","maxLength":40},
   "version":{"type":"string","pattern":"^\\d+\\.\\d+\\.\\d+$"},"author":{"type":"string"},"description":{"type":"string"},
   "localized":{"type":"object","description":"Name and description in other languages: {\"ru\": {\"name\": …, \"description\": …}}",
