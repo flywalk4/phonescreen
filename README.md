@@ -14,6 +14,7 @@ Move the Mac's cursor off the edge of your display and it lands on the phone.
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white)
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-F05138?logo=swift&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **English** · [Русский](README.ru.md)
 
@@ -252,6 +253,10 @@ Mac (menu bar agent)                                   iPhone
 cd Packages/PhoneScreenKit && swift test        # protocol, templates, themes
 node scripts/widget-dev.mjs test                # every widget scenario, no Mac needed
 ```
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 Vadim Shalimov
 
 <div align="center">
 <br>

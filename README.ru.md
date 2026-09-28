@@ -14,6 +14,7 @@
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white)
 ![iOS 18+](https://img.shields.io/badge/iOS-18%2B-000000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-native-F05138?logo=swift&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [English](README.md) · **Русский**
 
@@ -274,6 +275,10 @@ Mac (агент в строке меню)                              iPhone
 cd Packages/PhoneScreenKit && swift test        # протокол, шаблоны, темы
 node scripts/widget-dev.mjs test                # все сценарии виджетов, Mac не нужен
 ```
+
+## 📄 Лицензия
+
+[MIT](LICENSE) © 2026 Vadim Shalimov
 
 <div align="center">
 <br>
