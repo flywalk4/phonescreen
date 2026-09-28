@@ -1,9 +1,15 @@
 {
   "id": "com.flywalk4.graphite",
-  "name": "Графит",
-  "version": "1.0.0",
+  "name": "Graphite",
+  "version": "1.1.0",
   "author": "flywalk4",
-  "description": "Чёрный и белый, моноширинный шрифт и один красный акцент — только там, где нужно внимание. Цвета виджетов сведены к оттенкам серого.",
+  "description": "Black and white, a monospaced font and a single red accent — only where attention is needed. Widget colours are reduced to shades of grey.",
+  "localized": {
+    "ru": {
+      "name": "Графит",
+      "description": "Чёрный и белый, моноширинный шрифт и один красный акцент — только там, где нужно внимание. Цвета виджетов сведены к оттенкам серого."
+    }
+  },
   "style": "flat",
   "appearance": "dark",
   "font": "monospaced",

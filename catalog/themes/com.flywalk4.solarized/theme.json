@@ -1,9 +1,14 @@
 {
   "id": "com.flywalk4.solarized",
   "name": "Solarized",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
-  "description": "Классическая светлая палитра Итана Шуновера — мягкая для глаз.",
+  "description": "Ethan Schoonover's classic light palette — easy on the eyes.",
+  "localized": {
+    "ru": {
+      "description": "Классическая светлая палитра Итана Шуновера — мягкая для глаз."
+    }
+  },
   "style": "flat",
   "appearance": "light",
   "font": "system",

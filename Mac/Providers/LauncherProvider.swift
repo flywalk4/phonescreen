@@ -12,11 +12,11 @@ final class LauncherProvider: @unchecked Sendable {
     private var items: [LauncherItem] = []
 
     private static let systemActions: [LauncherItem] = [
-        LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock.fill"),
-        LauncherItem(id: "sys:displaySleep", title: "Погасить экран", kind: .system, symbol: "display"),
-        LauncherItem(id: "sys:darkMode", title: "Тёмная тема", kind: .system, symbol: "circle.lefthalf.filled"),
-        LauncherItem(id: "sys:mute", title: "Звук вкл/выкл", kind: .system, symbol: "speaker.slash.fill"),
-        LauncherItem(id: "sys:screenshot", title: "Снимок экрана", kind: .system, symbol: "camera.viewfinder"),
+        LauncherItem(id: "sys:lock", title: String(localized: "Lock Screen"), kind: .system, symbol: "lock.fill"),
+        LauncherItem(id: "sys:displaySleep", title: String(localized: "Turn Off Display"), kind: .system, symbol: "display"),
+        LauncherItem(id: "sys:darkMode", title: String(localized: "Dark Mode"), kind: .system, symbol: "circle.lefthalf.filled"),
+        LauncherItem(id: "sys:mute", title: String(localized: "Sound On/Off"), kind: .system, symbol: "speaker.slash.fill"),
+        LauncherItem(id: "sys:screenshot", title: String(localized: "Screenshot"), kind: .system, symbol: "camera.viewfinder"),
         LauncherItem(id: "sys:missionControl", title: "Mission Control", kind: .system, symbol: "rectangle.3.group"),
     ]
 

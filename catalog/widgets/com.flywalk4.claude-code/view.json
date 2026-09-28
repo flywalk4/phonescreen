@@ -83,7 +83,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "5 ЧАСОВ",
+                "text": "{{t.fiveHeader}}",
                 "style": "caption",
                 "weight": "semibold",
                 "color": "secondary"
@@ -120,7 +120,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "НЕДЕЛЯ",
+                "text": "{{t.weekHeader}}",
                 "style": "caption",
                 "weight": "semibold",
                 "color": "secondary"
@@ -162,7 +162,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "ЗА СУТКИ",
+                "text": "{{t.dayHeader}}",
                 "style": "caption",
                 "weight": "semibold",
                 "color": "secondary"
@@ -172,7 +172,7 @@
               },
               {
                 "type": "text",
-                "text": "{{activityTotal}} токенов",
+                "text": "{{activityTotal}} {{t.tokens}}",
                 "style": "caption",
                 "weight": "semibold",
                 "color": "secondary"
@@ -245,7 +245,7 @@
                 "children": [
                   {
                     "type": "text",
-                    "text": "5 ч",
+                    "text": "{{t.five}}",
                     "style": "caption",
                     "weight": "semibold",
                     "color": "secondary"
@@ -289,7 +289,7 @@
                 "children": [
                   {
                     "type": "text",
-                    "text": "Неделя",
+                    "text": "{{t.week}}",
                     "style": "caption",
                     "weight": "semibold",
                     "color": "secondary"
@@ -367,7 +367,7 @@
         "children": [
           {
             "type": "text",
-            "text": "5ч",
+            "text": "{{t.fiveShort}}",
             "style": "caption",
             "color": "secondary"
           },
@@ -389,7 +389,7 @@
         "children": [
           {
             "type": "text",
-            "text": "нед",
+            "text": "{{t.weekShort}}",
             "style": "caption",
             "color": "secondary"
           },

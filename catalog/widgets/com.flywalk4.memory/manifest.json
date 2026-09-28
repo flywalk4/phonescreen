@@ -1,29 +1,29 @@
 {
   "id": "com.flywalk4.memory",
-  "name": "Память",
-  "version": "1.1.2",
+  "name": "Memory",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Найди пары: 16 карточек, открывай по две. Считаются ходы, лучший результат сохраняется. Наборы картинок — животные, еда, космос.",
+  "description": "Find the pairs: 16 cards, flip two at a time. Moves are counted and the best score is kept. Card sets: animals, food, space.",
   "symbol": "square.grid.3x3.fill",
   "refresh": 3600,
   "settings": [
     {
       "key": "set",
-      "title": "Набор карточек",
+      "title": "Card set",
       "type": "choice",
       "default": "animals",
       "options": [
         {
           "value": "animals",
-          "title": "🦊 Животные"
+          "title": "🦊 Animals"
         },
         {
           "value": "food",
-          "title": "🍕 Еда"
+          "title": "🍕 Food"
         },
         {
           "value": "space",
-          "title": "🚀 Космос"
+          "title": "🚀 Space"
         }
       ]
     }

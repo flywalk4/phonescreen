@@ -1,9 +1,9 @@
 {
   "id": "com.flywalk4.game2048",
   "name": "2048",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Классическая 2048: сдвигай плитки кнопками-стрелками, одинаковые складываются. Счёт и рекорд сохраняются, партию можно продолжать когда угодно.",
+  "description": "The classic 2048: slide tiles with the arrow buttons, equal ones merge. Score and best are kept, and a game can be picked up any time.",
   "symbol": "square.grid.2x2.fill",
   "refresh": 3600
 }

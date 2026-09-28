@@ -25,7 +25,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         /// Home folder `~/` resolves to (the real one; overridable in `--widget-test`).
         var home: String = NSHomeDirectory()
         /// The widget's language ("ru", "en"…) and its strings table (`t()`, `format`), see WidgetStrings.
-        var language: String = "ru"
+        var language: String = "en"
         var strings: [String: Any] = [:]
     }
 
@@ -34,8 +34,8 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         var description: String {
             switch self {
             case .script(let s): s
-            case .timeout: "Скрипт не ответил за 20 с"
-            case .noRefresh: "В provider.js нет функции refresh()"
+            case .timeout: "The script didn't answer within 20 s"
+            case .noRefresh: "provider.js has no refresh() function"
             }
         }
     }
@@ -78,7 +78,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
 
     private func call(_ function: String, arguments: [Any], _ done: @escaping @Sendable (Result<Any, Failure>) -> Void) {
         queue.async { [self] in
-            guard let context = loadedContext() else { return done(.failure(.script(lastError ?? "Не удалось загрузить скрипт"))) }
+            guard let context = loadedContext() else { return done(.failure(.script(lastError ?? "Couldn't load the script"))) }
             guard let fn = context.objectForKeyedSubscript(function), !fn.isUndefined, fn.isObject else {
                 return done(function == "refresh" ? .failure(.noRefresh) : .success(NSNull()))
             }
@@ -95,13 +95,13 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
             lastError = nil
             let result = fn.call(withArguments: arguments + [ctx])
             if let error = lastError { return finish(.failure(.script(error))) }
-            guard let result else { return finish(.failure(.script("Нет результата"))) }
+            guard let result else { return finish(.failure(.script("No result"))) }
 
             // Async functions return a Promise; plain values are fine too.
             if result.isObject, let then = result.objectForKeyedSubscript("then"), then.isObject {
                 let onValue: @convention(block) (JSValue) -> Void = { value in finish(.success(Self.plain(value))) }
                 let onError: @convention(block) (JSValue) -> Void = { error in
-                    let message = error.objectForKeyedSubscript("message")?.toString() ?? error.toString() ?? "Ошибка"
+                    let message = error.objectForKeyedSubscript("message")?.toString() ?? error.toString() ?? "Error"
                     finish(.failure(.script(message)))
                 }
                 result.invokeMethod("then", withArguments: [JSValue(object: onValue, in: context)!,
@@ -119,9 +119,9 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         guard let context = JSContext(virtualMachine: JSVirtualMachine()) else { return nil }
         context.name = manifest.id
         context.exceptionHandler = { [weak self] _, exception in
-            let message = exception?.toString() ?? "Ошибка"
+            let message = exception?.toString() ?? "Error"
             let line = exception?.objectForKeyedSubscript("line")?.toInt32() ?? 0
-            self?.lastError = line > 0 ? "\(message) (строка \(line))" : message
+            self?.lastError = line > 0 ? "\(message) (line \(line))" : message
             self?.hooks.log("error: \(self?.lastError ?? message)")
         }
         // Each synchronous run of script code may take at most 2 s; waiting on fetch doesn't count.
@@ -163,7 +163,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
                 self.hooks.saveStorage(self.storage)
             } else {
                 self.storage[key] = nil
-                self.hooks.log("storage: превышен лимит \(Self.maxStorageBytes / 1024) КБ, значение не сохранено")
+                self.hooks.log("storage: over the \(Self.maxStorageBytes / 1024) KB limit, the value wasn't saved")
             }
         }
         context.setObject(storageGet, forKeyedSubscript: "__storageGet" as NSString)
@@ -175,7 +175,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
             guard let self, let url = self.fileURL(path) else { return NSNull() }
             guard let data = try? Data(contentsOf: url) else { return NSNull() }
             guard data.count <= Self.maxFileBytes else {
-                self.hooks.log("files.read: \(path) больше 1 МБ")
+                self.hooks.log("files.read: \(path) is over 1 MB")
                 return NSNull()
             }
             return String(data: data, encoding: .utf8) ?? NSNull()
@@ -252,14 +252,14 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
 
     private func fileURL(_ path: String) -> URL? {
         guard manifest.allowsFile(path) else {
-            hooks.log("files: \(path) не разрешён — добавьте путь в permissions.files")
+            hooks.log("files: \(path) is not allowed — add the path to permissions.files")
             return nil
         }
         let absolute = URL(fileURLWithPath: hooks.home).appendingPathComponent(String(path.dropFirst(2)))
         let resolved = absolute.resolvingSymlinksInPath()
         let home = URL(fileURLWithPath: hooks.home).resolvingSymlinksInPath().path
         guard manifest.allowsResolved(resolved.path, home: home) else {
-            hooks.log("files: \(path) ведёт за пределы разрешённых путей")
+            hooks.log("files: \(path) leads outside the allowed paths")
             return nil
         }
         return resolved
@@ -302,7 +302,7 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
     private func fetch(url: String, method: String, headersJSON: String, body: String?, resolve: JSValue, reject: JSValue) {
         func fail(_ message: String) { queue.async { reject.call(withArguments: [message]) } }
         guard let target = URL(string: url), manifest.allows(target) else {
-            return fail("fetch: \(url) не разрешён — добавьте хост в permissions.network (только HTTPS)")
+            return fail("fetch: \(url) is not allowed — add the host to permissions.network (HTTPS only)")
         }
         var request = URLRequest(url: target)
         request.httpMethod = method.uppercased()
@@ -314,8 +314,8 @@ final class WidgetRuntime: NSObject, URLSessionTaskDelegate, @unchecked Sendable
         session.dataTask(with: request) { [weak self] data, response, error in
             guard let self else { return }
             if let error { return fail("fetch: \(error.localizedDescription)") }
-            guard let http = response as? HTTPURLResponse else { return fail("fetch: нет ответа") }
-            guard (data?.count ?? 0) <= Self.maxResponseBytes else { return fail("fetch: ответ больше 2 МБ") }
+            guard let http = response as? HTTPURLResponse else { return fail("fetch: no answer") }
+            guard (data?.count ?? 0) <= Self.maxResponseBytes else { return fail("fetch: the answer is over 2 MB") }
             let text = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
             var headers: [String: String] = [:]
             for (k, v) in http.allHeaderFields { headers["\(k)".lowercased()] = "\(v)" }

@@ -1,0 +1,32 @@
+{
+  "en": {
+    "manifest.name": "Exchange rates",
+    "manifest.description": "Exchange rates against the ruble (or another currency) from open.er-api.com, with a chart of changes.",
+    "settings.target.title": "Show in",
+    "settings.codes.title": "Currencies",
+    "settings.codes.hint": "Comma-separated codes: USD, EUR, CNY",
+    "httpError": "The rates server answered {status}",
+    "noRates": "No rates for {target}",
+    "noneFound": "None of the currencies were found — check the codes in the settings",
+    "header": "EXCHANGE RATES",
+    "refresh": "Refresh",
+    "in": "in",
+    "recent": "over the last days",
+    "updated": "Updated"
+  },
+  "ru": {
+    "manifest.name": "Курсы валют",
+    "manifest.description": "Курсы валют к рублю (или другой валюте) по данным open.er-api.com, с графиком изменений.",
+    "settings.target.title": "Показывать в",
+    "settings.codes.title": "Валюты",
+    "settings.codes.hint": "Коды через запятую: USD, EUR, CNY",
+    "httpError": "Сервер курсов ответил {status}",
+    "noRates": "Нет курсов для {target}",
+    "noneFound": "Ни одна из валют не найдена — проверьте коды в настройках",
+    "header": "КУРСЫ ВАЛЮТ",
+    "refresh": "Обновить",
+    "in": "в",
+    "recent": "за последние дни",
+    "updated": "Обновлено"
+  }
+}

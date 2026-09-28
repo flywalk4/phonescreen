@@ -17,7 +17,7 @@
           },
           {
             "type": "text",
-            "text": "МЕСЯЦ",
+            "text": "{{t.header}}",
             "style": "caption",
             "weight": "semibold",
             "color": "secondary"

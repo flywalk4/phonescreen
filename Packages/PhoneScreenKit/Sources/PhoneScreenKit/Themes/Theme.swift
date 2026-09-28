@@ -120,6 +120,8 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
     public var version: String
     public var author: String
     public var description: String?
+    /// Name and description in other languages: `{"ru": {"name": "…", "description": "…"}}`.
+    public var localized: [String: [String: String]]?
     public var style: Style
     public var appearance: Appearance
     public var font: FontDesign
@@ -130,13 +132,14 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
     public var layout: Layout?
 
     public init(id: String, name: String, version: String = "1.0.0", author: String, description: String? = nil,
-                style: Style, appearance: Appearance, font: FontDesign, radius: Double,
+                localized: [String: [String: String]]? = nil, style: Style, appearance: Appearance, font: FontDesign, radius: Double,
                 background: Background, colors: Colors, layout: Layout? = nil) {
         self.id = id
         self.name = name
         self.version = version
         self.author = author
         self.description = description
+        self.localized = localized
         self.style = style
         self.appearance = appearance
         self.font = font
@@ -146,35 +149,41 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         self.layout = layout
     }
 
+    /// Name and description in `language`, falling back to the theme's own.
+    public func text(in language: String) -> (name: String, description: String?) {
+        let table = localized?[language]
+        return (table?["name"] ?? name, table?["description"] ?? description)
+    }
+
     public struct Invalid: Error, Equatable, CustomStringConvertible {
         public var description: String
     }
 
     public func validate() throws {
         guard id.range(of: #"^[a-z0-9]+(\.[a-z0-9-]+)+$"#, options: .regularExpression) != nil else {
-            throw Invalid(description: "id: «\(id)» — обратный домен строчными буквами, например com.author.theme")
+            throw Invalid(description: "id: “\(id)” — a lowercase reverse domain, e.g. com.author.theme")
         }
-        guard !name.isEmpty, name.count <= 40 else { throw Invalid(description: "name: от 1 до 40 символов") }
-        guard (0...40).contains(radius) else { throw Invalid(description: "radius: от 0 до 40") }
+        guard !name.isEmpty, name.count <= 40 else { throw Invalid(description: "name: 1 to 40 characters") }
+        guard (0...40).contains(radius) else { throw Invalid(description: "radius: 0 to 40") }
         if let size = layout?.textSize, !Layout.textSizes.contains(size) {
-            throw Invalid(description: "layout.textSize: small, medium, large или xlarge")
+            throw Invalid(description: "layout.textSize: small, medium, large or xlarge")
         }
         if let l = layout {
             for (name, value, range) in [("gap", l.gap, 0.0...24), ("margin", l.margin, 0...24), ("padding", l.padding, 6...24),
                                          ("cardOpacity", l.cardOpacity, 0...1), ("autoPage", l.autoPage, 0...600)] {
                 if let value, !range.contains(value) {
-                    throw Invalid(description: "layout.\(name): от \(range.lowerBound.formatted()) до \(range.upperBound.formatted())")
+                    throw Invalid(description: "layout.\(name): \(range.lowerBound.formatted()) to \(range.upperBound.formatted())")
                 }
             }
         }
         guard (1...4).contains(background.colors.count) else {
-            throw Invalid(description: "background.colors: от 1 до 4 цветов")
+            throw Invalid(description: "background.colors: 1 to 4 colours")
         }
         if let a = background.animation, !Self.animations.contains(a), a != Self.photoBackground {
-            throw Invalid(description: "background.animation: «\(a)» — одна из \(Self.animations.joined(separator: ", "))")
+            throw Invalid(description: "background.animation: “\(a)” — one of \(Self.animations.joined(separator: ", "))")
         }
-        if let s = background.speed, !(0.1...5).contains(s) { throw Invalid(description: "background.speed: от 0.1 до 5") }
-        guard (background.tints?.count ?? 0) <= 6 else { throw Invalid(description: "background.tints: не больше 6 цветов") }
+        if let s = background.speed, !(0.1...5).contains(s) { throw Invalid(description: "background.speed: 0.1 to 5") }
+        guard (background.tints?.count ?? 0) <= 6 else { throw Invalid(description: "background.tints: at most 6 colours") }
         var all = background.colors.map { ("background.colors", $0) }
         all += (background.tints ?? []).map { ("background.tints", $0) }
         all += [("colors.text", colors.text), ("colors.secondary", colors.secondary), ("colors.accent", colors.accent)]
@@ -182,7 +191,7 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         if let c = colors.border { all.append(("colors.border", c)) }
         for (key, value) in colors.palette ?? [:] { all.append(("colors.palette.\(key)", value)) }
         for (key, value) in all where RGBA(hex: value) == nil {
-            throw Invalid(description: "\(key): «\(value)» — цвет вида #RRGGBB или #RRGGBBAA")
+            throw Invalid(description: "\(key): “\(value)” — a colour like #RRGGBB or #RRGGBBAA")
         }
     }
 }
@@ -195,14 +204,14 @@ public extension Theme {
     func contrastWarnings() -> [String] {
         let backgrounds = background.colors.compactMap(RGBA.init(hex:)).map { $0.over(RGBA(r: 0, g: 0, b: 0)) }
         let card = colors.card.flatMap(RGBA.init(hex:))
-        var surfaces: [(String, RGBA)] = backgrounds.map { ("фон", $0) }
-        if let card, style != .glass { surfaces += backgrounds.map { ("карточка", card.over($0)) } }
+        var surfaces: [(String, RGBA)] = backgrounds.map { ("the background", $0) }
+        if let card, style != .glass { surfaces += backgrounds.map { ("a card", card.over($0)) } }
         var warnings: [String] = []
         for (name, hex, minimum) in [("text", colors.text, 4.5), ("secondary", colors.secondary, 3.0)] {
             guard let fg = RGBA(hex: hex) else { continue }
             let worst = surfaces.map { ($0.0, fg.over($0.1).contrast(with: $0.1)) }.min { $0.1 < $1.1 }
             if let worst, worst.1 < minimum {
-                warnings.append("colors.\(name) плохо читается на \(worst.0): контраст \(String(format: "%.1f", worst.1)):1, нужно от \(String(format: "%.1f", minimum)):1")
+                warnings.append("colors.\(name) reads poorly on \(worst.0): contrast \(String(format: "%.1f", worst.1)):1, needs at least \(String(format: "%.1f", minimum)):1")
             }
         }
         return warnings
@@ -251,15 +260,17 @@ public struct RGBA: Equatable, Sendable {
 
 public extension Theme {
     static let dark = Theme(
-        id: "builtin.dark", name: "Тёмная", author: "PhoneScreen",
-        description: "Чёрный фон и тёмные карточки — как раньше.",
+        id: "builtin.dark", name: "Dark", author: "PhoneScreen",
+        description: "A black background and dark cards — the classic look.",
+        localized: ["ru": ["name": "Тёмная", "description": "Чёрный фон и тёмные карточки — как раньше."]],
         style: .flat, appearance: .dark, font: .system, radius: 22,
         background: .init(colors: ["#000000"]),
         colors: .init(text: "#FFFFFF", secondary: "#98989F", accent: "#0A84FF", card: "#FFFFFF12"))
 
     static let light = Theme(
-        id: "builtin.light", name: "Светлая", author: "PhoneScreen",
-        description: "Светло-серый фон, белые карточки, тёмный текст.",
+        id: "builtin.light", name: "Light", author: "PhoneScreen",
+        description: "A light grey background, white cards, dark text.",
+        localized: ["ru": ["name": "Светлая", "description": "Светло-серый фон, белые карточки, тёмный текст."]],
         style: .flat, appearance: .light, font: .system, radius: 22,
         background: .init(colors: ["#F2F2F7"]),
         colors: .init(text: "#000000", secondary: "#6C6C70", accent: "#007AFF", card: "#FFFFFF", border: "#0000000F",
@@ -269,7 +280,8 @@ public extension Theme {
 
     static let glass = Theme(
         id: "builtin.glass", name: "Liquid Glass", author: "PhoneScreen",
-        description: "Стеклянные карточки поверх яркого градиента, как в iOS 26.",
+        description: "Glass cards over a bright gradient, as in iOS 26.",
+        localized: ["ru": ["description": "Стеклянные карточки поверх яркого градиента, как в iOS 26."]],
         style: .glass, appearance: .dark, font: .rounded, radius: 28,
         background: .init(colors: ["#141B45", "#2A1650"], angle: 35, animation: "aurora",
                           tints: ["#3A6FF7", "#B04BD8", "#16A3A8", "#E0559C"], speed: 1),
@@ -277,7 +289,8 @@ public extension Theme {
 
     static let ascii = Theme(
         id: "builtin.ascii", name: "ASCII", author: "PhoneScreen",
-        description: "Всё как в терминале: рамки из +-|, полосы [####....], моноширинный зелёный текст.",
+        description: "Everything as in a terminal: +-| frames, [####....] bars, monospaced green text.",
+        localized: ["ru": ["description": "Всё как в терминале: рамки из +-|, полосы [####....], моноширинный зелёный текст."]],
         style: .ascii, appearance: .dark, font: .monospaced, radius: 0,
         background: .init(colors: ["#050805"], animation: "matrix", tints: ["#39FF14", "#0F5A0A"], speed: 1),
         colors: .init(text: "#39FF14", secondary: "#1FA30C", accent: "#39FF14", card: "#050805EB", border: "#1FA30C",

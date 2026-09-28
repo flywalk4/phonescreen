@@ -107,10 +107,10 @@ import Testing
 
     @Test func titleListsVisibleWidgets() {
         let page = PageInfo(layout: .split, builtins: [.music, .weather, .notes])
-        #expect(page.title == "Музыка + Погода")
+        #expect(page.title == "Music + Weather")
         let custom = PageInfo(layout: .split, widgets: [.custom("com.example.rates"), .builtin(.music)])
-        #expect(custom.title(customNames: ["com.example.rates": "Курсы валют"]) == "Курсы валют + Музыка")
-        #expect(custom.title == "rates + Музыка")
+        #expect(custom.title(customNames: ["com.example.rates": "Курсы валют"]) == "Курсы валют + Music")
+        #expect(custom.title == "rates + Music")
     }
 
     @Test func widgetRefIsAStringOnTheWire() throws {

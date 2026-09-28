@@ -1,9 +1,9 @@
-// Месяц: календарь-сетка текущего месяца — сегодня выделено, выходные и праздники РФ цветом, номер недели,
-// сколько рабочих дней осталось. Сеть не нужна.
+// Month: the current month as a grid — today highlighted, weekends and Russian public holidays in colour, the week
+// number, how many working days are left. No network.
 
-const WEEKDAYS = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
-const MONTHS = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-// Нерабочие праздники РФ (ММ-ДД). Переносы выходных каждый год свои — их можно добавить в настройках.
+const WEEKDAYS = t("weekdays").split(",");
+const MONTHS = t("months").split(",");
+// Russian public holidays (MM-DD). Moved days off differ every year; they can be added in the settings.
 const HOLIDAYS = ["01-01", "01-02", "01-03", "01-04", "01-05", "01-06", "01-07", "01-08", "02-23", "03-08", "05-01", "05-09", "06-12", "11-04"];
 
 function refresh(ctx) {
@@ -22,15 +22,15 @@ function refresh(ctx) {
     nextCells: next.cells,
     day: String(now.getDate()),
     weekday: format.date(now, "weekday").split(",")[0],
-    week: `неделя ${isoWeek(now)}`,
-    work: `рабочих дней: осталось ${workLeft} из ${workTotal}`,
-    workShort: `${workLeft} раб. ${format.plural(workLeft, "день", "дня", "дней", false)}`,
+    week: t("week", { n: isoWeek(now) }),
+    work: t("work", { n: workLeft, total: workTotal }),
+    workShort: t("workShort", { n: workLeft }),
     progress: workTotal ? 1 - workLeft / workTotal : 1,
-    holiday: holidays.has(key(now)) ? "праздник" : "",
+    holiday: holidays.has(key(now)) ? t("holiday") : "",
   };
 }
 
-// Клетки месяца по неделям с понедельника: пустые до 1-го числа и после последнего.
+// The month's cells by weeks from Monday: empty before the 1st and after the last day.
 function grid(year, monthIndex, today, holidays) {
   const first = new Date(year, monthIndex, 1);
   const length = new Date(year, monthIndex + 1, 0).getDate();
@@ -61,7 +61,7 @@ function key(date) {
   return `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-// «2026-12-31, 05-04» → ["12-31", "05-04"] (год не важен: даты те же каждый год, кроме указанных).
+// "2026-12-31, 05-04" → ["12-31", "05-04"] (the year doesn't matter: the same dates every year).
 function extra(text) {
   return String(text || "").split(",").map((s) => s.trim().slice(-5)).filter((s) => /^\d\d-\d\d$/.test(s));
 }

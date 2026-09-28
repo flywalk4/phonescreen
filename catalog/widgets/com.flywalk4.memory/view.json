@@ -15,7 +15,7 @@
           },
           {
             "type": "text",
-            "text": "ПАМЯТЬ",
+            "text": "{{t.header}}",
             "style": "caption",
             "weight": "semibold",
             "color": "secondary"
@@ -25,7 +25,7 @@
           },
           {
             "type": "text",
-            "text": "рекорд: {{best}}",
+            "text": "{{t.best}}: {{best}}",
             "style": "caption",
             "color": "secondary"
           }
@@ -50,7 +50,7 @@
               },
               {
                 "type": "text",
-                "text": "ходов",
+                "text": "{{t.movesLabel}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -72,7 +72,7 @@
               },
               {
                 "type": "text",
-                "text": "пар",
+                "text": "{{t.pairsLabel}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -122,7 +122,7 @@
           },
           {
             "type": "button",
-            "title": "Заново",
+            "title": "{{t.restart}}",
             "symbol": "arrow.clockwise",
             "action": "new"
           }
@@ -189,7 +189,7 @@
               },
               {
                 "type": "text",
-                "text": "ходов",
+                "text": "{{t.movesLabel}}",
                 "style": "caption",
                 "color": "secondary"
               },
@@ -205,7 +205,7 @@
               },
               {
                 "type": "button",
-                "title": "Заново",
+                "title": "{{t.restart}}",
                 "action": "new"
               }
             ]
@@ -252,7 +252,7 @@
       },
       {
         "type": "text",
-        "text": "{{moves}} ходов · {{pairs}}",
+        "text": "{{movesLine}} · {{pairs}}",
         "style": "caption",
         "weight": "semibold"
       },
@@ -261,7 +261,7 @@
       },
       {
         "type": "button",
-        "title": "Заново",
+        "title": "{{t.restart}}",
         "action": "new"
       }
     ]

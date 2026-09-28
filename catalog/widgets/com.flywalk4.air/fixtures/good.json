@@ -6,7 +6,7 @@
    "body": {
     "results": [
      {
-      "name": "Москва",
+      "name": "Moscow",
       "latitude": 55.75,
       "longitude": 37.62
      }
@@ -85,10 +85,10 @@
  ],
  "expect": {
   "aqi": "34",
-  "level": "Хороший",
+  "level": "Good",
   "color": "mint",
   "pollutants.0.value": "11",
-  "uvText": "низкий",
+  "uvText": "low",
   "hasHourly": true
  }
 }

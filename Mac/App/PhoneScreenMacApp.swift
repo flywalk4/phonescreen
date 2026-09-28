@@ -2,7 +2,8 @@ import PhoneScreenKit
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    @MainActor let model = AppModel()
+    /// The language is settled first (English by default), before any text is looked up.
+    @MainActor let model: AppModel = { AppLanguage.bootstrap(); return AppModel() }()
     @MainActor private var arrangementWindow: NSWindow?
 
     @MainActor func applicationDidFinishLaunching(_ notification: Notification) {
@@ -85,7 +86,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.settingsTab = tab
         if arrangementWindow == nil {
             let window = NSWindow(contentViewController: NSHostingController(rootView: SettingsView().environmentObject(model)))
-            window.title = "Настройки PhoneScreen"
+            window.title = String(localized: "PhoneScreen Settings")
             window.styleMask = [.titled, .closable, .resizable, .miniaturizable]
             window.setContentSize(NSSize(width: 760, height: 560))
             window.isReleasedWhenClosed = false
@@ -149,10 +150,10 @@ struct MenuBarView: View {
                     if let active = model.status.active {
                         Text(active.label)
                         if let rtt = model.status.rtt {
-                            Text(String(format: "%.0f мс", rtt * 1000)).monospacedDigit().foregroundStyle(.tertiary)
+                            Text("\(Int((rtt * 1000).rounded())) ms").monospacedDigit().foregroundStyle(.tertiary)
                         }
                     } else {
-                        Text("Ищу iPhone — USB, Wi-Fi, Bluetooth")
+                        Text("Searching: USB, Wi-Fi, Bluetooth")
                     }
                 }
                 .font(.caption).foregroundStyle(.secondary).lineLimit(1)
@@ -166,7 +167,7 @@ struct MenuBarView: View {
     private var pagesStrip: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Страницы").font(.subheadline.weight(.semibold))
+                Text("Pages").font(.subheadline.weight(.semibold))
                 Spacer()
                 Text("⌃⌥← →").font(.caption2.monospaced()).foregroundStyle(.tertiary)
             }
@@ -218,18 +219,18 @@ struct MenuBarView: View {
         if !model.hasAccessibility {
             HStack(spacing: 10) {
                 Image(systemName: "cursorarrow.motionlines").foregroundStyle(.orange)
-                Text("Разрешите «Универсальный доступ», чтобы уводить курсор на iPhone").font(.caption)
+                Text("Allow Accessibility to move the cursor onto the iPhone").font(.caption)
                 Spacer()
-                Button("Разрешить") { model.requestAccessibility() }.controlSize(.small)
+                Button("Allow") { model.requestAccessibility() }.controlSize(.small)
             }
             .padding(10)
             .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.orange.opacity(0.12)))
         } else if model.isPointerOnPhone {
-            Label(model.isTypingOnPhone ? "Клавиатура печатает на iPhone — Esc закончит" : "Курсор на iPhone — Esc вернёт его",
+            Label(model.isTypingOnPhone ? String(localized: "The keyboard types on the iPhone — Esc stops") : String(localized: "The cursor is on the iPhone — Esc brings it back"),
                   systemImage: model.isTypingOnPhone ? "keyboard" : "cursorarrow.rays")
                 .font(.caption).foregroundStyle(.green)
         } else {
-            Label("Толкните курсор за край экрана (\(model.arrangement.edge.title.lowercased())) — он перейдёт на iPhone",
+            Label("Push the cursor past the screen's edge (\(model.arrangement.edge.title.lowercased())) and it moves to the iPhone",
                   systemImage: "cursorarrow.motionlines")
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -240,18 +241,18 @@ struct MenuBarView: View {
 
     private var shortcuts: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
-            ShortcutTile(title: "Страницы", symbol: "rectangle.grid.2x2.fill", tint: .blue) { showSettings(.pages) }
-            ShortcutTile(title: "Виджеты", symbol: "puzzlepiece.extension.fill", tint: .purple) { showSettings(.widgets) }
-            ShortcutTile(title: "Темы", symbol: "paintpalette.fill", tint: .pink) { showSettings(.themes) }
-            ShortcutTile(title: "Расположение", symbol: "iphone.gen3", tint: .orange) { showSettings(.arrangement) }
+            ShortcutTile(title: String(localized: "Pages"), symbol: "rectangle.grid.2x2.fill", tint: .blue) { showSettings(.pages) }
+            ShortcutTile(title: String(localized: "Widgets"), symbol: "puzzlepiece.extension.fill", tint: .purple) { showSettings(.widgets) }
+            ShortcutTile(title: String(localized: "Themes"), symbol: "paintpalette.fill", tint: .pink) { showSettings(.themes) }
+            ShortcutTile(title: String(localized: "Arrangement"), symbol: "iphone.gen3", tint: .orange) { showSettings(.arrangement) }
         }
     }
 
     private var footer: some View {
         HStack {
-            Text("⌃⌥1…9 — страница").font(.caption2).foregroundStyle(.tertiary)
+            Text("⌃⌥1…9 — a page").font(.caption2).foregroundStyle(.tertiary)
             Spacer()
-            Button("Выйти") { NSApplication.shared.terminate(nil) }
+            Button("Quit") { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.plain).font(.caption).foregroundStyle(.secondary)
                 .keyboardShortcut("q")
         }
@@ -283,7 +284,7 @@ private struct PageChip: View {
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
-        .help("Страница \(index + 1): \(title)")
+        .help("Page \(index + 1): \(title)")
     }
 }
 

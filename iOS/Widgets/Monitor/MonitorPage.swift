@@ -68,7 +68,7 @@ struct MonitorPage: View {
                 } else {
                     VStack(spacing: 12) {
                         ThemedSpinner()
-                        Text("Жду данные с Mac…").foregroundStyle(.secondary)
+                        Text("Waiting for data from the Mac…").foregroundStyle(.secondary)
                     }
                 }
             }
@@ -101,7 +101,7 @@ struct MonitorPage: View {
     }
 
     private func rate(_ bytesPerSec: Double) -> String {
-        ByteCountFormatter.string(fromByteCount: Int64(bytesPerSec), countStyle: .binary) + "/с"
+        L("%@/s", ByteCountFormatter.string(fromByteCount: Int64(bytesPerSec), countStyle: .binary))
     }
 }
 
@@ -159,7 +159,7 @@ private struct LoadChart: View {
     var body: some View {
         if theme.style == .ascii {
             VStack(alignment: .leading, spacing: 2) {
-                Text("CPU за минуту").font(.caption2).foregroundStyle(.secondary)
+                Text("CPU, last minute").font(.caption2).foregroundStyle(.secondary)
                 AsciiChart(values: history.map { $0.cpu * 100 }, color: theme.text)
             }
         } else {
@@ -208,7 +208,7 @@ private struct NetworkChart: View {
     var body: some View {
         if theme.style == .ascii {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Сеть, входящий").font(.caption2).foregroundStyle(.secondary)
+                Text("Network in").font(.caption2).foregroundStyle(.secondary)
                 AsciiChart(values: history.map(\.netInBytesPerSec), color: theme.text)
             }
         } else {

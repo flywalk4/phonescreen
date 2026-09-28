@@ -37,6 +37,23 @@
   "description": {
    "type": "string"
   },
+  "localized": {
+   "type": "object",
+   "description": "Name and description in other languages: {\"ru\": {\"name\": …, \"description\": …}}",
+   "additionalProperties": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 40
+     },
+     "description": {
+      "type": "string"
+     }
+    }
+   }
+  },
   "style": {
    "enum": [
     "flat",

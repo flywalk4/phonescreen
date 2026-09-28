@@ -9,8 +9,8 @@ struct PagesEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Страницы").font(.system(size: 26, weight: .bold))
-                Text("Что показывает iPhone: страницы листаются свайпом, трекпадом или ⌃⌥← →.")
+                Text("Pages").font(.system(size: 26, weight: .bold))
+                Text("What the iPhone shows: turn pages with a swipe, the trackpad or ⌃⌥← →.")
                     .font(.callout).foregroundStyle(.secondary)
             }
             .padding(.horizontal, 24).padding(.top, 20).padding(.bottom, 12)
@@ -32,7 +32,7 @@ struct PagesEditor: View {
                         LayoutGlyph(layout: page.layout).frame(width: 22, height: 30)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(page.title(customNames: model.widgets.names)).lineLimit(1)
-                            Text(index < 9 ? "Страница \(index + 1) · ⌃⌥\(index + 1)" : "Страница \(index + 1)")
+                            Text(index < 9 ? String(localized: "Page \(index + 1) · ⌃⌥\(index + 1)") : String(localized: "Page \(index + 1)"))
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }
@@ -44,16 +44,16 @@ struct PagesEditor: View {
             Divider()
             HStack(spacing: 2) {
                 Button { add() } label: { Image(systemName: "plus").frame(width: 22, height: 18) }
-                    .help("Добавить страницу")
+                    .help("Add a page")
                 Button { remove() } label: { Image(systemName: "minus").frame(width: 22, height: 18) }
-                    .help("Удалить страницу")
+                    .help("Delete the page")
                     .disabled(model.pages.count <= 1 || selection == nil)
                 Spacer()
-                Button("Сбросить") {
+                Button("Reset") {
                     model.pages = PageInfo.defaults
                     selection = model.pages.first?.id
                 }
-                .help("Вернуть страницы по умолчанию")
+                .help("Restore the default pages")
             }
             .buttonStyle(.borderless)
             .padding(8)
@@ -105,7 +105,7 @@ struct PagesEditor: View {
                         .help(layout.title)
                     }
                 }
-                Toggle("Без карточек — виджеты прямо на фоне", isOn: Binding(
+                Toggle("No cards — widgets right on the background", isOn: Binding(
                     get: { page.bare == true },
                     set: { model.pages[index].bare = $0 ? true : nil }))
                     .toggleStyle(.switch).controlSize(.small)
@@ -117,13 +117,13 @@ struct PagesEditor: View {
                     model.pages[index].widgets = widgets
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                Text("Нажмите на слот, чтобы выбрать виджет. Порядок страниц меняется перетаскиванием в списке слева. Изменения сразу появляются на iPhone.")
+                Text("Click a slot to pick a widget. Drag pages in the list on the left to reorder them. Changes show up on the iPhone right away.")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(20)
         } else {
-            Text("Выберите страницу").foregroundStyle(.secondary).frame(maxWidth: .infinity, maxHeight: .infinity)
+            Text("Choose a page").foregroundStyle(.secondary).frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
@@ -199,7 +199,7 @@ private struct PagePreview: View {
         let ref = page.widgets.indices.contains(i) ? page.widgets[i] : nil
         let customInfo = ref?.customID.flatMap { id in custom.first { $0.0 == id } }
         let symbol = ref?.builtin?.symbol ?? customInfo?.2 ?? (ref == nil ? "plus" : "puzzlepiece.extension")
-        let title = ref?.builtin?.title ?? customInfo?.1 ?? ref?.title() ?? "Пусто"
+        let title = ref?.builtin?.title ?? customInfo?.1 ?? ref?.title() ?? String(localized: "Empty")
         return Menu {
             ForEach(WidgetKind.allCases, id: \.self) { option in
                 Button { choose(i, .builtin(option)) } label: { Label(option.title, systemImage: option.symbol) }
@@ -273,10 +273,10 @@ struct SettingsView: View {
     }
 
     private let sections: [Section] = [
-        Section(id: .pages, title: "Страницы", symbol: "rectangle.grid.2x2.fill", tint: .blue),
-        Section(id: .widgets, title: "Виджеты", symbol: "puzzlepiece.extension.fill", tint: .purple),
-        Section(id: .themes, title: "Темы", symbol: "paintpalette.fill", tint: .pink),
-        Section(id: .arrangement, title: "Расположение", symbol: "iphone.gen3", tint: .orange),
+        Section(id: .pages, title: String(localized: "Pages"), symbol: "rectangle.grid.2x2.fill", tint: .blue),
+        Section(id: .widgets, title: String(localized: "Widgets"), symbol: "puzzlepiece.extension.fill", tint: .purple),
+        Section(id: .themes, title: String(localized: "Themes"), symbol: "paintpalette.fill", tint: .pink),
+        Section(id: .arrangement, title: String(localized: "Arrangement"), symbol: "iphone.gen3", tint: .orange),
     ]
 
     var body: some View {
@@ -349,15 +349,15 @@ private struct LanguagePicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("Язык", systemImage: "globe").font(.caption.weight(.medium)).foregroundStyle(.secondary)
+            Label("Language", systemImage: "globe").font(.caption.weight(.medium)).foregroundStyle(.secondary)
             Picker("", selection: Binding(get: { model.languageChoice }, set: { model.setLanguage($0) })) {
-                Text("Как в системе").tag("system")
+                Text("Same as the system").tag("system")
                 ForEach(AppLanguage.supported, id: \.code) { Text($0.name).tag($0.code) }
             }
             .labelsHidden()
             if model.languageChoice != launchedWith {
-                Button("Перезапустить") { relaunch() }.controlSize(.small)
-                Text("Окна Mac сменят язык после перезапуска").font(.caption2).foregroundStyle(.secondary)
+                Button("Relaunch") { relaunch() }.controlSize(.small)
+                Text("The Mac's windows switch language after a relaunch").font(.caption2).foregroundStyle(.secondary)
             }
         }
     }
@@ -388,7 +388,7 @@ private struct SidebarHeader: View {
                 Text("PhoneScreen").font(.headline)
                 HStack(spacing: 5) {
                     Circle().fill(model.status.active == nil ? Color.orange : Color.green).frame(width: 6, height: 6)
-                    Text(model.status.active.map { "iPhone · \($0.label)" } ?? "iPhone не подключён").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text(model.status.active.map { "iPhone · \($0.label)" } ?? String(localized: "iPhone not connected")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
         }

@@ -1,0 +1,22 @@
+{
+  "en": {
+    "manifest.description": "The classic 2048: slide tiles with the arrow buttons, equal ones merge. Score and best are kept, and a game can be picked up any time.",
+    "over": "No moves left — start over",
+    "won": "2048! Keep going if you like",
+    "bestTile": "Best tile: {n}",
+    "score": "SCORE",
+    "best": "BEST",
+    "newGame": "New game",
+    "bestLower": "best"
+  },
+  "ru": {
+    "manifest.description": "Классическая 2048: сдвигай плитки кнопками-стрелками, одинаковые складываются. Счёт и рекорд сохраняются, партию можно продолжать когда угодно.",
+    "over": "Ходов нет — начни заново",
+    "won": "2048! Можно играть дальше",
+    "bestTile": "Лучшая плитка: {n}",
+    "score": "СЧЁТ",
+    "best": "РЕКОРД",
+    "newGame": "Новая игра",
+    "bestLower": "рекорд"
+  }
+}

@@ -1,8 +1,8 @@
-// GitHub: PR на твоё ревью, твои открытые PR и число непрочитанных уведомлений (REST API, токен из Связки ключей).
+// GitHub: PRs awaiting your review, your open PRs and the number of unread notifications (REST API, token from the Keychain).
 
 async function refresh(ctx) {
   const token = secrets.get("token");
-  if (!token) throw new Error("Добавьте GitHub токен в настройках виджета");
+  if (!token) throw new Error(t("noToken"));
   const [review, mine, notifications] = await Promise.all([
     search("is:open is:pr review-requested:@me archived:false", token),
     search("is:open is:pr author:@me archived:false", token),
@@ -37,15 +37,15 @@ function search(q, token) {
 
 async function api(url, token) {
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" } });
-  if (res.status === 401) throw new Error("GitHub не принял токен — проверьте его в настройках");
-  if (res.status === 403) throw new Error("GitHub: лимит запросов или у токена нет прав");
-  if (!res.ok) throw new Error(`GitHub ответил ${res.status}`);
+  if (res.status === 401) throw new Error(t("badToken"));
+  if (res.status === 403) throw new Error(t("forbidden"));
+  if (!res.ok) throw new Error(t("httpError", { status: res.status }));
   return res.json();
 }
 
 function age(sec) {
   if (!isFinite(sec)) return "";
-  if (sec < 3600) return `${Math.max(1, Math.round(sec / 60))} мин`;
-  if (sec < 86400) return `${Math.round(sec / 3600)} ч`;
-  return `${Math.round(sec / 86400)} д`;
+  if (sec < 3600) return t("age.min", { n: Math.max(1, Math.round(sec / 60)) });
+  if (sec < 86400) return t("age.h", { n: Math.round(sec / 3600) });
+  return t("age.d", { n: Math.round(sec / 86400) });
 }

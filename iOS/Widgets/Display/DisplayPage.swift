@@ -13,11 +13,11 @@ struct DisplayPage: View {
     var body: some View {
         Group {
             if size != .full {
-                Placeholder(symbol: "display.2", text: "Откройте на весь экран")
+                Placeholder(symbol: "display.2", text: L("Open it full screen"))
             } else if model.status.active == nil {
-                Placeholder(symbol: "display.2", text: "Нет связи с Mac")
+                Placeholder(symbol: "display.2", text: L("No connection to the Mac"))
             } else if model.status.active == .bluetooth {
-                Placeholder(symbol: "cable.connector", text: "Нужен кабель или Wi-Fi")
+                Placeholder(symbol: "cable.connector", text: L("Needs a cable or Wi-Fi"))
             } else {
                 ZStack {
                     StreamView(decoder: model.displayDecoder, send: model.sendDisplay)
@@ -27,8 +27,8 @@ struct DisplayPage: View {
                         if model.displayStopped {
                             // Disconnected on the Mac (Control Center, System Settings): only back on request.
                             VStack(spacing: 14) {
-                                Placeholder(symbol: "display.2", text: "Экран отключён на Mac").fixedSize()
-                                Button("Включить снова") {
+                                Placeholder(symbol: "display.2", text: L("The screen is off on the Mac")).fixedSize()
+                                Button("Turn on again") {
                                     model.displayStopped = false
                                     model.sendDisplay(.displayVisible(true))
                                 }
@@ -37,7 +37,7 @@ struct DisplayPage: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(Color.black)
                         } else {
-                            Placeholder(symbol: "display.2", text: "Подключаю экран…").allowsHitTesting(false)
+                            Placeholder(symbol: "display.2", text: L("Connecting the screen…")).allowsHitTesting(false)
                         }
                     }
                 }

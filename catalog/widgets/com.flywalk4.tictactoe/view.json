@@ -17,7 +17,7 @@
           },
           {
             "type": "text",
-            "text": "КРЕСТИКИ-НОЛИКИ",
+            "text": "{{t.header}}",
             "style": "caption",
             "weight": "semibold",
             "color": "secondary"
@@ -53,7 +53,7 @@
               },
               {
                 "type": "text",
-                "text": "ты ✕",
+                "text": "{{t.you}}",
                 "style": "caption",
                 "color": "secondary"
               }
@@ -75,7 +75,7 @@
               },
               {
                 "type": "text",
-                "text": "ничьи",
+                "text": "{{t.draws}}",
                 "style": "caption",
                 "color": "secondary"
               }
@@ -147,7 +147,7 @@
           },
           {
             "type": "button",
-            "title": "Новая игра",
+            "title": "{{t.newGame}}",
             "symbol": "arrow.clockwise",
             "action": "new"
           }
@@ -220,7 +220,7 @@
               },
               {
                 "type": "button",
-                "title": "Заново",
+                "title": "{{t.restart}}",
                 "symbol": "arrow.clockwise",
                 "action": "new"
               }
@@ -277,7 +277,7 @@
       },
       {
         "type": "button",
-        "title": "Заново",
+        "title": "{{t.restart}}",
         "action": "new"
       }
     ]

@@ -30,7 +30,7 @@
  ],
  "expect": {
   "over": true,
-  "status": "Ходов нет — начни заново",
+  "status": "No moves left — start over",
   "best": "500"
  }
 }

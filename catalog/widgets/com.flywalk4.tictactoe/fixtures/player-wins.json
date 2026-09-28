@@ -28,7 +28,7 @@
   "tap:2"
  ],
  "expect": {
-  "status": "Ты победил!",
+  "status": "You won!",
   "you": "1",
   "cells.2.bg": "green",
   "over": true

@@ -15,7 +15,7 @@
           },
           {
             "type": "text",
-            "text": "САПЁР",
+            "text": "{{t.header}}",
             "style": "caption",
             "weight": "semibold",
             "color": "secondary"
@@ -25,7 +25,7 @@
           },
           {
             "type": "text",
-            "text": "рекорд {{best}}",
+            "text": "{{t.best}} {{best}}",
             "style": "caption",
             "color": "secondary"
           }
@@ -51,7 +51,7 @@
               },
               {
                 "type": "text",
-                "text": "мин осталось",
+                "text": "{{t.minesLeft}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -85,7 +85,7 @@
               },
               {
                 "type": "text",
-                "text": "время",
+                "text": "{{t.time}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -150,7 +150,7 @@
           },
           {
             "type": "button",
-            "title": "Заново",
+            "title": "{{t.restart}}",
             "symbol": "arrow.clockwise",
             "action": "new"
           }
@@ -237,7 +237,7 @@
               },
               {
                 "type": "button",
-                "title": "Заново",
+                "title": "{{t.restart}}",
                 "action": "new"
               }
             ]
@@ -331,7 +331,7 @@
           },
           {
             "type": "button",
-            "title": "Заново",
+            "title": "{{t.restart}}",
             "action": "new"
           }
         ]

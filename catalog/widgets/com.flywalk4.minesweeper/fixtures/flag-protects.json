@@ -162,7 +162,7 @@
   "tap:9"
  ],
  "expect": {
-  "status": "Осторожно…",
+  "status": "Careful…",
   "cells.9.text": "🚩",
   "minesLeft": "9"
  }

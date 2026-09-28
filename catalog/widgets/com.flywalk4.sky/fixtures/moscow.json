@@ -7,7 +7,7 @@
    "body": {
     "results": [
      {
-      "name": "Москва",
+      "name": "Moscow",
       "latitude": 55.75,
       "longitude": 37.62
      }
@@ -70,8 +70,8 @@
  "expect": {
   "sunrise": "06:47",
   "sunset": "18:29",
-  "status": "до заката 49 мин",
-  "moon.phase": "Полнолуние",
-  "week.0.day": "пн"
+  "status": "49 min to sunset",
+  "moon.phase": "Full moon",
+  "week.0.day": "Mon"
  }
 }

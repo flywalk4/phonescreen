@@ -1,9 +1,14 @@
 {
   "id": "com.flywalk4.claude",
   "name": "Claude",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Тёплая бумага, терракотовый акцент и шрифт с засечками.",
+  "description": "Warm paper, a terracotta accent and a serif font.",
+  "localized": {
+    "ru": {
+      "description": "Тёплая бумага, терракотовый акцент и шрифт с засечками."
+    }
+  },
   "style": "flat",
   "appearance": "light",
   "font": "serif",

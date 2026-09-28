@@ -1,9 +1,15 @@
 {
   "id": "com.flywalk4.rainy",
-  "name": "Дождливый вечер",
-  "version": "1.1.0",
+  "name": "Rainy evening",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Косой дождь и капли на стекле, графитовые карточки, тёплый янтарный акцент — как у окна кафе.",
+  "description": "Slanted rain and drops on the glass, graphite cards and a warm amber accent — like a café window.",
+  "localized": {
+    "ru": {
+      "name": "Дождливый вечер",
+      "description": "Косой дождь и капли на стекле, графитовые карточки, тёплый янтарный акцент — как у окна кафе."
+    }
+  },
   "style": "flat",
   "appearance": "dark",
   "font": "system",

@@ -73,8 +73,10 @@ fs.mkdirSync(OUT, { recursive: true });
 const first = numbers[0];
 const THEMES = [["dark", "Dark"], ["glass", "Liquid Glass"], ["light", "Light"], ["ascii", "ASCII"]];
 
-// Hero: the same page in the four built-in themes.
-await render("hero.png", phones(THEMES.map(([t, label]) => ({ file: page(t, first), label })), { width: 300 }), { columns: 4, width: 300 });
+// Hero: four different pages, one per built-in theme — markets / time / air / focus, Claude Code / sky / rates,
+// the built-in widgets, the games.
+const hero = [0, 1, 4, 3].map((i) => numbers[i] ?? first);
+await render("hero.png", phones(THEMES.map(([t, label], i) => ({ file: page(t, hero[i]), label })), { width: 300 }), { columns: 4, width: 300 });
 
 // Widgets: every catalog widget on its own page.
 const widgets = list("widgets").map((f) => ({ file: `widgets/${f}`, label: name(f.replace(/\.png$/, "")) }));

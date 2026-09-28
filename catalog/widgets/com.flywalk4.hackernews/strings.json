@@ -1,0 +1,28 @@
+{
+  "en": {
+    "manifest.description": "Hacker News top stories: title, site, points and comments, with fresh ones marked. No key.",
+    "settings.list.title": "Feed",
+    "settings.list.options.top": "Top",
+    "settings.list.options.best": "Best",
+    "settings.list.options.new": "New",
+    "settings.count.title": "Stories",
+    "age.min": "{n} min",
+    "age.h": "{n} h",
+    "age.d": "{n} d",
+    "empty": "Hacker News returned no stories",
+    "httpError": "Hacker News answered {status}"
+  },
+  "ru": {
+    "manifest.description": "Главные истории Hacker News: заголовок, сайт, очки и комментарии, свежие отмечены. Без ключа.",
+    "settings.list.title": "Лента",
+    "settings.list.options.top": "Топ",
+    "settings.list.options.best": "Лучшее",
+    "settings.list.options.new": "Новое",
+    "settings.count.title": "Сколько историй",
+    "age.min": "{n} мин",
+    "age.h": "{n} ч",
+    "age.d": "{n} д",
+    "empty": "Hacker News не вернул истории",
+    "httpError": "Hacker News ответил {status}"
+  }
+}

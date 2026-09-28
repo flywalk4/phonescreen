@@ -1,10 +1,10 @@
-// Помодоро: работа → перерыв → работа…, длинный перерыв после каждых N помидоров.
-// Состояние в storage, так что таймер переживает перезапуск приложения. Кнопки: toggle, reset, skip.
+// Pomodoro: work → break → work…, a long break after every N pomodoros.
+// State lives in storage, so the timer survives an app restart. Buttons: toggle, reset, skip.
 
 const PHASES = {
-  focus: { title: "Работа", icon: "flame.fill", color: "orange" },
-  short: { title: "Перерыв", icon: "cup.and.saucer.fill", color: "green" },
-  long: { title: "Длинный перерыв", icon: "leaf.fill", color: "teal" },
+  focus: { icon: "flame.fill", color: "orange" },
+  short: { icon: "cup.and.saucer.fill", color: "green" },
+  long: { icon: "leaf.fill", color: "teal" },
 };
 
 async function refresh(ctx) {
@@ -17,22 +17,25 @@ async function refresh(ctx) {
   const phase = PHASES[s.phase];
   const goal = cfg.goal;
   return {
-    phase: phase.title, icon: phase.icon, color: phase.color,
+    phase: t(`phase.${s.phase}`), icon: phase.icon, color: phase.color,
     time: clock(left),
-    minutes: `${Math.ceil(left / 60)} мин`,
+    minutes: format.duration(Math.ceil(left / 60) * 60),
     progress: 1 - left / total,
     running: s.running,
     paused: !s.running && left < total,
     idle: !s.running && left >= total,
-    toggleTitle: s.running ? "Пауза" : left < total ? "Продолжить" : "Старт",
+    toggleTitle: t(s.running ? "pause" : left < total ? "resume" : "start"),
     toggleSymbol: s.running ? "pause.fill" : "play.fill",
-    until: s.running ? `закончится в ${hhmm(new Date(s.endsAt * 1000))}` : s.justFinished ? s.justFinished
-      : left < total ? "на паузе" : "нажми «Старт», когда будешь готов",
+    until: s.running ? t("endsAt", { time: format.time(new Date(s.endsAt * 1000)) }) : s.justFinished ? t(`finished.${s.justFinished}`)
+      : left < total ? t("paused") : t("hint"),
     done: s.done,
     goal,
     dots: Array.from({ length: Math.max(goal, s.done) }, (_, i) => (i < s.done ? "●" : "○")).join(" "),
     goalProgress: Math.min(1, s.done / goal),
     focusTime: minutesText(s.done * cfg.focus),
+    focusLine: t("worked", { time: minutesText(s.done * cfg.focus) }),
+    todayLine: t("today", { time: minutesText(s.done * cfg.focus) }),
+    goalLine: t("ofGoal", { n: goal }),
     next: nextText(s, cfg),
   };
 }
@@ -63,14 +66,14 @@ function today() { const d = new Date(); return `${d.getFullYear()}-${d.getMonth
 
 function load(cfg) {
   const s = storage.get("pomodoro") || { phase: "focus", running: false, left: cfg.focus * 60, endsAt: 0, done: 0, day: today(), justFinished: "" };
-  if (s.day !== today()) { s.day = today(); s.done = 0; } // новый день — новый счёт
-  if (!s.running && s.left > cfg[s.phase] * 60) s.left = cfg[s.phase] * 60; // длительность уменьшили в настройках
+  if (s.day !== today()) { s.day = today(); s.done = 0; } // a new day, a new count
+  if (!s.running && s.left > cfg[s.phase] * 60) s.left = cfg[s.phase] * 60; // the length was shortened in settings
   return s;
 }
 
 function save(s) { storage.set("pomodoro", s); }
 
-// Если время фазы вышло — переходим к следующей и ждём нажатия «Старт».
+// When a phase's time is up, move to the next one and wait for Start.
 function advance(s, cfg, now) {
   if (s.running && now >= s.endsAt) finish(s, cfg, true);
   return s;
@@ -80,21 +83,20 @@ function finish(s, cfg, natural) {
   if (s.phase === "focus") {
     if (natural) s.done += 1;
     s.phase = s.done > 0 && s.done % cfg.every === 0 ? "long" : "short";
-    s.justFinished = natural ? "Помидор готов — отдохни" : "";
+    s.justFinished = natural ? "focus" : ""; // strings.json: finished.<phase>
   } else {
     s.phase = "focus";
-    s.justFinished = natural ? "Перерыв окончен" : "";
+    s.justFinished = natural ? "break" : "";
   }
   s.running = false;
   s.left = cfg[s.phase] * 60;
 }
 
 function nextText(s, cfg) {
-  if (s.phase !== "focus") return `дальше: работа ${cfg.focus} мин`;
+  if (s.phase !== "focus") return t("next.focus", { time: minutesText(cfg.focus) });
   const long = (s.done + 1) % cfg.every === 0;
-  return `дальше: ${long ? "длинный перерыв" : "перерыв"} ${long ? cfg.long : cfg.short} мин`;
+  return t(long ? "next.long" : "next.short", { time: minutesText(long ? cfg.long : cfg.short) });
 }
 
 function clock(sec) { const m = Math.floor(sec / 60), s = Math.floor(sec % 60); return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`; }
-function hhmm(d) { return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; }
-function minutesText(m) { return m >= 60 ? `${Math.floor(m / 60)} ч ${m % 60 ? `${m % 60} мин` : ""}`.trim() : `${m} мин`; }
+function minutesText(m) { return m > 0 ? format.duration(m * 60) : t("zeroMin"); }

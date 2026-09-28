@@ -1,29 +1,29 @@
 {
   "id": "com.flywalk4.tictactoe",
-  "name": "Крестики-нолики",
-  "version": "1.1.2",
+  "name": "Tic-tac-toe",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Крестики-нолики против Mac: ходишь пальцем или курсором, Mac отвечает. Три уровня сложности, счёт партий, ходите по очереди первыми.",
+  "description": "Tic-tac-toe against the Mac: move with a finger or the cursor, the Mac answers. Three difficulty levels, a game score, and you take turns going first.",
   "symbol": "number",
   "refresh": 3600,
   "settings": [
     {
       "key": "level",
-      "title": "Сложность",
+      "title": "Difficulty",
       "type": "choice",
       "default": "normal",
       "options": [
         {
           "value": "easy",
-          "title": "Лёгкая"
+          "title": "Easy"
         },
         {
           "value": "normal",
-          "title": "Обычная"
+          "title": "Normal"
         },
         {
           "value": "hard",
-          "title": "Непобедимая"
+          "title": "Unbeatable"
         }
       ]
     }

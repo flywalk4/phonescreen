@@ -1,9 +1,14 @@
 {
   "id": "com.flywalk4.catppuccin",
   "name": "Catppuccin Mocha",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
-  "description": "Пастельная палитра Catppuccin (Mocha, MIT): мягкий фиолетовый акцент, тёплые пастельные цвета виджетов, медленные огоньки на тёмно-синем.",
+  "description": "The Catppuccin pastel palette (Mocha, MIT): a soft violet accent, warm pastel widget colours, slow bokeh on dark blue.",
+  "localized": {
+    "ru": {
+      "description": "Пастельная палитра Catppuccin (Mocha, MIT): мягкий фиолетовый акцент, тёплые пастельные цвета виджетов, медленные огоньки на тёмно-синем."
+    }
+  },
   "style": "flat",
   "appearance": "dark",
   "font": "rounded",

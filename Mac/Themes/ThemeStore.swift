@@ -29,12 +29,12 @@ enum ThemeStore {
     /// Reads and validates a theme (folder or file).
     static func read(_ url: URL) throws -> Theme {
         let file = file(at: url)
-        guard let data = try? Data(contentsOf: file) else { throw Failure(description: "Нет файла theme.json") }
+        guard let data = try? Data(contentsOf: file) else { throw Failure(description: "No theme.json file") }
         return try decode(data)
     }
 
     static func decode(_ data: Data) throws -> Theme {
-        guard data.count <= maxBytes else { throw Failure(description: "theme.json больше 64 КБ") }
+        guard data.count <= maxBytes else { throw Failure(description: "theme.json is over 64 KB") }
         let theme: Theme
         do {
             theme = try JSONDecoder().decode(Theme.self, from: data)
@@ -42,7 +42,7 @@ enum ThemeStore {
             throw Failure(description: "theme.json: \(describe(error))")
         }
         try theme.validate()
-        guard !theme.id.hasPrefix("builtin.") else { throw Failure(description: "id не может начинаться с builtin.") }
+        guard !theme.id.hasPrefix("builtin.") else { throw Failure(description: "The id can't start with builtin.") }
         return theme
     }
 
@@ -52,10 +52,10 @@ enum ThemeStore {
         case "json":
             return (try read(file), file, false)
         case "link":
-            guard let source = linkTarget(file) else { throw Failure(description: "Не прочитать ссылку разработки") }
+            guard let source = linkTarget(file) else { throw Failure(description: "Can't read the development link") }
             return (try read(source), source, true)
         default:
-            throw Failure(description: "не тема")
+            throw Failure(description: "not a theme")
         }
     }
 
@@ -92,14 +92,14 @@ enum ThemeStore {
     /// Downloads a catalog entry's `theme.json` and checks it against its SHA-256. Themes are small, so the settings
     /// download every catalog theme up front to show previews; installing then just writes the same bytes.
     static func download(_ entry: WidgetCatalog.Entry, indexURL: URL) async throws -> (theme: Theme, data: Data) {
-        guard let expected = entry.files["theme.json"]?.lowercased() else { throw Failure(description: "В каталоге нет хеша theme.json") }
+        guard let expected = entry.files["theme.json"]?.lowercased() else { throw Failure(description: "The catalog has no hash for theme.json") }
         let url = indexURL.deletingLastPathComponent().appendingPathComponent(entry.path, isDirectory: true)
             .appendingPathComponent("theme.json")
         let data: Data
         if url.isFileURL {
             data = try Data(contentsOf: url)
         } else {
-            guard url.scheme == "https" else { throw Failure(description: "Каталог должен быть по HTTPS") }
+            guard url.scheme == "https" else { throw Failure(description: "The catalog must be served over HTTPS") }
             let (body, response) = try await URLSession.shared.data(from: url)
             guard (response as? HTTPURLResponse)?.statusCode == 200 else {
                 throw Failure(description: "theme.json: HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)")
@@ -107,9 +107,9 @@ enum ThemeStore {
             data = body
         }
         let actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-        guard actual == expected else { throw Failure(description: "theme.json: хеш не совпадает с каталогом — файл изменён") }
+        guard actual == expected else { throw Failure(description: "theme.json: the hash doesn't match the catalog — the file was changed") }
         let theme = try decode(data)
-        guard theme.id == entry.id else { throw Failure(description: "id в theme.json не совпадает с каталогом") }
+        guard theme.id == entry.id else { throw Failure(description: "The id in theme.json doesn't match the catalog") }
         return (theme, data)
     }
 
@@ -119,11 +119,11 @@ enum ThemeStore {
 
     private static func describe(_ error: Error) -> String {
         switch error {
-        case DecodingError.keyNotFound(let key, _): "нет поля «\(key.stringValue)»"
+        case DecodingError.keyNotFound(let key, _): "no field “\(key.stringValue)”"
         case DecodingError.typeMismatch(_, let c), DecodingError.valueNotFound(_, let c):
-            "неверное значение «\(c.codingPath.map(\.stringValue).joined(separator: "."))»"
+            "an invalid value “\(c.codingPath.map(\.stringValue).joined(separator: "."))”"
         case DecodingError.dataCorrupted(let c):
-            c.codingPath.isEmpty ? "это не JSON" : "неверное значение «\(c.codingPath.map(\.stringValue).joined(separator: "."))»"
+            c.codingPath.isEmpty ? "not JSON" : "an invalid value “\(c.codingPath.map(\.stringValue).joined(separator: "."))”"
         default: error.localizedDescription
         }
     }

@@ -1,0 +1,66 @@
+{
+  "en": {
+    "manifest.name": "Memory",
+    "manifest.description": "Find the pairs: 16 cards, flip two at a time. Moves are counted and the best score is kept. Card sets: animals, food, space.",
+    "settings.set.title": "Card set",
+    "settings.set.options.animals": "🦊 Animals",
+    "settings.set.options.food": "🍕 Food",
+    "settings.set.options.space": "🚀 Space",
+    "pairsOf": "{n} of {total}",
+    "moves": {
+      "one": "{n} move",
+      "other": "{n} moves"
+    },
+    "movesLine": {
+      "one": "{n} move",
+      "other": "{n} moves"
+    },
+    "noBest": "none yet",
+    "done": {
+      "one": "Done in {n} move!",
+      "other": "Done in {n} moves!"
+    },
+    "mismatch": "Not a pair — tap on",
+    "findAll": "Find all the pairs",
+    "header": "MEMORY",
+    "best": "best",
+    "movesLabel": "moves",
+    "pairsLabel": "pairs",
+    "restart": "Restart"
+  },
+  "ru": {
+    "manifest.name": "Память",
+    "manifest.description": "Найди пары: 16 карточек, открывай по две. Считаются ходы, лучший результат сохраняется. Наборы картинок — животные, еда, космос.",
+    "settings.set.title": "Набор карточек",
+    "settings.set.options.animals": "🦊 Животные",
+    "settings.set.options.food": "🍕 Еда",
+    "settings.set.options.space": "🚀 Космос",
+    "pairsOf": "{n} из {total}",
+    "moves": {
+      "one": "{n} ход",
+      "few": "{n} хода",
+      "many": "{n} ходов",
+      "other": "{n} хода"
+    },
+    "movesLine": {
+      "one": "{n} ход",
+      "few": "{n} хода",
+      "many": "{n} ходов",
+      "other": "{n} хода"
+    },
+    "noBest": "ещё нет",
+    "done": {
+      "one": "Готово за {n} ход!",
+      "few": "Готово за {n} хода!",
+      "many": "Готово за {n} ходов!",
+      "other": "Готово за {n} хода!"
+    },
+    "mismatch": "Не пара — нажми дальше",
+    "findAll": "Найди все пары",
+    "header": "ПАМЯТЬ",
+    "best": "рекорд",
+    "movesLabel": "ходов",
+    "pairsLabel": "пар",
+    "restart": "Заново"
+  }
+}

@@ -1,4 +1,4 @@
-// Сапёр 8×8. Кнопки: tap:<0…63> — открыть (или поставить флажок в режиме флажков), mode — переключить режим, new.
+// Minesweeper 8×8. Buttons: tap:<0…63> opens (or flags, in flag mode), mode switches the mode, new.
 
 const N = 8;
 const NUMBER_COLORS = ["", "blue", "green", "red", "indigo", "brown", "teal", "primary", "gray"];
@@ -27,10 +27,10 @@ async function refresh(ctx) {
     minesLeft: String(g.mines.length - flags),
     time: clock(time),
     best: g.best != null ? clock(g.best) : "—",
-    modeTitle: g.flagMode ? "Режим: флажки" : "Режим: открывать",
+    modeTitle: t(g.flagMode ? "mode.flag" : "mode.open"),
     modeSymbol: g.flagMode ? "flag.fill" : "hand.tap.fill",
     face: g.status === "won" ? "😎" : g.status === "lost" ? "😵" : "🙂",
-    status: g.status === "won" ? "Все мины найдены!" : g.status === "lost" ? "Бум! Попробуй ещё" : g.started ? "Осторожно…" : "Первый ход безопасен",
+    status: t(g.status === "won" ? "won" : g.status === "lost" ? "lost" : g.started ? "careful" : "firstSafe"),
     statusColor: g.status === "won" ? "green" : g.status === "lost" ? "red" : "secondary",
   };
 }
@@ -43,7 +43,7 @@ async function action(name, ctx) {
   const i = Number(name.slice(4));
   if (g.open[i]) return;
   if (g.flagMode) { g.flags[i] = !g.flags[i]; return storage.set("game", g); }
-  if (g.flags[i]) return; // флажок защищает клетку от случайного нажатия
+  if (g.flags[i]) return; // a flag protects the cell from a stray tap
   if (!g.started) { placeMines(g, i); g.started = Date.now() / 1000; }
   if (g.mines.includes(i)) { g.status = "lost"; g.hit = i; g.ended = Date.now() / 1000; }
   else flood(g, i);
@@ -68,7 +68,7 @@ function fresh(count, best) {
            status: "playing", flagMode: false, started: 0, ended: 0, hit: -1, best };
 }
 
-// Мины расставляются после первого нажатия, мимо него и его соседей.
+// Mines are placed after the first tap, away from it and its neighbours.
 function placeMines(g, safe) {
   const banned = new Set([safe, ...neighbours(safe)]);
   const free = Array.from({ length: N * N }, (_, i) => i).filter((i) => !banned.has(i));

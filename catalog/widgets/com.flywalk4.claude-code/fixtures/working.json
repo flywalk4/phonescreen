@@ -1,13 +1,13 @@
 {
- "description": "Сессия с запущенным инструментом 10 с назад; дубль строки с тем же id не считается дважды",
+ "description": "A session with a tool started 10 s ago; a duplicate line with the same id isn't counted twice",
  "now": "2026-09-27T14:40:00Z",
  "files": {
   "~/.claude/projects/-repo/s1.jsonl": [
-   "{\"type\": \"user\", \"timestamp\": \"2026-09-27T11:40:00.000Z\", \"message\": {\"role\": \"user\", \"content\": \"начни\"}, \"isSidechain\": false}",
+   "{\"type\": \"user\", \"timestamp\": \"2026-09-27T11:40:00.000Z\", \"message\": {\"role\": \"user\", \"content\": \"start\"}, \"isSidechain\": false}",
    "{\"type\": \"assistant\", \"timestamp\": \"2026-09-27T11:40:05.000Z\", \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"thinking\"}], \"model\": \"claude-opus-5-5\", \"id\": \"msg_a\", \"stop_reason\": \"tool_use\", \"usage\": {\"input_tokens\": 10, \"output_tokens\": 990, \"cache_creation_input_tokens\": 4000, \"cache_read_input_tokens\": 90000}}, \"isSidechain\": false}",
    "{\"type\": \"assistant\", \"timestamp\": \"2026-09-27T11:40:06.000Z\", \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"tool_use\", \"name\": \"Bash\"}], \"model\": \"claude-opus-5-5\", \"id\": \"msg_a\", \"stop_reason\": \"tool_use\", \"usage\": {\"input_tokens\": 10, \"output_tokens\": 990, \"cache_creation_input_tokens\": 4000, \"cache_read_input_tokens\": 90000}}, \"isSidechain\": false}",
    "{\"type\": \"user\", \"timestamp\": \"2026-09-27T14:10:00.000Z\", \"message\": {\"role\": \"user\", \"content\": [{\"type\": \"tool_result\"}]}, \"isSidechain\": false}",
-   "{\"type\": \"user\", \"timestamp\": \"2026-09-27T14:39:40.000Z\", \"message\": {\"role\": \"user\", \"content\": \"дальше\"}, \"isSidechain\": false}",
+   "{\"type\": \"user\", \"timestamp\": \"2026-09-27T14:39:40.000Z\", \"message\": {\"role\": \"user\", \"content\": \"go on\"}, \"isSidechain\": false}",
    "{\"type\": \"assistant\", \"timestamp\": \"2026-09-27T14:39:50.000Z\", \"message\": {\"role\": \"assistant\", \"content\": [{\"type\": \"tool_use\", \"name\": \"Edit\"}], \"model\": \"claude-opus-5-5\", \"id\": \"msg_b\", \"stop_reason\": \"tool_use\", \"usage\": {\"input_tokens\": 10, \"output_tokens\": 990, \"cache_creation_input_tokens\": 4000, \"cache_read_input_tokens\": 90000}}, \"isSidechain\": false}"
   ]
  },
@@ -17,9 +17,9 @@
  "expect": {
   "mood": "working",
   "model": "Opus 5.5",
-  "five.pct": "10 тыс.",
-  "week.pct": "10 тыс.",
-  "five.reset": "/≈ сброс через 1 ч (19|20) мин/",
+  "five.pct": "10K",
+  "week.pct": "10K",
+  "five.reset": "/≈ resets in 1 h (19|20) min/",
   "official": false
  }
 }

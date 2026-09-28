@@ -2,7 +2,7 @@
 // Widget development without a Mac: runs provider.js in an emulation of the app's sandbox (Node), resolves
 // view.json the way WidgetTemplate.swift does, draws an approximate PNG mock, and runs the widgets' fixtures.
 //
-//   node scripts/widget-dev.mjs new com.you.widget [--name "Имя"] [--dir catalog/widgets]  # a working starter widget
+//   node scripts/widget-dev.mjs new com.you.widget [--name "Name"] [--dir catalog/widgets]  # a working starter widget
 //   node scripts/widget-dev.mjs watch <widget> [--theme …] [--fixture NAME]   # re-run + re-render preview.png on save
 //   node scripts/widget-dev.mjs run <widget> [--fixture NAME] [--setting k=v] [--secret k=v] [--action NAME]…
 //                                            [--now 2026-09-27T14:40:00Z] [--home DIR] [--views]
@@ -41,7 +41,7 @@ const MAX_NODES = 500, MAX_TEXT = 2000;
  * A widget's strings.json ({"ru": {…}, "en": {…}}) for `wanted`: that language if the widget has it, else English,
  * else its first language; the fallback language's keys fill any gaps. Mirrors WidgetStrings.swift.
  */
-export function strings(dir, wanted = "ru") {
+export function strings(dir, wanted = "en") {
   const file = path.join(dir, "strings.json");
   const all = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
   const langs = Object.keys(all);
@@ -53,7 +53,7 @@ export function strings(dir, wanted = "ru") {
 /** Loads a widget into a fresh sandbox. Everything the script can touch comes from `options`. */
 export function sandbox(dir, options = {}) {
   const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8"));
-  const { lang, table } = strings(dir, options.lang || "ru");
+  const { lang, table } = strings(dir, options.lang || "en");
   const perms = manifest.permissions || {};
   const logs = [];
   const log = (line) => { logs.push(line); if (options.verbose) console.error("log:", line); };
@@ -73,7 +73,7 @@ export function sandbox(dir, options = {}) {
     const abs = path.join(home, p.replace(/^~\//, ""));
     fs.mkdirSync(path.dirname(abs), { recursive: true });
     fs.writeFileSync(abs, Array.isArray(content) ? content.join("\n") + "\n" : content);
-    const t = (RealDate.now() + shift) / 1000 - (options.fileAge?.[p] ?? 0); // «изменён N секунд назад» по часам фикстуры
+    const t = (RealDate.now() + shift) / 1000 - (options.fileAge?.[p] ?? 0); // "modified N seconds ago" by the fixture's clock
     fs.utimesSync(abs, t, t);
   }
   const realHome = fs.realpathSync(home);
@@ -81,15 +81,15 @@ export function sandbox(dir, options = {}) {
   const allows = (p) => p.startsWith("~/") && !p.split("/").includes("..") && declared.some((e) => (e.endsWith("/") ? p.startsWith(e) : p === e));
   const fileURL = (p) => {
     p = String(p);
-    if (!allows(p)) { log(`files: ${p} не разрешён — добавьте путь в permissions.files`); return null; }
+    if (!allows(p)) { log(`files: ${p} is not allowed — add the path to permissions.files`); return null; }
     const abs = path.join(home, p.slice(2));
     let real; try { real = fs.realpathSync(abs); } catch { return abs; }
     const inside = declared.some((e) => { const full = realHome + "/" + e.slice(2); return e.endsWith("/") ? (real + "/").startsWith(full) : real === full; });
-    if (!inside) { log(`files: ${p} ведёт за пределы разрешённых путей`); return null; }
+    if (!inside) { log(`files: ${p} leads outside the allowed paths`); return null; }
     return real;
   };
   const files = Object.freeze({
-    read(p) { const u = fileURL(p); if (!u) return null; try { const b = fs.readFileSync(u); if (b.length > MAX_FILE) { log(`files.read: ${p} больше 1 МБ`); return null; } return b.toString("utf8"); } catch { return null; } },
+    read(p) { const u = fileURL(p); if (!u) return null; try { const b = fs.readFileSync(u); if (b.length > MAX_FILE) { log(`files.read: ${p} is over 1 MB`); return null; } return b.toString("utf8"); } catch { return null; } },
     modified(p) { const u = fileURL(p); if (!u) return null; try { return fs.statSync(u).mtimeMs / 1000; } catch { return null; } },
     lines(p, o = {}) {
       const u = fileURL(p); if (!u) return null;
@@ -123,13 +123,13 @@ export function sandbox(dir, options = {}) {
     url = String(url);
     let host; try { host = new URL(url).hostname.toLowerCase(); } catch { host = ""; }
     if (!url.startsWith("https://") || !network.some((h) => host === h || host.endsWith("." + h))) {
-      throw new Error(`fetch: ${url} не разрешён — добавьте хост в permissions.network (только HTTPS)`);
+      throw new Error(`fetch: ${url} is not allowed — add the host to permissions.network (HTTPS only)`);
     }
     fetched.push(url);
     const mock = (options.fetch || []).find((m) => new RegExp(m.match).test(decodeURIComponent(url)));
-    if (!mock) throw new Error(`fetch: в фикстуре нет ответа для ${url}`);
+    if (!mock) throw new Error(`fetch: the fixture has no answer for ${url}`);
     const text = typeof mock.body === "string" ? mock.body : JSON.stringify(mock.body ?? null);
-    if (text.length > MAX_RESPONSE) throw new Error("fetch: ответ больше 2 МБ");
+    if (text.length > MAX_RESPONSE) throw new Error("fetch: the answer is over 2 MB");
     const status = mock.status ?? 200, headers = Object.fromEntries(Object.entries(mock.headers || {}).map(([k, v]) => [k.toLowerCase(), String(v)]));
     return { status, ok: status >= 200 && status < 300, headers: { get: (k) => headers[String(k).toLowerCase()] ?? null }, text: async () => text, json: async () => JSON.parse(text) };
   }
@@ -145,7 +145,7 @@ export function sandbox(dir, options = {}) {
       set: (k, v) => {
         const next = { ...store };
         if (v === null || v === undefined) delete next[String(k)]; else next[String(k)] = JSON.parse(JSON.stringify(v));
-        if (JSON.stringify(next).length > MAX_STORAGE) { log(`storage: превышен лимит ${MAX_STORAGE / 1024} КБ, значение не сохранено`); return; }
+        if (JSON.stringify(next).length > MAX_STORAGE) { log(`storage: over the ${MAX_STORAGE / 1024} KB limit, the value wasn't saved`); return; }
         store = next;
       },
     }),
@@ -162,14 +162,14 @@ export function sandbox(dir, options = {}) {
   const settings = {};
   for (const s of manifest.settings || []) settings[s.key] = options.settings?.[s.key] ?? s.default ?? "";
   const call = async (fn, args) => {
-    if (typeof context[fn] !== "function") { if (fn === "refresh") throw new Error("В provider.js нет функции refresh()"); return null; }
+    if (typeof context[fn] !== "function") { if (fn === "refresh") throw new Error("provider.js has no refresh() function"); return null; }
     const started = RealDate.now();
     const value = await Promise.race([
       Promise.resolve(context[fn](...args, { settings, lang })),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Скрипт не ответил за 20 с")), 20000).unref()),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("The script didn't answer within 20 s")), 20000).unref()),
     ]);
     const took = RealDate.now() - started;
-    if (took > 1500 && fetched.length === 0) log(`warn: ${fn}() занял ${took} мс — в приложении на синхронный код даётся 2 с`);
+    if (took > 1500 && fetched.length === 0) log(`warn: ${fn}() took ${took} ms — the app allows 2 s of synchronous code`);
     return JSON.parse(JSON.stringify(value ?? null));
   };
   return {
@@ -194,7 +194,7 @@ function lookup(p, scope) {
   }
   return cur ?? null;
 }
-const text = (v) => (v == null ? "" : typeof v === "boolean" ? (v ? "да" : "нет") : typeof v === "object" ? JSON.stringify(v) : String(v));
+const text = (v) => (v == null ? "" : typeof v === "boolean" ? (v ? "yes" : "no") : typeof v === "object" ? JSON.stringify(v) : String(v));
 const value = (raw, scope) => {
   if (typeof raw !== "string") return raw;
   const m = WHOLE.exec(raw);
@@ -208,14 +208,14 @@ const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 export function resolve(template, data) {
   const budget = { left: MAX_NODES };
   const out = node(template, { $: data }, budget);
-  if (!out) throw new Error("Шаблон пустой");
+  if (!out) throw new Error("The template is empty");
   return out;
 }
 
 function node(t, scope, budget) {
-  if (!t || typeof t !== "object" || Array.isArray(t)) throw new Error("Узел шаблона должен быть объектом");
+  if (!t || typeof t !== "object" || Array.isArray(t)) throw new Error("A template node must be an object");
   if ("if" in t && !truthy(value(t.if, scope))) return null;
-  if (--budget.left < 0) throw new Error(`Слишком много элементов (больше ${MAX_NODES})`);
+  if (--budget.left < 0) throw new Error(`Too many elements (over ${MAX_NODES})`);
   const str = (k) => (k in t ? text(value(t[k], scope)) : undefined);
   const num = (k) => (k in t ? number(value(t[k], scope)) ?? undefined : undefined);
   const children = () => (t.children || []).map((c) => node(c, scope, budget)).filter(Boolean);
@@ -237,12 +237,12 @@ function node(t, scope, budget) {
     }
     case "button": {
       const action = str("action");
-      if (!action) throw new Error("У кнопки нет action");
+      if (!action) throw new Error("The button has no action");
       return { type: "button", title: str("title") ?? "", symbol: str("symbol"), action };
     }
     case "sprite": {
       const frames = (value(t.frames, scope) || []).slice(0, 16).filter(Array.isArray).map((f) => f.slice(0, 48).map((r) => text(r).slice(0, 48)));
-      if (!frames.length) throw new Error("У sprite нет frames");
+      if (!frames.length) throw new Error("The sprite has no frames");
       const pal = value(t.palette, scope) || {};
       return { type: "sprite", frames, palette: Object.fromEntries(Object.entries(pal).map(([k, v]) => [k.slice(0, 1), text(v)])), fps: num("fps") };
     }
@@ -262,7 +262,7 @@ function node(t, scope, budget) {
     }
     case "list": {
       const items = value(t.items, scope);
-      if (!t.template) throw new Error("У списка нет template");
+      if (!t.template) throw new Error("The list has no template");
       const rows = (Array.isArray(items) ? items : []).map((item, index) => node(t.template, { ...scope, item, index }, budget)).filter(Boolean);
       const n = num("columns");
       if (n !== undefined && n > 1) return { type: "grid", columns: columns(n), spacing: num("spacing"), children: rows };
@@ -300,7 +300,7 @@ export function fixtures(dir) {
 /** Runs one scenario: actions, then refresh() and view resolution. Returns { data, views, error, box }. */
 export async function scenario(dir, fx = {}, extra = {}) {
   const tz = process.env.TZ;
-  process.env.TZ = fx.timezone || "UTC"; // местное время в сценарии не зависит от машины
+  process.env.TZ = fx.timezone || "UTC"; // local time in a scenario doesn't depend on the machine
   const box = sandbox(dir, { ...fx, ...extra });
   try {
     for (const a of fx.actions || []) await box.action(a);
@@ -317,8 +317,8 @@ export async function scenario(dir, fx = {}, extra = {}) {
 function check(result, fx) {
   const problems = [];
   if (fx.error) {
-    if (!result.error) problems.push(`ожидалась ошибка «${fx.error}», а refresh() прошёл`);
-    else if (!result.error.includes(fx.error)) problems.push(`ошибка «${result.error}», ожидалась «${fx.error}»`);
+    if (!result.error) problems.push(`expected the error “${fx.error}”, but refresh() passed`);
+    else if (!result.error.includes(fx.error)) problems.push(`the error “${result.error}”, expected “${fx.error}”`);
     return problems;
   }
   if (result.error) return [result.error];
@@ -327,7 +327,7 @@ function check(result, fx) {
     const ok = typeof want === "string" && want.length > 1 && want.startsWith("/") && want.endsWith("/")
       ? new RegExp(want.slice(1, -1)).test(text(got))
       : JSON.stringify(got) === JSON.stringify(want);
-    if (!ok) problems.push(`${p}: ${JSON.stringify(got)}, ожидалось ${JSON.stringify(want)}`);
+    if (!ok) problems.push(`${p}: ${JSON.stringify(got)}, expected ${JSON.stringify(want)}`);
   }
   return problems;
 }
@@ -496,7 +496,7 @@ async function screenshot(html, out) {
     for (const place of places) { try { playwright = require(place); break; } catch {} }
     if (!playwright) throw new Error("no playwright");
   } catch {
-    throw new Error("Для preview нужен Playwright с Chromium: npm i -g playwright && npx playwright install chromium");
+    throw new Error("preview needs Playwright with Chromium: npm i -g playwright && npx playwright install chromium");
   }
   const launch = process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {};
   const browser = await playwright.chromium.launch(launch);
@@ -525,7 +525,7 @@ function parseArgs(argv) {
 
 function widgetDir(p) {
   const dir = path.resolve(p);
-  if (!fs.existsSync(path.join(dir, "manifest.json"))) throw new Error(`${p}: это не папка виджета (нет manifest.json)`);
+  if (!fs.existsSync(path.join(dir, "manifest.json"))) throw new Error(`${p}: not a widget folder (no manifest.json)`);
   return dir;
 }
 
@@ -534,7 +534,7 @@ function fixtureFor(dir, args) {
   let fx = {};
   if (args.fixture) {
     fx = all.find((f) => f.name === args.fixture);
-    if (!fx) throw new Error(`нет фикстуры «${args.fixture}» (есть: ${all.map((f) => f.name).join(", ") || "никаких"})`);
+    if (!fx) throw new Error(`no fixture “${args.fixture}” (there are: ${all.map((f) => f.name).join(", ") || "none"})`);
   }
   return {
     ...fx,
@@ -555,9 +555,16 @@ function scaffold(dir, id, name) {
   fs.mkdirSync(path.join(dir, "fixtures"), { recursive: true });
   fs.writeFileSync(path.join(dir, "manifest.json"), json({
     $schema: schema("manifest"), id, name, version: "1.0.0", author: id.split(".")[1] || "me",
-    description: "Счётчик с целью на день — стартовый шаблон: настройки, storage, кнопки и все три размера.",
+    description: "A counter with a daily goal — a starter template: settings, storage, buttons and all three sizes.",
     symbol: "sparkles", refresh: 60,
-    settings: [{ key: "goal", title: "Цель на день", type: "number", min: 1, max: 20, default: "8" }],
+    settings: [{ key: "goal", title: "Daily goal", type: "number", min: 1, max: 20, default: "8" }],
+  }));
+  fs.writeFileSync(path.join(dir, "strings.json"), json({
+    en: { "manifest.name": name, "settings.goal.title": "Daily goal", today: "Today", reset: "Reset", week: "Last 7 days",
+          left: { one: "{n} more to go", other: "{n} more to go" }, done: "goal reached 🎉" },
+    ru: { "manifest.name": name, "settings.goal.title": "Цель на день", today: "Сегодня", reset: "Сброс", week: "Последние 7 дней",
+          left: { one: "ещё {n} раз до цели", few: "ещё {n} раза до цели", many: "ещё {n} раз до цели", other: "ещё {n} раза до цели" },
+          done: "цель выполнена 🎉" },
   }));
   const face = (big, extra = [], compact = false) => ({
     type: "vstack", spacing: 10, children: [
@@ -574,14 +581,14 @@ function scaffold(dir, id, name) {
   });
   const buttons = { type: "hstack", children: [
     { type: "button", title: "+1", symbol: "plus", action: "add" },
-    { type: "button", title: "Сброс", symbol: "arrow.clockwise", action: "reset" },
+    { type: "button", title: "{{t.reset}}", symbol: "arrow.clockwise", action: "reset" },
   ] };
   fs.writeFileSync(path.join(dir, "view.json"), json({
     $schema: schema("view"),
     full: { type: "vstack", spacing: 16, children: [
       face(96, [buttons]),
       { type: "box", if: "{{history}}", children: [
-        { type: "text", text: "Последние 7 дней", style: "caption", color: "secondary" },
+        { type: "text", text: "{{t.week}}", style: "caption", color: "secondary" },
         { type: "chart", values: "{{history}}", style: "bar", color: "accent", height: 80 },
       ] },
     ] },
@@ -589,7 +596,8 @@ function scaffold(dir, id, name) {
     small: { type: "box", action: "add", children: [face(40, [], true)] },
   }));
   fs.writeFileSync(path.join(dir, "provider.js"), `// ${name}: refresh(ctx) returns the data view.json binds to ({{count}} etc.). Runs on the Mac.
-// ctx.settings — from manifest.settings; storage — 64 KB that survive restarts; format — number/date helpers.
+// ctx.settings — from manifest.settings; storage — 64 KB that survive restarts; format — number/date helpers;
+// t(key, vars) — texts from strings.json in the user's language.
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -611,9 +619,9 @@ function refresh(ctx) {
   const goal = Math.max(1, Number(ctx.settings.goal) || 8);
   const left = goal - state.count;
   return {
-    title: "Сегодня",
+    title: t("today"),
     count: format.number(state.count, 0),
-    left: left > 0 ? \`ещё \${format.plural(left, "раз", "раза", "раз")} до цели\` : "цель выполнена 🎉",
+    left: left > 0 ? t("left", { n: left }) : t("done"),
     progress: Math.min(1, state.count / goal),
     color: left > 0 ? "accent" : "green",
     history: state.history.length ? [...state.history, state.count] : [],
@@ -630,11 +638,11 @@ function action(name, ctx) {
 }
 `);
   fs.writeFileSync(path.join(dir, "fixtures/ok.json"), json({
-    description: "Два нажатия утром; цель по умолчанию — 8",
+    description: "Two taps in the morning; the default goal is 8",
     now: "2026-09-27T09:00:00Z",
     storage: { state: { day: "2026-09-27", count: 3, history: [5, 8, 2] } },
     actions: ["add", "add"],
-    expect: { count: "5", progress: 0.625, color: "accent", left: "/ещё 3 раза/" },
+    expect: { count: "5", progress: 0.625, color: "accent", left: "/3 more/" },
   }));
 }
 
@@ -658,19 +666,19 @@ async function main() {
     for (const theme of themes) {
       const file = themes.length > 1 ? out.replace(/(\.png)?$/, `-${theme}.png`) : out;
       await screenshot(renderHTML(result.views, theme), file);
-      console.log(`${file}: примерный макет (шрифт и значки не как на iPhone)`);
+      console.log(`${file}: an approximate mock-up (fonts and icons differ from the iPhone)`);
     }
   } else if (command === "new") {
     const id = args._[0];
-    if (!/^[a-z0-9]+(\.[a-z0-9-]+)+$/.test(id || "")) throw new Error("new com.you.widget — id из строчных латинских букв, цифр и точек");
+    if (!/^[a-z0-9]+(\.[a-z0-9-]+)+$/.test(id || "")) throw new Error("new com.you.widget — an id of lowercase Latin letters, digits and dots");
     const dir = path.resolve(args.dir || path.join(ROOT, "catalog/widgets"), id);
-    if (fs.existsSync(dir)) throw new Error(`${dir} уже есть`);
-    scaffold(dir, id, args.name || "Мой виджет");
+    if (fs.existsSync(dir)) throw new Error(`${dir} already exists`);
+    scaffold(dir, id, args.name || "My widget");
     const rel = path.relative(process.cwd(), dir);
     console.log(`${rel}: manifest.json, view.json, provider.js, fixtures/ok.json\n` +
-      `дальше:  node scripts/widget-dev.mjs watch ${rel}   (правьте файлы — preview.png обновляется)\n` +
+      `next:    node scripts/widget-dev.mjs watch ${rel}   (edit the files — preview.png updates)\n` +
       `         node scripts/widget-dev.mjs test ${rel}\n` +
-      `на Mac:  меню PhoneScreen → «Виджеты…» → «Папка разработки…» (живая перезагрузка)`);
+      `on a Mac: the PhoneScreen menu → “Widgets…” → “Development folder…” (live reload)`);
   } else if (command === "watch") {
     const dir = widgetDir(args._[0] || ".");
     const out = args.out || path.join(dir, "preview.png");
@@ -690,7 +698,7 @@ async function main() {
       running = false;
     };
     await go();
-    console.log("слежу за изменениями (Ctrl-C — выход)…");
+    console.log("watching for changes (Ctrl-C to quit)…");
     const skip = (f) => !f || f.endsWith(".png") || f.startsWith(".");
     fs.watch(dir, { recursive: true }, (_, f) => { if (skip(f)) return; clearTimeout(timer); timer = setTimeout(go, 150); });
     fs.watch(path.join(ROOT, "Mac/Widgets/prelude.js"), () => { clearTimeout(timer); timer = setTimeout(go, 150); });
@@ -719,7 +727,7 @@ async function main() {
       { layout: "split", widgets: ["rain", "hackernews"].map(ref) },
       { layout: "grid", widgets: ["tictactoe", "game2048", "memory", "minesweeper"].map(ref) },
       { layout: "grid", widgets: ["music", "weather", "calendar", "monitor"] },
-      { layout: "trio", widgets: ["wallpaper", "photos", "worldclock"].map((id) => (id === "photos" ? id : ref(id))) },
+      { layout: "trio", widgets: ["wallpaper", "month", "worldclock"].map(ref) },
       { layout: "single", widgets: ["photos"] },
       ...["music", "weather", "calendar", "monitor", "reminders", "notes", "launcher"].map((id) => ({ layout: "single", widgets: [id] })),
       { layout: "split", widgets: ["music", "calendar"] },
@@ -728,6 +736,7 @@ async function main() {
       { layout: "split", bare: true, widgets: ["worldclock", "time"].map(ref) },
       { layout: "trio", widgets: ["reminders", "notes", "launcher"] },
       { layout: "stack", widgets: ["music", "weather", "monitor"] },
+      { layout: "split", widgets: ["apps", ref("github")] },
     ];
     const bundle = { widgets, pages };
     if (args.theme) {
@@ -735,7 +744,7 @@ async function main() {
       bundle.theme = JSON.parse(fs.readFileSync(file, "utf8"));
     }
     fs.writeFileSync(out, JSON.stringify(bundle));
-    console.log(`${out}: ${widgets.length} виджетов, ${pages.length} страниц (страница N = --page N)`);
+    console.log(`${out}: ${widgets.length} widgets, ${pages.length} pages (page N = --page N)`);
     pages.forEach((p, i) => console.log(`  ${i}: ${p.layout} ${p.widgets.join(", ")}`));
   } else if (command === "test") {
     const dirs = args._.length ? args._.map(widgetDir)
@@ -743,7 +752,7 @@ async function main() {
     let failed = 0, total = 0;
     for (const dir of dirs.sort()) {
       const list = fixtures(dir);
-      if (!list.length) { console.log(`- ${path.basename(dir)}: нет fixtures/`); continue; }
+      if (!list.length) { console.log(`- ${path.basename(dir)}: no fixtures/`); continue; }
       for (const fx of list) {
         total++;
         const problems = check(await scenario(dir, fx), fx);
@@ -751,7 +760,7 @@ async function main() {
         else console.log(`✓ ${path.basename(dir)} · ${fx.name}`);
       }
     }
-    console.log(failed ? `${failed} из ${total} сценариев не прошли` : `OK: ${total} сценариев`);
+    console.log(failed ? `${failed} of ${total} scenarios failed` : `OK: ${total} scenario${total === 1 ? "" : "s"}`);
     process.exit(failed ? 1 : 0);
   } else {
     console.error(fs.readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 11).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));

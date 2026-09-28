@@ -1,0 +1,42 @@
+{
+  "en": {
+    "manifest.name": "Tic-tac-toe",
+    "manifest.description": "Tic-tac-toe against the Mac: move with a finger or the cursor, the Mac answers. Three difficulty levels, a game score, and you take turns going first.",
+    "settings.level.title": "Difficulty",
+    "settings.level.options.easy": "Easy",
+    "settings.level.options.normal": "Normal",
+    "settings.level.options.hard": "Unbeatable",
+    "yourMove": "Your move",
+    "draw": "Draw",
+    "youWon": "You won!",
+    "macWon": "The Mac won",
+    "level.easy": "easy",
+    "level.normal": "normal",
+    "level.hard": "unbeatable",
+    "header": "TIC-TAC-TOE",
+    "you": "you ✕",
+    "draws": "draws",
+    "newGame": "New game",
+    "restart": "Restart"
+  },
+  "ru": {
+    "manifest.name": "Крестики-нолики",
+    "manifest.description": "Крестики-нолики против Mac: ходишь пальцем или курсором, Mac отвечает. Три уровня сложности, счёт партий, ходите по очереди первыми.",
+    "settings.level.title": "Сложность",
+    "settings.level.options.easy": "Лёгкая",
+    "settings.level.options.normal": "Обычная",
+    "settings.level.options.hard": "Непобедимая",
+    "yourMove": "Твой ход",
+    "draw": "Ничья",
+    "youWon": "Ты победил!",
+    "macWon": "Mac победил",
+    "level.easy": "лёгкий",
+    "level.normal": "обычный",
+    "level.hard": "непобедимый",
+    "header": "КРЕСТИКИ-НОЛИКИ",
+    "you": "ты ✕",
+    "draws": "ничьи",
+    "newGame": "Новая игра",
+    "restart": "Заново"
+  }
+}

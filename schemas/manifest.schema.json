@@ -155,7 +155,7 @@
      },
      "unit": {
       "type": "string",
-      "description": "Shown after a number: мин, %"
+      "description": "Shown after a number: min, %"
      }
     }
    }

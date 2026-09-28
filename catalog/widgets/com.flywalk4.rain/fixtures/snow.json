@@ -2,14 +2,14 @@
  "now": "2026-09-27T14:40:00Z",
  "fetch": [
   {
-   "match": "geocoding-api.*name=Москва",
+   "match": "geocoding-api.*name=Moscow",
    "body": {
     "results": [
      {
-      "name": "Москва",
+      "name": "Moscow",
       "latitude": 55.75222,
       "longitude": 37.61556,
-      "country": "Россия"
+      "country": "Russia"
      }
     ]
    }
@@ -123,8 +123,8 @@
   }
  ],
  "expect": {
-  "place": "Москва",
-  "headline": "Снег через 1 ч 35 мин",
+  "place": "Moscow",
+  "headline": "Snow in 1 h 35 min",
   "icon": "cloud.snow.fill"
  }
 }

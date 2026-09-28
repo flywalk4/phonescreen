@@ -249,10 +249,10 @@ struct ConnectionBadge: View {
             if let active = status.active {
                 Text(active.label)
                 if let rtt = status.rtt {
-                    Text(String(format: "%.0f мс", rtt * 1000)).monospacedDigit()
+                    Text(L("%lld ms", Int((rtt * 1000).rounded()))).monospacedDigit()
                 }
             } else {
-                Text("Нет связи с Mac")
+                Text("No connection to the Mac")
             }
         }
         .font(.caption2)
@@ -267,8 +267,8 @@ private struct WaitingView: View {
     var body: some View {
         VStack(spacing: 16) {
             ThemedSpinner().controlSize(.large)
-            Text("Жду Mac").font(.title2.weight(.semibold))
-            Text("Подключите кабель или откройте PhoneScreen на Mac.\nWi-Fi сеть не обязательна — сработает прямое соединение.")
+            Text("Waiting for the Mac").font(.title2.weight(.semibold))
+            Text("Connect the cable or open PhoneScreen on the Mac.\nA Wi-Fi network isn't required — a direct connection works too.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -286,11 +286,11 @@ private struct IslandStatus: View {
         TimelineView(.everyMinute) { context in
             // Two equal halves around a gap the island's width, so nothing slides under it whatever the font.
             HStack(spacing: 0) {
-                Text(context.date.formatted(date: .omitted, time: .shortened))
+                Text(context.date.text(date: .omitted, time: .shortened))
                     .monospacedDigit()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Color.clear.frame(width: 150) // the island
-                Text(context.date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+                Text(context.date.text(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .opacity(showsDate ? 1 : 0)
                     .animation(.easeOut(duration: 0.2), value: showsDate)

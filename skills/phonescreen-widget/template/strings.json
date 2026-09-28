@@ -1,0 +1,10 @@
+{
+  "en": {
+    "reload": "Refresh",
+    "httpError": "The API answered {status}"
+  },
+  "ru": {
+    "reload": "Обновить",
+    "httpError": "API ответил {status}"
+  }
+}

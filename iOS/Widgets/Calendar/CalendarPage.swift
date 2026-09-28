@@ -39,7 +39,7 @@ struct CalendarPage: View {
                     }
                 }
             } else {
-                AccessPrompt(symbol: "calendar", title: "Календарь", status: kit.eventsAccess) {
+                AccessPrompt(symbol: "calendar", title: L("Calendar"), status: kit.eventsAccess) {
                     await kit.requestEvents()
                     model.reload()
                 }
@@ -53,9 +53,9 @@ struct CalendarPage: View {
     private func compact(now: Date) -> some View {
         let upcoming = model.today.filter { $0.isAllDay || $0.endDate > now }
         return VStack(alignment: .leading, spacing: 8) {
-            WidgetHeader(title: now.formatted(.dateTime.weekday(.abbreviated).day()).capitalizedFirst, symbol: "calendar")
+            WidgetHeader(title: now.text(.dateTime.weekday(.abbreviated).day()).capitalizedFirst, symbol: "calendar")
             if upcoming.isEmpty {
-                Text(model.tomorrow.isEmpty ? "Свободный день" : "Сегодня всё. Завтра: \(model.tomorrow[0].title ?? "")")
+                Text(model.tomorrow.isEmpty ? L("A free day") : L("That's all for today. Tomorrow: %@", model.tomorrow[0].title ?? ""))
                     .font(.caption).foregroundStyle(.secondary)
                 MonthGrid(now: now, compact: true).frame(maxHeight: .infinity, alignment: .center)
             }
@@ -67,8 +67,8 @@ struct CalendarPage: View {
                             RoundedRectangle(cornerRadius: 1.5).fill(Color(cgColor: event.calendar.cgColor)).frame(width: 3)
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(event.title ?? "").font(.caption.weight(ongoing ? .bold : .medium)).lineLimit(1)
-                                Text(event.isAllDay ? "весь день" : ongoing ? "сейчас"
-                                     : event.startDate.formatted(date: .omitted, time: .shortened))
+                                Text(event.isAllDay ? L("all day") : ongoing ? L("now")
+                                     : event.startDate.text(date: .omitted, time: .shortened))
                                     .font(.caption2.monospacedDigit()).foregroundStyle(ongoing ? .green : .secondary)
                             }
                         }
@@ -81,7 +81,7 @@ struct CalendarPage: View {
 
     private func content(now: Date, tall: Bool) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            WidgetHeader(title: now.formatted(.dateTime.weekday(.wide).day().month(.wide)).capitalizedFirst,
+            WidgetHeader(title: now.text(.dateTime.weekday(.wide).day().month(.wide)).capitalizedFirst,
                          symbol: "calendar")
             if let next = model.today.first(where: { !$0.isAllDay && $0.startDate > now }) {
                 NextUp(event: next, now: now)
@@ -92,7 +92,7 @@ struct CalendarPage: View {
                     ForEach(allDay, id: \.eventIdentifier) { EventRow(event: $0, now: now) }
                     let timed = model.today.filter { !$0.isAllDay }
                     if timed.isEmpty && allDay.isEmpty {
-                        Label("Сегодня встреч нет — свободный день", systemImage: "sun.max")
+                        Label("No events today — a free day", systemImage: "sun.max")
                             .foregroundStyle(.secondary).padding(.vertical, 8)
                         MonthGrid(now: now, compact: false, roomy: tall)
                             .padding(16)
@@ -107,7 +107,7 @@ struct CalendarPage: View {
                     }
                     if let last = timed.last, last.startDate <= now { NowLine(now: now) }
                     if !model.tomorrow.isEmpty {
-                        Text("Завтра").font(.headline).foregroundStyle(.secondary).padding(.top, 12)
+                        Text("Tomorrow").font(.headline).foregroundStyle(.secondary).padding(.top, 12)
                         ForEach(model.tomorrow, id: \.eventIdentifier) { EventRow(event: $0, now: now) }
                     }
                 }
@@ -126,7 +126,7 @@ private struct NextUp: View {
         let minutes = Int(event.startDate.timeIntervalSince(now) / 60)
         HStack {
             Glyph(systemName: "bell.fill").foregroundStyle(.orange)
-            Text(minutes < 60 ? "Через \(minutes) мин" : "В \(event.startDate.formatted(date: .omitted, time: .shortened))")
+            Text(minutes < 60 ? L("In %lld min", minutes) : L("At %@", event.startDate.text(date: .omitted, time: .shortened)))
                 .font(.subheadline.weight(.semibold))
             Text(event.title ?? "").font(.subheadline).lineLimit(1)
         }
@@ -146,16 +146,16 @@ private struct EventRow: View {
         HStack(alignment: .top, spacing: 10) {
             RoundedRectangle(cornerRadius: 2).fill(Color(cgColor: event.calendar.cgColor)).frame(width: 4)
             VStack(alignment: .leading, spacing: 3) {
-                Text(event.title ?? "Без названия").font(.body.weight(ongoing ? .semibold : .regular)).lineLimit(2)
-                Text(event.isAllDay ? "Весь день"
-                     : "\(event.startDate.formatted(date: .omitted, time: .shortened)) – \(event.endDate.formatted(date: .omitted, time: .shortened))")
+                Text(event.title ?? L("Untitled")).font(.body.weight(ongoing ? .semibold : .regular)).lineLimit(2)
+                Text(event.isAllDay ? L("All day")
+                     : "\(event.startDate.text(date: .omitted, time: .shortened)) – \(event.endDate.text(date: .omitted, time: .shortened))")
                     .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                 if let location = event.location, !location.isEmpty {
                     Label { Text(location) } icon: { Glyph("mappin") }.font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
             Spacer()
-            if ongoing { Text("сейчас").font(.caption.weight(.bold)).foregroundStyle(.green) }
+            if ongoing { Text("now").font(.caption.weight(.bold)).foregroundStyle(.green) }
         }
         .padding(10)
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(ongoing ? 0.12 : 0.05)))
@@ -168,7 +168,7 @@ private struct NowLine: View {
 
     var body: some View {
         HStack(spacing: 6) {
-            Text(now.formatted(date: .omitted, time: .shortened)).font(.caption2.monospacedDigit().weight(.bold))
+            Text(now.text(date: .omitted, time: .shortened)).font(.caption2.monospacedDigit().weight(.bold))
             Rectangle().frame(height: 1.5)
         }
         .foregroundStyle(.red)
@@ -186,18 +186,18 @@ struct MonthGrid: View {
 
     var body: some View {
         var cal = Calendar(identifier: .gregorian)
-        cal.locale = Locale(identifier: "ru_RU")
+        cal.locale = Lang.locale
         cal.firstWeekday = 2
         let month = cal.dateInterval(of: .month, for: now)!
         let days = cal.range(of: .day, in: .month, for: now)!.count
         let lead = (cal.component(.weekday, from: month.start) - cal.firstWeekday + 7) % 7
         let today = cal.component(.day, from: now)
         let cells = Array(repeating: 0, count: lead) + Array(1...days)
-        let symbols = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+        let symbols = L("Mo,Tu,We,Th,Fr,Sa,Su").components(separatedBy: ",")
         let font: Font = compact ? .caption : roomy ? .title3 : .callout
         return VStack(alignment: .leading, spacing: compact ? 4 : 10) {
             if !compact {
-                Text(now.formatted(.dateTime.month(.wide).year()).capitalizedFirst).font(.headline)
+                Text(now.text(.dateTime.month(.wide).year()).capitalizedFirst).font(.headline)
             }
             Grid(horizontalSpacing: 0, verticalSpacing: compact ? 2 : roomy ? 8 : 2) {
                 GridRow {

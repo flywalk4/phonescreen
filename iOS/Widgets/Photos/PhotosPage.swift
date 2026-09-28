@@ -16,9 +16,9 @@ struct PhotosPage: View {
                 case .loading:
                     ThemedSpinner()
                 case .denied:
-                    message("Нет доступа к фото", "Разрешите PhoneScreen доступ в Настройках → Конфиденциальность → Фото")
+                    message(L("No access to photos"), L("Allow PhoneScreen access in Settings → Privacy & Security → Photos"))
                 case .empty:
-                    message("Нет фото", "Добавьте снимки в «Избранное» — они появятся здесь")
+                    message(L("No photos"), L("Add pictures to Favorites and they'll show up here"))
                 case .ready:
                     if let image = library.image {
                         KenBurns(image: image, seed: library.index)
@@ -146,7 +146,7 @@ final class PhotoLibrary: ObservableObject {
         guard let loaded else { return }
         withAnimation(.easeInOut(duration: 1.2)) {
             image = loaded
-            caption = asset.creationDate.map { $0.formatted(.dateTime.day().month(.wide).year()) }
+            caption = asset.creationDate.map { $0.text(.dateTime.day().month(.wide).year()) }
             state = .ready
         }
     }

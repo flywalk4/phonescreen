@@ -59,19 +59,19 @@ def check_strings(folder: Path, manifest: dict, files: dict) -> list[str]:
     except json.JSONDecodeError as e:
         return [f"strings.json: {e}"]
     if not isinstance(strings, dict) or not strings:
-        return ["strings.json: объект {\"ru\": {…}, \"en\": {…}}"]
+        return ["strings.json: an object {\"en\": {…}, \"ru\": {…}}"]
     for lang, table in strings.items():
         if not LANG.match(lang):
-            errors.append(f"strings.json: «{lang}» — код языка вида ru, en, pt-BR")
+            errors.append(f"strings.json: “{lang}” — a language code like en, ru, pt-BR")
         if not isinstance(table, dict):
-            errors.append(f"strings.json.{lang}: объект ключ → текст")
+            errors.append(f"strings.json.{lang}: an object of key → text")
             continue
         for key, value in table.items():
             if isinstance(value, dict):
                 if not value or not set(value) <= PLURAL or not all(isinstance(v, str) for v in value.values()):
-                    errors.append(f"strings.json.{lang}.{key}: формы — строки с ключами {', '.join(sorted(PLURAL))}")
+                    errors.append(f"strings.json.{lang}.{key}: forms are strings keyed {', '.join(sorted(PLURAL))}")
             elif not isinstance(value, str):
-                errors.append(f"strings.json.{lang}.{key}: строка или формы {{\"one\": …, \"other\": …}}")
+                errors.append(f"strings.json.{lang}.{key}: a string or forms {{\"one\": …, \"other\": …}}")
     # Keys used by view.json ({{t.key}}) and provider.js (t("key")) must exist in every language.
     text = lambda name: files.get(name, b"").decode("utf-8", "replace")
     used = set(re.findall(r"\{\{\s*t\.([\w.-]+)\s*\}\}", text("view.json")))
@@ -80,7 +80,7 @@ def check_strings(folder: Path, manifest: dict, files: dict) -> list[str]:
         if isinstance(table, dict):
             missing = sorted(k for k in used if k not in table)
             if missing:
-                errors.append(f"strings.json.{lang}: нет ключей {', '.join(missing[:8])}{' …' if len(missing) > 8 else ''}")
+                errors.append(f"strings.json.{lang}: missing keys {', '.join(missing[:8])}{' …' if len(missing) > 8 else ''}")
     return errors
 
 
@@ -90,11 +90,11 @@ def validate(folder: Path) -> list[str]:
     for name in REQUIRED:
         p = folder / name
         if not p.is_file():
-            errors.append(f"нет файла {name}")
+            errors.append(f"no file {name}")
             continue
         data = p.read_bytes()
         if len(data) > MAX_BYTES:
-            errors.append(f"{name} больше 256 КБ")
+            errors.append(f"{name} is over 256 KB")
         files[name] = data
     if errors:
         return errors
@@ -104,47 +104,47 @@ def validate(folder: Path) -> list[str]:
     except json.JSONDecodeError as e:
         return [f"manifest.json: {e}"]
     if not re.fullmatch(r"[a-z0-9]+(\.[a-z0-9-]+)+", str(m.get("id", ""))) or len(m.get("id", "")) > 100:
-        errors.append("manifest.id: нужен вид com.author.widget (строчные латинские буквы, цифры, точки)")
+        errors.append("manifest.id: must look like com.author.widget (lowercase Latin letters, digits, dots)")
     if folder.name != m.get("id"):
-        errors.append(f"папка должна называться как id: {m.get('id')}")
+        errors.append(f"the folder must be named like the id: {m.get('id')}")
     if not str(m.get("name", "")).strip() or len(m.get("name", "")) > 40:
-        errors.append("manifest.name обязателен, до 40 символов")
+        errors.append("manifest.name is required, up to 40 characters")
     if not re.fullmatch(r"\d+\.\d+\.\d+", str(m.get("version", ""))):
-        errors.append("manifest.version: вид 1.2.3")
+        errors.append("manifest.version: like 1.2.3")
     if not m.get("author"):
-        errors.append("manifest.author обязателен")
+        errors.append("manifest.author is required")
     perms = m.get("permissions") or {}
     for host in perms.get("network") or []:
         if not re.fullmatch(r"[a-z0-9-]+(\.[a-z0-9-]+)+", host):
-            errors.append(f"permissions.network: «{host}» — только домен (api.example.com), без https://, пути и *")
+            errors.append(f"permissions.network: “{host}” — a domain only (api.example.com), no https://, path or *")
     for path in perms.get("files") or []:
         if not path.startswith("~/") or len(path) <= 2 or ".." in path.split("/") or "*" in path:
-            errors.append(f"permissions.files: «{path}» — путь в домашней папке: ~/folder/ или ~/folder/file, без .. и *")
+            errors.append(f"permissions.files: “{path}” — a path in the home folder: ~/folder/ or ~/folder/file, no .. or *")
     secret_keys = [s.get("key") for s in perms.get("secrets") or []]
     setting_keys = [s.get("key") for s in m.get("settings") or []]
     if len(set(secret_keys)) != len(secret_keys) or len(set(setting_keys)) != len(setting_keys):
-        errors.append("ключи secrets / settings повторяются")
+        errors.append("secrets / settings keys repeat")
     for st in m.get("settings") or []:
         key, kind = st.get("key"), st.get("type", "text")
         if kind not in ("text", "choice", "toggle", "number"):
-            errors.append(f"settings.{key}: type — text, choice, toggle или number")
+            errors.append(f"settings.{key}: type is text, choice, toggle or number")
         if st.get("default") is not None and not isinstance(st["default"], str):
-            errors.append(f"settings.{key}: default — строка (\"true\", \"5\")")
+            errors.append(f"settings.{key}: default is a string (\"true\", \"5\")")
         values = [o if isinstance(o, str) else (o or {}).get("value") for o in st.get("options") or []]
         if kind == "choice":
             if not values or not all(isinstance(v, str) for v in values):
-                errors.append(f"settings.{key}: для choice нужен options — строки или {{value, title}}")
+                errors.append(f"settings.{key}: choice needs options — strings or {{value, title}}")
             elif st.get("default") is not None and st["default"] not in values:
-                errors.append(f"settings.{key}: default «{st['default']}» нет среди options")
+                errors.append(f"settings.{key}: default “{st['default']}” isn't among the options")
         if kind == "toggle" and st.get("default") not in (None, "true", "false"):
-            errors.append(f"settings.{key}: default у toggle — \"true\" или \"false\"")
+            errors.append(f"settings.{key}: a toggle's default is \"true\" or \"false\"")
         if kind == "number":
             lo, hi = st.get("min"), st.get("max")
             if lo is not None and hi is not None and lo >= hi:
-                errors.append(f"settings.{key}: min должен быть меньше max")
+                errors.append(f"settings.{key}: min must be less than max")
     floor = 30 if perms.get("network") else 5
     if m.get("refresh") is not None and m["refresh"] < floor:
-        errors.append(f"refresh меньше {floor} с будет поднят до {floor}")
+        errors.append(f"refresh under {floor} s will be raised to {floor}")
 
     errors += check_strings(folder, m, files)
 
@@ -153,28 +153,28 @@ def validate(folder: Path) -> list[str]:
     except json.JSONDecodeError as e:
         return errors + [f"view.json: {e}"]
     if not isinstance(view, dict) or not (set(view) & SIZES):
-        errors.append("view.json: объект с ключами full / medium / small")
+        errors.append("view.json: an object with the keys full / medium / small")
     else:
         for key in set(view) - SIZES - {"$schema"}:
-            errors.append(f"view.json: неизвестный ключ «{key}» (нужны full / medium / small)")
+            errors.append(f"view.json: unknown key “{key}” (expected full / medium / small)")
         for size in SIZES & set(view):
             check_node(view[size], f"view.{size}", errors)
             style_hints(view[size], f"view.{size}", size, WARNINGS)
 
     source = files["provider.js"].decode("utf-8", errors="replace")
     if not re.search(r"function\s+refresh\s*\(", source):
-        errors.append("provider.js: нет функции refresh(ctx)")
+        errors.append("provider.js: no refresh(ctx) function")
     if re.search(r"files\.(read|modified|lines|list)\(", source) and not perms.get("files"):
-        errors.append("provider.js читает файлы, но permissions.files пуст")
+        errors.append("provider.js reads files, but permissions.files is empty")
     if re.search(r"\b(require|import\s|XMLHttpRequest|WebSocket|process\.)", source):
-        errors.append("provider.js: require/import/XMLHttpRequest/WebSocket/process в песочнице нет — используйте fetch")
+        errors.append("provider.js: the sandbox has no require/import/XMLHttpRequest/WebSocket/process — use fetch")
     urls = re.findall(r"https?://([a-z0-9.-]+)", source)
     allowed = perms.get("network") or []
     for host in sorted(set(urls)):
         if not any(host == a or host.endswith("." + a) for a in allowed):
-            errors.append(f"provider.js обращается к {host}, но его нет в permissions.network")
+            errors.append(f"provider.js reaches {host}, but it isn't in permissions.network")
     if re.search(r"http://", source):
-        errors.append("provider.js: http:// запрещён, только https://")
+        errors.append("provider.js: http:// is not allowed, only https://")
     return errors
 
 
@@ -189,12 +189,12 @@ def style_hints(node, path: str, size: str, out: list[str]) -> None:
     t = node.get("type")
     for key in ("color", "background"):
         if t != "sprite" and HEX.match(str(node.get(key, ""))):
-            out.append(f"{path}.{key}: {node[key]} — темы не перекрасят hex; если это не фирменный цвет, лучше имя (accent, green…)")
+            out.append(f"{path}.{key}: {node[key]} — themes can't restyle hex; unless it's a brand colour, prefer a name (accent, green…)")
     kids = [k for k in node.get("children") or [] if isinstance(k, dict)]
     if t == "box" and "if" not in node and kids and all(k.get("if") for k in kids):
-        out.append(f"{path}: всё содержимое box под if, а сам box — нет; когда условие ложно, останется пустая подложка — перенесите if на box")
+        out.append(f"{path}: all of the box's content is under if, but the box itself isn't; when the condition is false an empty backing remains — move the if to the box")
     if t == "button" and size == "small":
-        out.append(f"{path}: кнопка в small — тесно; лучше box с action (вся плитка нажимается)")
+        out.append(f"{path}: a button in small is cramped; better a box with an action (the whole tile is tappable)")
     for i, child in enumerate(node.get("children") or []):
         style_hints(child, f"{path}.children[{i}]", size, out)
     if isinstance(node.get("template"), dict):
@@ -203,33 +203,33 @@ def style_hints(node, path: str, size: str, out: list[str]) -> None:
 
 def check_node(node, path: str, errors: list[str]) -> None:
     if not isinstance(node, dict):
-        errors.append(f"{path}: узел должен быть объектом")
+        errors.append(f"{path}: a node must be an object")
         return
     t = node.get("type")
     if t not in NODES:
-        errors.append(f"{path}: неизвестный type «{t}» (есть: {', '.join(sorted(NODES))})")
+        errors.append(f"{path}: unknown type “{t}” (there are: {', '.join(sorted(NODES))})")
         return
     for key in set(node) - NODES[t] - COMMON:
-        errors.append(f"{path}: у {t} нет поля «{key}»")
+        errors.append(f"{path}: {t} has no field “{key}”")
     if t == "text" and "style" in node and not BINDING.search(str(node["style"])) and node["style"] not in STYLES:
-        errors.append(f"{path}: style «{node['style']}» — есть: {', '.join(sorted(STYLES))}")
+        errors.append(f"{path}: style “{node['style']}” — there are: {', '.join(sorted(STYLES))}")
     for key, allowed in (("weight", WEIGHTS), ("design", DESIGNS)):
         if t == "text" and key in node and not BINDING.search(str(node[key])) and node[key] not in allowed:
-            errors.append(f"{path}: {key} «{node[key]}» — есть: {', '.join(sorted(allowed))}")
+            errors.append(f"{path}: {key} “{node[key]}” — there are: {', '.join(sorted(allowed))}")
     if t == "chart" and "style" in node and not BINDING.search(str(node["style"])) and node["style"] not in CHART_STYLES:
-        errors.append(f"{path}: style графика «{node['style']}» — есть: {', '.join(sorted(CHART_STYLES))}")
+        errors.append(f"{path}: chart style “{node['style']}” — there are: {', '.join(sorted(CHART_STYLES))}")
     if t == "button" and not node.get("action"):
-        errors.append(f"{path}: у button нужен action")
+        errors.append(f"{path}: a button needs an action")
     if t == "list":
         if "template" not in node:
-            errors.append(f"{path}: у list нужен template")
+            errors.append(f"{path}: a list needs a template")
         else:
             check_node(node["template"], f"{path}.template", errors)
     for i, child in enumerate(node.get("children") or []):
         check_node(child, f"{path}.children[{i}]", errors)
     for key, value in node.items():
         if isinstance(value, str) and value.count("{{") != value.count("}}"):
-            errors.append(f"{path}.{key}: незакрытая привязка {{{{…}}}}")
+            errors.append(f"{path}.{key}: an unclosed binding {{{{…}}}}")
 
 
 if __name__ == "__main__":
@@ -241,5 +241,5 @@ if __name__ == "__main__":
         print("✗", p)
     for w in WARNINGS if "--hints" in sys.argv else []:
         print("⚠", w)
-    print("OK" if not problems else f"{len(problems)} проблем(ы)")
+    print("OK" if not problems else f"{len(problems)} problem(s)")
     sys.exit(1 if problems else 0)

@@ -1,13 +1,13 @@
-// Лимиты Claude Code и его состояние. Работает сам по себе, мост — по желанию.
+// Claude Code's limits and state. Works on its own; the bridge is optional.
 //
-// Без моста: читает журналы сессий, которые Claude Code и так пишет в ~/.claude/projects/*/*.jsonl
-// (только чтение, в сеть виджет не ходит вовсе). Из них — что делает Claude (краб) и сколько токенов
-// потрачено за текущее 5-часовое окно и за 7 дней. Процентов тут нет: лимиты подписки нигде не
-// публикуются, но в настройках можно задать свой бюджет токенов — тогда будут полосы.
+// Without the bridge: reads the session logs Claude Code writes anyway to ~/.claude/projects/*/*.jsonl
+// (read-only; the widget never goes online). From them: what Claude is doing (the crab) and how many tokens
+// went into the current 5-hour window and the last 7 days. No percentages here: subscription limits aren't
+// published anywhere, but a token budget can be set in the settings — then there are bars.
 //
-// С мостом (python3 scripts/claude-code-bridge.py install) — точнее:
-//   ~/.claude/phonescreen/status.json — официальные rate_limits из статусной строки (Pro/Max): % и время сброса
-//   ~/.claude/phonescreen/state.json  — состояние сессий из хуков: working / waiting / idle
+// With the bridge (python3 scripts/claude-code-bridge.py install), more precise:
+//   ~/.claude/phonescreen/status.json — the official rate_limits from the status line (Pro/Max): % and reset time
+//   ~/.claude/phonescreen/state.json  — session state from hooks: working / waiting / idle
 
 const BRIDGE = "~/.claude/phonescreen/";
 const ROOTS = ["~/.claude/projects/", "~/.config/claude/projects/"];
@@ -30,16 +30,13 @@ async function refresh(ctx) {
   } else {
     five = tokenWindow(currentBlock(now), Number(ctx.settings.budget5h), now);
     week = tokenWindow(lastWeek(now), Number(ctx.settings.budgetWeek), now);
-    note = !scan.ready ? "Подсчитываю историю…"
-      : status ? "Проценты появятся после первого ответа Claude (подписка Pro или Max)."
-      : !scan.logs ? "Сессий Claude Code за неделю не найдено."
-      : "Токены по журналам Claude Code. Точные % лимитов — с мостом.";
-    noteShort = !scan.ready ? "Считаю историю…" : status ? "% — после первого ответа" : !scan.logs ? "Сессий пока нет" : "";
+    note = t(!scan.ready ? "note.counting" : status ? "note.afterReply" : !scan.logs ? "note.noSessions" : "note.logs");
+    noteShort = !scan.ready ? t("short.counting") : status ? t("short.afterReply") : !scan.logs ? t("short.noSessions") : "";
   }
 
   return {
     mood: mood.key,
-    moodText: mood.text,
+    moodText: t(`mood.${mood.key}`),
     moodColor: mood.color,
     mascot: mascot(mood.key),
     model: prettyModel((status && status.model) || scan.model),
@@ -51,7 +48,7 @@ async function refresh(ctx) {
   };
 }
 
-// Токены по часам за последние сутки — столбики на странице.
+// Tokens per hour over the last 24 hours: the bars on the page.
 function activity(now) {
   const top = Math.floor(now / HOUR) * HOUR;
   const values = Array.from({ length: 24 }, (_, i) => scan.hours[top - (23 - i) * HOUR] || 0);
@@ -66,12 +63,12 @@ function readJSON(path) {
 }
 
 const MOODS = {
-  working: { key: "working", text: "Claude работает", color: "orange" },
-  waiting: { key: "waiting", text: "Ждёт тебя", color: "yellow" },
-  idle: { key: "idle", text: "Отдыхает", color: "secondary" },
+  working: { key: "working", color: "orange" },
+  waiting: { key: "waiting", color: "yellow" },
+  idle: { key: "idle", color: "secondary" },
 };
 
-// Мост: working, если хоть одна сессия работает (недавно), иначе waiting, иначе idle.
+// Bridge: working if any session is (recently) working, else waiting, else idle.
 function hookMood(state, now) {
   const sessions = Object.values(state.sessions || {});
   const fresh = (s, maxAge) => now - (s.at || 0) < maxAge;
@@ -80,16 +77,16 @@ function hookMood(state, now) {
   return MOODS.idle;
 }
 
-// ---- Журналы сессий ----
+// ---- Session logs ----
 //
-// Читаем их кусками с того места, где остановились, так что обычный refresh() разбирает только новые строки.
-// Токены копим по часам (для 5-часового окна и недели), по каждому файлу помним последнюю реплику — из неё краб.
+// Read in chunks from where we stopped, so a regular refresh() parses only new lines.
+// Tokens are summed per hour (for the 5-hour window and the week); per file we keep the last message — the crab comes from it.
 
 const scan = {
   ready: false,
-  files: {},      // путь → { off, size, modified, last }
-  hours: {},      // начало часа (с) → токены
-  seen: [],       // id последних сообщений: одна реплика пишется несколькими строками с одним usage
+  files: {},      // path → { off, size, modified, last }
+  hours: {},      // start of the hour (s) → tokens
+  seen: [],       // ids of recent messages: one reply is written as several lines with the same usage
   model: "",
   loaded: false,
 };
@@ -105,31 +102,31 @@ async function scanLogs(now) {
   for (const log of logs) {
     let f = scan.files[log.path];
     if (!f || log.size < f.off) {
-      // Новый или переписанный файл читаем с начала. Незнакомый, но не менявшийся с прошлого полного подсчёта,
-      // уже учтён (в хранилище помещаются не все файлы) — его пропускаем.
+      // A new or rewritten file is read from the start. An unknown one that hasn't changed since the last full count
+      // is already counted (storage doesn't fit every file), so it's skipped.
       const counted = !f && scan.countedAt && log.modified <= scan.countedAt;
       f = scan.files[log.path] = { off: counted ? log.size : 0, last: null };
     }
     f.size = log.size;
     f.modified = log.modified;
     while (f.off < log.size) {
-      // Остальное — в следующий раз (но хотя бы кусок за вызов, чтобы подсчёт всегда двигался).
+      // The rest next time (but at least one chunk per call, so the count always moves).
       if (chunks > 0 && Date.now() - started > 3000) { pending = true; break; }
       chunks++;
       const part = files.lines(log.path, { offset: f.off, length: CHUNK });
       if (!part || part.next <= f.off) break;
       digest(f, part.lines, now);
       f.off = part.next;
-      await sleep(0); // отдельный отрезок синхронного кода на каждый мегабайт
+      await sleep(0); // a separate slice of synchronous code per megabyte
     }
     if (pending) break;
-    // После перезапуска приложения последняя реплика неизвестна — берём её из хвоста файла.
+    // After an app restart the last message is unknown: take it from the file's tail.
     if (!f.last && now - log.modified < HOUR) {
       const tail = files.lines(log.path, { offset: Math.max(0, log.size - 256 * 1024), length: 256 * 1024 });
       if (tail) digest(f, tail.lines, now, false);
     }
   }
-  // Забываем то, что старше недели.
+  // Forget what's older than a week.
   const alive = new Set(logs.map((l) => l.path));
   for (const path of Object.keys(scan.files)) if (!alive.has(path)) delete scan.files[path];
   for (const h of Object.keys(scan.hours)) if (Number(h) < now - WEEK - HOUR) delete scan.hours[h];
@@ -139,7 +136,7 @@ async function scanLogs(now) {
   save();
 }
 
-// *.jsonl за последнюю неделю, свежие первыми (их состояние нужнее всего). Подпапки — сессии субагентов.
+// *.jsonl from the last week, newest first (their state matters most). Subfolders are subagent sessions.
 function listLogs(now) {
   const out = [];
   const walk = (dir, depth) => {
@@ -157,7 +154,7 @@ function digest(f, lines, now, count = true) {
   let last = null;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!MESSAGE.test(line)) continue; // служебные записи (attachment, mode, …) не разбираем
+    if (!MESSAGE.test(line)) continue; // service records (attachment, mode, …) aren't parsed
     let e;
     try { e = JSON.parse(line); } catch (err) { continue; }
     if (e.type !== "assistant" && e.type !== "user") continue;
@@ -169,7 +166,7 @@ function digest(f, lines, now, count = true) {
       scan.seen.push(m.id);
       if (now - at < WEEK + HOUR) {
         const u = m.usage;
-        // Кэш-чтение дешёвое и огромное — не считаем, иначе цифры ни о чём не говорят.
+        // Cache reads are cheap and huge; not counted, or the numbers would mean nothing.
         const tokens = (u.input_tokens || 0) + (u.output_tokens || 0) + (u.cache_creation_input_tokens || 0);
         const h = Math.floor(at / HOUR) * HOUR;
         scan.hours[h] = (scan.hours[h] || 0) + tokens;
@@ -193,7 +190,7 @@ function blockTypes(content) {
 const MESSAGE = /"type":\s*"(assistant|user)"/;
 const QUESTION_TOOLS = ["AskUserQuestion", "ExitPlanMode"];
 
-// Настроение по последним репликам сессий, изменённых за последний час.
+// The mood from the last messages of sessions changed within the last hour.
 function logMood(now) {
   let best = MOODS.idle;
   for (const f of Object.values(scan.files)) {
@@ -208,19 +205,19 @@ function logMood(now) {
 function sessionMood(last, quiet) {
   const b = last.blocks;
   if (b.includes("interrupt")) return MOODS.idle;
-  if (last.type === "user") return quiet < 600 ? MOODS.working : MOODS.idle; // промпт или результат инструмента
-  if (b.includes("question")) return MOODS.waiting;                         // Claude задал вопрос
+  if (last.type === "user") return quiet < 600 ? MOODS.working : MOODS.idle; // a prompt or a tool result
+  if (b.includes("question")) return MOODS.waiting;                         // Claude asked a question
   if (b.includes("tool_use")) {
-    // Инструмент запрошен, результата нет: либо ещё выполняется, либо ждёт разрешения. Журнал их не различает,
-    // поэтому долгая тишина считается ожиданием (мост различает точно).
+    // A tool was requested with no result yet: either still running or waiting for permission. The log can't tell,
+    // so a long silence counts as waiting (the bridge knows for sure).
     return quiet < 45 ? MOODS.working : MOODS.waiting;
   }
   if (last.stop === "end_turn" || last.stop === "stop_sequence" || last.stop === "max_tokens") return MOODS.idle;
-  return quiet < 600 ? MOODS.working : MOODS.idle; // ещё думает / пишет ответ
+  return quiet < 600 ? MOODS.working : MOODS.idle; // still thinking / writing the reply
 }
 
-// Текущее 5-часовое окно: как у Claude — начинается с первого сообщения (с точностью до часа) и длится 5 часов;
-// следующее сообщение после конца окна открывает новое. Цепочку окон строим по всей сохранённой неделе.
+// The current 5-hour window, as Claude counts it: starts at the first message (to the hour) and lasts 5 hours;
+// the next message after it ends opens a new one. The chain of windows is built over the whole stored week.
 function currentBlock(now) {
   const hours = Object.keys(scan.hours).map(Number).sort((a, b) => a - b);
   let start = null;
@@ -246,15 +243,13 @@ function tokenWindow(w, budget, now) {
     pct: hasBudget ? `${Math.round((w.tokens / budget) * 100)}%` : tokensText(w.tokens),
     value: share,
     color: hasBudget ? levelColor(share * 100) : "primary",
-    reset: [hasBudget ? `${tokensText(w.tokens)} ток.` : "токенов",
-      w.resetsAt ? "≈ " + resetText(w.resetsAt, now, false) : w.weekly ? "за 7 дней" : ""].filter(Boolean).join(" · "),
+    reset: [hasBudget ? t("tokensShort", { n: tokensText(w.tokens) }) : t("tokens"),
+      w.resetsAt ? "≈ " + resetText(w.resetsAt, now, false) : w.weekly ? t("last7") : ""].filter(Boolean).join(" · "),
   };
 }
 
 function tokensText(n) {
-  if (n >= 1e6) return `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(".", ",")} млн`;
-  if (n >= 1e3) return `${Math.round(n / 1e3)} тыс.`;
-  return String(n);
+  return format.compact(n);
 }
 
 function prettyModel(id) {
@@ -263,11 +258,11 @@ function prettyModel(id) {
   return `${m[1][0].toUpperCase()}${m[1].slice(1)} ${m[2]}${m[3] ? "." + m[3] : ""}`;
 }
 
-// Счётчики переживают перезапуск приложения (storage), чтобы не перечитывать неделю журналов заново.
+// The counters survive an app restart (storage), so a week of logs isn't read again.
 function restore() {
   scan.loaded = true;
   const saved = storage.get("scan");
-  // Первый подсчёт не закончился — смещения сохранены не для всех файлов, надёжнее начать заново.
+  // The first count didn't finish: offsets aren't stored for every file, so starting over is safer.
   if (!saved || saved.v !== 1 || !saved.countedAt) return;
   scan.hours = saved.hours || {};
   scan.seen = saved.seen || [];
@@ -280,17 +275,17 @@ function restore() {
 let savedJSON = "";
 function save() {
   const offsets = {};
-  // Не больше 150 самых свежих файлов, чтобы уложиться в 64 КБ хранилища.
+  // At most the 150 newest files, to fit into 64 KB of storage.
   Object.entries(scan.files).sort((a, b) => (b[1].modified || 0) - (a[1].modified || 0)).slice(0, 150)
     .forEach(([path, f]) => { offsets[path] = f.off; });
   const data = { v: 1, hours: scan.hours, seen: scan.seen.slice(-200), model: scan.model, modelAt: scan.modelAt, offsets };
   const json = JSON.stringify(data);
-  if (json === savedJSON) return; // ничего нового — не пишем на диск каждые 5 с
+  if (json === savedJSON) return; // nothing new: don't write to disk every 5 s
   storage.set("scan", { ...data, countedAt: scan.countedAt || 0 });
   savedJSON = json;
 }
 
-// ---- Официальные лимиты (мост) ----
+// ---- Official limits (bridge) ----
 
 function limitWindow(w, now, weekly) {
   if (!w) return { pct: "—", value: 0, color: "secondary", reset: "", has: false, bar: false };
@@ -309,12 +304,11 @@ function levelColor(pct) { return pct < 50 ? "green" : pct < 80 ? "orange" : "re
 
 function resetText(at, now, weekly) {
   const left = at - now;
-  if (left <= 0) return "сброшен";
-  const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60);
-  if (!weekly || left < 86400) return `сброс через ${h > 0 ? `${h} ч ` : ""}${m} мин`;
+  if (left <= 0) return t("reset.done");
+  if (!weekly || left < 86400) return t("reset.in", { x: format.duration(Math.floor(left / 60) * 60) });
   const d = new Date(at * 1000);
-  const days = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
-  return `сброс в ${days[d.getDay()]} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const day = new Intl.DateTimeFormat(format.lang, { weekday: "short" }).format(d).replace(/\.$/, "");
+  return t("reset.at", { day, time: format.time(d) });
 }
 
 // ---- Mascot: an orange pixel crab, drawn in code (14×11 cells). ----

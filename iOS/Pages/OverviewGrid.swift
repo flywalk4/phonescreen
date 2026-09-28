@@ -19,7 +19,7 @@ struct OverviewGrid: View {
             let scale = tileWidth / pageSize.width
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Все страницы").font(.title3.weight(.semibold))
+                    Text("All pages").font(.title3.weight(.semibold))
                     LazyVGrid(columns: Array(repeating: GridItem(.fixed(tileWidth), spacing: spacing), count: columns),
                               spacing: spacing) {
                         ForEach(Array(pages.enumerated()), id: \.element.id) { index, page in

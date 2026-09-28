@@ -42,13 +42,13 @@ struct AccessPrompt: View {
             Image(systemName: symbol).font(.system(size: 44)).foregroundStyle(.secondary)
             Text(title).font(.title3.weight(.semibold))
             if status == .denied || status == .restricted {
-                Text("Доступ запрещён. Разрешите его в Настройках → PhoneScreen.")
+                Text("Access denied. Allow it in Settings → PhoneScreen.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                Button("Открыть Настройки") {
+                Button("Open Settings") {
                     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                 }
             } else {
-                Button("Разрешить доступ") { Task { await request() } }
+                Button("Allow access") { Task { await request() } }
                     .buttonStyle(.borderedProminent)
                     .pointerTarget { Task { await request() } }
             }

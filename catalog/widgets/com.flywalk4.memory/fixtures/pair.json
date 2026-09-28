@@ -48,7 +48,7 @@
   "tap:2"
  ],
  "expect": {
-  "pairs": "1 из 8",
+  "pairs": "1 of 8",
   "moves": "1",
   "cards.0.bg": "green"
  }

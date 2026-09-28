@@ -1,6 +1,6 @@
 {
  "settings": {
-  "place": "Абырвалг"
+  "place": "Nowhereville"
  },
  "fetch": [
   {
@@ -10,5 +10,5 @@
    }
   }
  ],
- "error": "Не нашёл «Абырвалг»"
+ "error": "Couldn't find “Nowhereville”"
 }

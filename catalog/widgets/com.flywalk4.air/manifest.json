@@ -1,9 +1,9 @@
 {
   "id": "com.flywalk4.air",
-  "name": "Воздух",
-  "version": "1.1.1",
+  "name": "Air",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Качество воздуха (европейский индекс AQI) с понятной оценкой, частицы PM2.5 и PM10, NO₂, озон, ультрафиолет и прогноз индекса на сутки столбиками. Данные Open-Meteo, без ключа.",
+  "description": "Air quality (European AQI) with a plain-language rating, PM2.5 and PM10, NO₂, ozone, UV and a 24-hour index forecast as bars. Open-Meteo data, no key.",
   "symbol": "aqi.medium",
   "refresh": 1800,
   "permissions": {
@@ -14,9 +14,9 @@
   "settings": [
     {
       "key": "place",
-      "title": "Город",
-      "default": "Москва",
-      "hint": "Название или координаты «55.75, 37.62»"
+      "title": "City",
+      "default": "Moscow",
+      "hint": "A name or coordinates “55.75, 37.62”"
     }
   ]
 }

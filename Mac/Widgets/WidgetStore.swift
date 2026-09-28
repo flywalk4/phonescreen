@@ -59,8 +59,8 @@ enum WidgetStore {
         var modified = Date.distantPast
         for name in requiredFiles {
             let url = folder.appendingPathComponent(name)
-            guard let data = try? Data(contentsOf: url) else { throw Failure(description: "Нет файла \(name)") }
-            guard data.count <= maxFileBytes else { throw Failure(description: "\(name) больше 256 КБ") }
+            guard let data = try? Data(contentsOf: url) else { throw Failure(description: "No file \(name)") }
+            guard data.count <= maxFileBytes else { throw Failure(description: "\(name) is over 256 KB") }
             files[name] = data
             if let date = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate {
                 modified = max(modified, date)
@@ -75,16 +75,16 @@ enum WidgetStore {
         try manifest.validate()
         guard let view = try? JSONSerialization.jsonObject(with: files["view.json"]!) as? [String: Any],
               !Set(view.keys).isDisjoint(with: ["full", "medium", "small"]) else {
-            throw Failure(description: "view.json должен быть объектом с ключами full / medium / small")
+            throw Failure(description: "view.json must be an object with the keys full / medium / small")
         }
         guard let source = String(data: files["provider.js"]!, encoding: .utf8) else {
-            throw Failure(description: "provider.js не в UTF-8")
+            throw Failure(description: "provider.js isn't UTF-8")
         }
         var strings: [String: Any] = [:]
         let stringsURL = folder.appendingPathComponent("strings.json")
         if let data = try? Data(contentsOf: stringsURL) {
             guard data.count <= maxFileBytes, let parsed = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                throw Failure(description: "strings.json: объект {\"ru\": {…}, \"en\": {…}}, до 256 КБ")
+                throw Failure(description: "strings.json: an object {\"en\": {…}, \"ru\": {…}}, up to 256 KB")
             }
             strings = parsed
             if let date = try? stringsURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate {
@@ -124,14 +124,14 @@ enum WidgetStore {
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent("phonescreen-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: temp, withIntermediateDirectories: true)
         for name in requiredFiles + optionalFiles.filter({ entry.files[$0] != nil }) {
-            guard let expected = entry.files[name]?.lowercased() else { throw Failure(description: "В каталоге нет хеша для \(name)") }
+            guard let expected = entry.files[name]?.lowercased() else { throw Failure(description: "The catalog has no hash for \(name)") }
             let data = try await fetch(base.appendingPathComponent(name))
             let actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-            guard actual == expected else { throw Failure(description: "\(name): хеш не совпадает с каталогом — файл изменён") }
+            guard actual == expected else { throw Failure(description: "\(name): the hash doesn't match the catalog — the file was changed") }
             try data.write(to: temp.appendingPathComponent(name))
         }
         let widget = try read(package: temp)
-        guard widget.id == entry.id else { throw Failure(description: "id в manifest.json не совпадает с каталогом") }
+        guard widget.id == entry.id else { throw Failure(description: "The id in manifest.json doesn't match the catalog") }
         return temp
     }
 
@@ -141,7 +141,7 @@ enum WidgetStore {
 
     private static func fetch(_ url: URL) async throws -> Data {
         if url.isFileURL { return try Data(contentsOf: url) }
-        guard url.scheme == "https" else { throw Failure(description: "Каталог должен быть по HTTPS") }
+        guard url.scheme == "https" else { throw Failure(description: "The catalog must be served over HTTPS") }
         let (data, response) = try await URLSession.shared.data(from: url)
         guard (response as? HTTPURLResponse)?.statusCode == 200 else {
             throw Failure(description: "\(url.lastPathComponent): HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)")

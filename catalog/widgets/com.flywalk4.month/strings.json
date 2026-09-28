@@ -1,0 +1,36 @@
+{
+  "en": {
+    "manifest.name": "Month",
+    "manifest.description": "The month as a grid: today highlighted, weekends and Russian public holidays in red, the week number and how many working days are left. Works offline.",
+    "settings.holidays.title": "Extra days off",
+    "settings.holidays.hint": "Moved days off: MM-DD, comma-separated",
+    "weekdays": "Mo,Tu,We,Th,Fr,Sa,Su",
+    "months": "January,February,March,April,May,June,July,August,September,October,November,December",
+    "week": "week {n}",
+    "work": "working days: {n} of {total} left",
+    "workShort": {
+      "one": "{n} work day",
+      "other": "{n} work days"
+    },
+    "holiday": "holiday",
+    "header": "MONTH"
+  },
+  "ru": {
+    "manifest.name": "Месяц",
+    "manifest.description": "Календарь месяца сеткой: сегодня выделено, выходные и праздники РФ красным, номер недели и сколько рабочих дней осталось. Без сети.",
+    "settings.holidays.title": "Доп. выходные",
+    "settings.holidays.hint": "Переносы: ММ-ДД через запятую",
+    "weekdays": "пн,вт,ср,чт,пт,сб,вс",
+    "months": "Январь,Февраль,Март,Апрель,Май,Июнь,Июль,Август,Сентябрь,Октябрь,Ноябрь,Декабрь",
+    "week": "неделя {n}",
+    "work": "рабочих дней: осталось {n} из {total}",
+    "workShort": {
+      "one": "{n} раб. день",
+      "few": "{n} раб. дня",
+      "many": "{n} раб. дней",
+      "other": "{n} раб. дня"
+    },
+    "holiday": "праздник",
+    "header": "МЕСЯЦ"
+  }
+}

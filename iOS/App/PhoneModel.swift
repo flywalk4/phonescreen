@@ -43,8 +43,14 @@ final class PhoneModel: ObservableObject {
     @Published private(set) var statsHistory: [SystemStats] = []
     /// The look chosen on the Mac; kept so the phone looks right before it reconnects.
     /// The Mac's language ("ru", "en"…): the phone's own texts follow it (widgets arrive already translated).
-    @Published private(set) var language: String = UserDefaults.standard.string(forKey: "language")
-        ?? String((Locale.preferredLanguages.first ?? "en").prefix(2))
+    @Published private(set) var language: String = PhoneModel.savedLanguage() { didSet { Lang.code = language } }
+    /// English until the Mac says otherwise.
+    private static func savedLanguage() -> String {
+        let code = UserDefaults.standard.string(forKey: "language") ?? "en"
+        Lang.code = code
+        Localization.translate = { L($0) } // widget and layout names from PhoneScreenKit
+        return code
+    }
     @Published private(set) var theme: Theme = PhoneModel.savedTheme() {
         didSet {
             if let data = try? JSONEncoder().encode(theme) { UserDefaults.standard.set(data, forKey: "theme") }
@@ -137,13 +143,13 @@ final class PhoneModel: ObservableObject {
             let t = { (s: String, st: String?) in WidgetNode.text(s, style: st, color: nil, lines: nil, align: nil) }
             let row = { (c: String, v: String) in WidgetNode.hstack(spacing: nil, align: nil, children: [t(c, "headline"), .spacer, t(v, nil)]) }
             customWidgets["com.flywalk4.rates"] = CustomWidgetState(
-                id: "com.flywalk4.rates", name: "Курсы валют", symbol: "dollarsign.arrow.circlepath",
+                id: "com.flywalk4.rates", name: "Exchange rates", symbol: "dollarsign.arrow.circlepath",
                 views: [.full: .vstack(spacing: 14, align: "leading", children: [
                             .hstack(spacing: 8, align: nil, children: [.symbol("dollarsign.arrow.circlepath", color: "green", size: nil),
-                                                                       t("Курсы валют", "title2"), .spacer,
-                                                                       .button(title: "Обновить", symbol: "arrow.clockwise", action: "reload")]),
+                                                                       t("Exchange rates", "title2"), .spacer,
+                                                                       .button(title: "Refresh", symbol: "arrow.clockwise", action: "reload")]),
                             t("1 USD = 84.27 RUB", "largeTitle"),
-                            .text("▲ 0.35 за день", style: "headline", color: "green", lines: nil, align: nil),
+                            .text("▲ 0.35 today", style: "headline", color: "green", lines: nil, align: nil),
                             .chart(values: [83.1, 83.4, 83.9, 83.7, 84.0, 84.27], color: "green"), .divider,
                             .vstack(spacing: 10, align: "leading", children: [row("USD", "84.27 RUB"), row("EUR", "96.08 RUB"), row("CNY", "12.63 RUB")])]),
                         .small: .vstack(spacing: 4, align: "leading", children: [
@@ -166,10 +172,10 @@ final class PhoneModel: ObservableObject {
                 pages.insert(PageInfo(id: "dw-trio", layout: .trio, widgets: [.custom(id), .custom(id), .builtin(.weather)]), at: 0)
                 pages.insert(PageInfo(id: "dw-full", layout: .single, widgets: [.custom(id)]), at: 0)
             }
-            musicQueue = MusicQueue(tracks: [QueueTrack(title: "Звезда по имени Солнце", artist: "Кино", duration: 225),
-                                             QueueTrack(title: "Пачка сигарет", artist: "Кино", duration: 268)], note: "Далее в плейлисте")
+            musicQueue = MusicQueue(tracks: [QueueTrack(title: "Midnight Drive", artist: "Neon Coast", duration: 225),
+                                             QueueTrack(title: "Paper Planes", artist: "Neon Coast", duration: 268)], note: "Up next in the playlist")
             audio = AudioState(systemVolume: 0.45, muted: false,
-                               airPlay: [AirPlayDevice(name: "Колонки MacBook Pro", kind: "computer", selected: true),
+                               airPlay: [AirPlayDevice(name: "MacBook Pro Speakers", kind: "computer", selected: true),
                                          AirPlayDevice(name: "HomePod", kind: "HomePod", selected: false)])
             // A drawn cover, so screenshots show the artwork path too.
             let cover = UIGraphicsImageRenderer(size: CGSize(width: 300, height: 300)).jpegData(withCompressionQuality: 0.9) { ctx in
@@ -179,19 +185,19 @@ final class PhoneModel: ObservableObject {
                 UIColor.black.withAlphaComponent(0.85).setFill()
                 ctx.cgContext.fillEllipse(in: CGRect(x: 90, y: 90, width: 120, height: 120))
             }
-            nowPlaying = NowPlaying(title: "Тем кто с нами", artist: "Кино", album: "Группа крови", artwork: cover,
+            nowPlaying = NowPlaying(title: "Blue Hour", artist: "Neon Coast", album: "Night Lines", artwork: cover,
                                     duration: 240, elapsed: 70, playing: true)
             nowPlaying?.player = "Music"; nowPlaying?.volume = 0.7; nowPlaying?.shuffle = true; nowPlaying?.repeatMode = "all"; nowPlaying?.liked = true
-            notes = [NoteSummary(id: "1", title: "Покупки", snippet: "молоко, хлеб, кофе", folder: "Заметки", modified: Date().addingTimeInterval(-600)),
-                     NoteSummary(id: "2", title: "Идеи для PhoneScreen", snippet: "дашборд 2×2, клавиатура на телефон", folder: "Проекты", modified: Date().addingTimeInterval(-86_400))]
-            launcher = [LauncherItem(id: "sys:lock", title: "Блокировка", kind: .system, symbol: "lock.fill"),
-                        LauncherItem(id: "sys:darkMode", title: "Тёмная тема", kind: .system, symbol: "circle.lefthalf.filled"),
-                        LauncherItem(id: "shortcut:x", title: "Фокус: работа", kind: .shortcut, symbol: "square.stack.3d.up.fill")]
+            notes = [NoteSummary(id: "1", title: "Groceries", snippet: "milk, bread, coffee", folder: "Notes", modified: Date().addingTimeInterval(-600)),
+                     NoteSummary(id: "2", title: "PhoneScreen ideas", snippet: "a 2×2 dashboard, a keyboard on the phone", folder: "Projects", modified: Date().addingTimeInterval(-86_400))]
+            launcher = [LauncherItem(id: "sys:lock", title: "Lock Screen", kind: .system, symbol: "lock.fill"),
+                        LauncherItem(id: "sys:darkMode", title: "Dark Mode", kind: .system, symbol: "circle.lefthalf.filled"),
+                        LauncherItem(id: "shortcut:x", title: "Focus: work", kind: .shortcut, symbol: "square.stack.3d.up.fill")]
             runningApps = [RunningApp(id: "com.apple.Safari", name: "Safari", active: true, window: "flywalk4/phonescreen — GitHub", windows: 3),
                            RunningApp(id: "com.apple.dt.Xcode", name: "Xcode", window: "PhoneScreen — AppsPage.swift", windows: 1),
-                           RunningApp(id: "com.apple.Terminal", name: "Терминал", window: "repo — zsh — 120×40", windows: 2),
-                           RunningApp(id: "com.apple.Music", name: "Музыка", window: "Музыка", windows: 1),
-                           RunningApp(id: "com.apple.mail", name: "Почта", hidden: true, window: "Входящие", windows: 1),
+                           RunningApp(id: "com.apple.Terminal", name: "Terminal", window: "repo — zsh — 120×40", windows: 2),
+                           RunningApp(id: "com.apple.Music", name: "Music", window: "Music", windows: 1),
+                           RunningApp(id: "com.apple.mail", name: "Mail", hidden: true, window: "Inbox", windows: 1),
                            RunningApp(id: "com.apple.finder", name: "Finder", windows: 0)]
             appIcons = DemoIcons.make(["com.apple.Safari": ("safari", .systemBlue), "com.apple.dt.Xcode": ("hammer.fill", .systemIndigo),
                                        "com.apple.Terminal": ("apple.terminal.fill", .darkGray), "com.apple.Music": ("music.note", .systemPink),

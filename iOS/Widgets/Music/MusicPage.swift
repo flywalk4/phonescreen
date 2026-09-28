@@ -29,8 +29,8 @@ struct MusicPage: View {
                 Artwork(image: model.artwork, playing: model.nowPlaying?.playing ?? false, radius: 14)
                     .frame(width: cover, height: cover)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(model.nowPlaying?.title ?? "Ничего не играет").font(.title3.weight(.semibold)).lineLimit(3)
-                    Text(model.nowPlaying?.artist ?? "Музыка / Spotify на Mac")
+                    Text(model.nowPlaying?.title ?? L("Nothing playing")).font(.title3.weight(.semibold)).lineLimit(3)
+                    Text(model.nowPlaying?.artist ?? L("Music / Spotify on the Mac"))
                         .font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
                     if let album = model.nowPlaying?.album, !album.isEmpty {
                         Text(album).font(.caption).foregroundStyle(.tertiary).lineLimit(1)
@@ -86,9 +86,9 @@ struct MusicPage: View {
 
     private var trackText: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(model.nowPlaying?.title ?? "Ничего не играет")
+            Text(model.nowPlaying?.title ?? L("Nothing playing"))
                 .font(size == .small ? .subheadline.weight(.semibold) : .headline).lineLimit(2)
-            Text(model.nowPlaying?.artist ?? "Музыка / Spotify на Mac")
+            Text(model.nowPlaying?.artist ?? L("Music / Spotify on the Mac"))
                 .font(.caption).foregroundStyle(.secondary).lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -96,7 +96,7 @@ struct MusicPage: View {
 
     @State private var mode: Mode = {
         #if DEBUG
-        // `--music-mode Звук` etc. for Simulator layout checks.
+        // `--music-mode Sound` etc. for Simulator layout checks.
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "--music-mode"), i + 1 < args.count, let m = Mode(rawValue: args[i + 1]) { return m }
         #endif
@@ -104,14 +104,14 @@ struct MusicPage: View {
     }()
 
     enum Mode: String, CaseIterable {
-        case now = "Сейчас", queue = "Далее", sound = "Звук"
+        case now = "Now", queue = "Up next", sound = "Sound"
     }
 
     private var full: some View {
         VStack(spacing: 14) {
             HStack(spacing: 6) {
                 ForEach(Mode.allCases, id: \.self) { m in
-                    Text(m.rawValue)
+                    Text(L(m.rawValue))
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 14).padding(.vertical, 6)
                         .background(Capsule().fill(m == mode ? Color.primary.opacity(0.18) : .clear))
@@ -288,18 +288,18 @@ private struct SoundView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 if let volume = model.nowPlaying?.volume {
-                    level(title: model.nowPlaying?.player ?? "Плеер", symbol: "music.note", value: volume) {
+                    level(title: model.nowPlaying?.player ?? L("Player"), symbol: "music.note", value: volume) {
                         model.music(.setPlayerVolume($0))
                     }
                 }
                 if let audio = model.audio {
                     level(title: "Mac", symbol: audio.muted ? "speaker.slash.fill" : "speaker.wave.2.fill",
                           value: audio.muted ? 0 : audio.systemVolume) { model.music(.setSystemVolume($0)) }
-                    Button(audio.muted ? "Включить звук" : "Выключить звук") { model.music(.toggleMute) }
+                    Button(audio.muted ? L("Unmute") : L("Mute")) { model.music(.toggleMute) }
                         .buttonStyle(.bordered)
                         .pointerTarget { model.music(.toggleMute) }
                     if !audio.airPlay.isEmpty {
-                        Text("Воспроизводить на").font(.headline).padding(.top, 6)
+                        Text("Play on").font(.headline).padding(.top, 6)
                         ForEach(audio.airPlay) { device in
                             AirPlayRow(device: device) { toggle(device, in: audio.airPlay) }
                         }
@@ -428,10 +428,10 @@ private struct TrackInfo: View {
 
     private var info: some View {
         VStack(spacing: 6) {
-            Text(track?.title ?? "Ничего не играет")
+            Text(track?.title ?? L("Nothing playing"))
                 .font(.title2.weight(.bold))
             Text(track.map { [$0.artist, $0.album].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " — ") }
-                 ?? "Запустите Музыку или Spotify на Mac")
+                 ?? L("Start Music or Spotify on the Mac"))
                 .font(.body)
                 .foregroundStyle(.secondary)
         }

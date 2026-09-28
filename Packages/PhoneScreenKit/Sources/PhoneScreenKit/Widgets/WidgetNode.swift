@@ -101,7 +101,7 @@ public enum WidgetTemplate {
     public static func resolve(_ template: Any, data: Any) throws -> WidgetNode {
         var budget = maxNodes
         guard let node = try node(template, scope: ["$": data], budget: &budget) else {
-            throw Error(description: "Шаблон пустой")
+            throw Error(description: "The template is empty")
         }
         return node
     }
@@ -109,10 +109,10 @@ public enum WidgetTemplate {
     // MARK: - Nodes
 
     private static func node(_ template: Any, scope: [String: Any], budget: inout Int) throws -> WidgetNode? {
-        guard let t = template as? [String: Any] else { throw Error(description: "Узел шаблона должен быть объектом") }
+        guard let t = template as? [String: Any] else { throw Error(description: "A template node must be an object") }
         if let condition = t["if"], !truthy(value(condition, scope)) { return nil }
         budget -= 1
-        guard budget >= 0 else { throw Error(description: "Слишком много элементов (больше \(maxNodes))") }
+        guard budget >= 0 else { throw Error(description: "Too many elements (over \(maxNodes))") }
 
         func str(_ key: String) -> String? { t[key].map { text(value($0, scope)) } }
         func num(_ key: String) -> Double? { t[key].flatMap { number(value($0, scope)) } }
@@ -143,12 +143,12 @@ public enum WidgetTemplate {
             return .chart(values: Array(values.suffix(200)), color: str("color"), style: str("style"),
                           height: num("height").map { min(max($0, 20), 400) })
         case "button":
-            guard let action = str("action"), !action.isEmpty else { throw Error(description: "У кнопки нет action") }
+            guard let action = str("action"), !action.isEmpty else { throw Error(description: "The button has no action") }
             return .button(title: str("title") ?? "", symbol: str("symbol"), action: action)
         case "sprite":
             let rawFrames = t["frames"].map { value($0, scope) } as? [Any] ?? []
             let frames = rawFrames.prefix(16).compactMap { ($0 as? [Any])?.prefix(48).map { String(text($0).prefix(48)) } }
-            guard !frames.isEmpty else { throw Error(description: "У sprite нет frames") }
+            guard !frames.isEmpty else { throw Error(description: "The sprite has no frames") }
             let rawPalette = t["palette"].map { value($0, scope) } as? [String: Any] ?? [:]
             let palette = rawPalette.reduce(into: [String: String]()) { $0[String($1.key.prefix(1))] = text($1.value) }
             return .sprite(frames: frames, palette: palette, fps: num("fps"))
@@ -174,7 +174,7 @@ public enum WidgetTemplate {
             return .divider
         case "list":
             let items = t["items"].map { value($0, scope) } as? [Any] ?? []
-            guard let itemTemplate = t["template"] else { throw Error(description: "У списка нет template") }
+            guard let itemTemplate = t["template"] else { throw Error(description: "The list has no template") }
             var rows: [WidgetNode] = []
             for (i, item) in items.enumerated() {
                 var inner = scope
@@ -242,12 +242,12 @@ public enum WidgetTemplate {
         case nil, is NSNull: return ""
         case let s as String: return s
         case let n as NSNumber:
-            if CFGetTypeID(n) == CFBooleanGetTypeID() { return n.boolValue ? "да" : "нет" }
+            if CFGetTypeID(n) == CFBooleanGetTypeID() { return n.boolValue ? "yes" : "no" }
             let d = n.doubleValue
             return d == d.rounded() && abs(d) < 1e15 ? String(Int64(d)) : String(d)
         case let d as Double: return d == d.rounded() && abs(d) < 1e15 ? String(Int64(d)) : String(d)
         case let i as Int: return String(i)
-        case let b as Bool: return b ? "да" : "нет"
+        case let b as Bool: return b ? "yes" : "no"
         default: return String(describing: v!)
         }
     }

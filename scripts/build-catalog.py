@@ -61,12 +61,13 @@ def build() -> dict:
             "description": t.get("description"), "symbol": "paintpalette",
             "path": f"themes/{folder.name}",
             "files": {"theme.json": hashlib.sha256((folder / "theme.json").read_bytes()).hexdigest()},
+            **({"localized": t["localized"]} if t.get("localized") else {}),
         })
-        print(f"✓ тема {t['id']} {t['version']}")
+        print(f"✓ theme {t['id']} {t['version']}")
         for w in validate_theme.contrast_warnings(t):
             print(f"    ⚠ {w}")
     if failed:
-        sys.exit("каталог не собран: исправьте ошибки выше")
+        sys.exit("the catalog wasn't built: fix the errors above")
     return {"widgets": entries, "themes": themes}
 
 
@@ -75,8 +76,8 @@ if __name__ == "__main__":
     index = ROOT / "index.json"
     if "--check" in sys.argv:
         if not index.exists() or index.read_text() != text:
-            sys.exit("catalog/index.json устарел: запустите python3 scripts/build-catalog.py")
-        print("index.json актуален")
+            sys.exit("catalog/index.json is stale: run python3 scripts/build-catalog.py")
+        print("index.json is up to date")
     else:
         index.write_text(text)
-        print(f"записан {index.relative_to(ROOT.parent)}")
+        print(f"wrote {index.relative_to(ROOT.parent)}")

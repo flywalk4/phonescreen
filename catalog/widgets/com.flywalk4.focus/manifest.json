@@ -1,58 +1,58 @@
 {
   "id": "com.flywalk4.focus",
-  "name": "Фокус",
-  "version": "1.3.0",
+  "name": "Focus",
+  "version": "1.4.0",
   "author": "flywalk4",
-  "description": "Помодоро-таймер: 25 минут работы, 5 минут перерыва, длинный перерыв после четырёх. Старт, пауза и пропуск — прямо с телефона; счётчик помидоров за день. Без сети.",
+  "description": "A Pomodoro timer: 25 minutes of work, a 5-minute break, a long break after four. Start, pause and skip right from the phone; a count of today's pomodoros. Works offline.",
   "symbol": "timer",
   "refresh": 5,
   "settings": [
     {
       "key": "focus",
-      "title": "Работа",
+      "title": "Work",
       "type": "number",
       "default": "25",
       "min": 5,
       "max": 90,
       "step": 5,
-      "unit": "мин"
+      "unit": "min"
     },
     {
       "key": "short",
-      "title": "Короткий перерыв",
+      "title": "Short break",
       "type": "number",
       "default": "5",
       "min": 1,
       "max": 30,
-      "unit": "мин"
+      "unit": "min"
     },
     {
       "key": "long",
-      "title": "Длинный перерыв",
+      "title": "Long break",
       "type": "number",
       "default": "15",
       "min": 5,
       "max": 60,
       "step": 5,
-      "unit": "мин"
+      "unit": "min"
     },
     {
       "key": "every",
-      "title": "Длинный перерыв после",
+      "title": "Long break after",
       "type": "number",
       "default": "4",
       "min": 2,
       "max": 8,
-      "unit": "помидоров"
+      "unit": "pomodoros"
     },
     {
       "key": "goal",
-      "title": "Цель на день",
+      "title": "Daily goal",
       "type": "number",
       "default": "8",
       "min": 1,
       "max": 20,
-      "unit": "помидоров"
+      "unit": "pomodoros"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
- "description": "Оба источника недоступны",
+ "description": "Both sources are down",
  "now": "2026-09-27T14:40:00Z",
  "fetch": [
   {
@@ -13,5 +13,5 @@
    "body": {}
   }
  ],
- "error": "Мосбиржа ответил 500"
+ "error": "MOEX answered 500"
 }

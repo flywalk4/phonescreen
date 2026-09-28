@@ -1,31 +1,31 @@
 {
- "description": "Утро: вчера всё сделано, позавчера спорт пропущен; отмечаем воду",
+ "description": "Morning: all done yesterday, workout skipped the day before; checking water",
  "now": "2026-09-28T07:30:00Z",
  "timezone": "Europe/Moscow",
  "settings": {
-  "habits": "💧 Вода, 🏃 Спорт, 📖 Чтение, 🧘 Медитация"
+  "habits": "💧 Water, 🏃 Workout, 📖 Reading, 🧘 Meditation"
  },
  "storage": {
   "done": {
    "2026-09-27": [
-    "💧 Вода",
-    "🏃 Спорт",
-    "📖 Чтение",
-    "🧘 Медитация"
+    "💧 Water",
+    "🏃 Workout",
+    "📖 Reading",
+    "🧘 Meditation"
    ],
    "2026-09-26": [
-    "💧 Вода",
-    "📖 Чтение",
-    "🧘 Медитация"
+    "💧 Water",
+    "📖 Reading",
+    "🧘 Meditation"
    ],
    "2026-09-25": [
-    "💧 Вода",
-    "🏃 Спорт",
-    "📖 Чтение"
+    "💧 Water",
+    "🏃 Workout",
+    "📖 Reading"
    ],
    "2026-09-24": [
-    "💧 Вода",
-    "📖 Чтение"
+    "💧 Water",
+    "📖 Reading"
    ]
   }
  },
@@ -37,9 +37,9 @@
   "total": 4,
   "ratio": "1/4",
   "habits.0.done": true,
-  "habits.0.streak": "серия 5 дней",
-  "habits.1.streak": "серия 1 день",
+  "habits.0.streak": "5-day streak",
+  "habits.1.streak": "1-day streak",
   "habits.2.week": "○ ○ ● ● ● ● ○",
-  "habits.3.streak": "серия 2 дня"
+  "habits.3.streak": "2-day streak"
  }
 }

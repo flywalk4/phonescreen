@@ -1,0 +1,258 @@
+# Каталог виджетов PhoneScreen
+
+[English](README.md) · **Русский**
+
+Виджет — папка из трёх файлов. Логика (`provider.js`) выполняется **на Mac** в песочнице JavaScriptCore, интерфейс (`view.json`) — декларативный: Mac подставляет в него данные и отправляет на iPhone готовое дерево элементов, которое телефон рисует нативно. На телефоне чужой код не выполняется.
+
+```
+catalog/widgets/com.author.mywidget/
+  manifest.json   — кто, что, какие разрешения
+  view.json       — вёрстка для размеров full / medium / small
+  provider.js     — async function refresh(ctx) { … return data }
+  strings.json    — необязательно: тексты на нескольких языках
+```
+
+## Как добавить виджет в каталог
+
+1. Создайте папку `catalog/widgets/<id>/` (имя папки = `id` из манифеста) — проще всего готовым шаблоном: `node scripts/widget-dev.mjs new com.you.widget --name "Имя"` (рабочий виджет со всеми тремя размерами, настройкой, `storage`, кнопками и сценарием).
+2. Проверьте: `python3 scripts/validate-widget.py catalog/widgets/<id>` (с `--hints` — ещё и советы: hex-цвета, которые темы не перекрасят, кнопки в маленькой плитке)
+3. Запустите по-настоящему (нужен собранный Mac-агент): `PhoneScreen --widget-test catalog/widgets/<id>` — выполнит `refresh()` в той же песочнице, что и приложение, и напечатает данные и итоговое дерево.
+4. Обновите индекс: `python3 scripts/build-catalog.py` (хеши SHA-256 всех файлов; приложение не установит файл с другим хешем).
+5. Добавьте сценарии в `fixtures/` (хотя бы «всё хорошо» и «API недоступен») и проверьте: `node scripts/widget-dev.mjs test catalog/widgets/<id>`.
+6. Pull request. Ревьюер смотрит прежде всего `permissions` и куда ходит `fetch`.
+
+**Без Mac** (Linux, Windows, CI, ИИ-агент в облаке) — `scripts/widget-dev.mjs` на Node 18+:
+
+```bash
+node scripts/widget-dev.mjs new com.you.widget --name "Имя"                  # стартовый виджет + fixtures/ok.json
+node scripts/widget-dev.mjs watch catalog/widgets/<id> --theme ascii          # при каждом сохранении: refresh() + preview.png
+node scripts/widget-dev.mjs run catalog/widgets/<id> --fixture ok --views   # refresh() в эмуляции песочницы + дерево для телефона
+node scripts/widget-dev.mjs preview catalog/widgets/<id> out.png --theme glass # примерный PNG всех трёх размеров (нужен Playwright)
+node scripts/widget-dev.mjs test                                             # все сценарии fixtures/ всех виджетов
+```
+
+Сценарии лежат в `catalog/widgets/<id>/fixtures/*.json` (в приложение не скачиваются): ответы API (`fetch`), настройки, секреты, `storage`, файлы, нажатия (`actions`), время (`now`, `timezone`) и что должно получиться (`expect` по путям в данных или `error`). Формат — в начале `scripts/widget-dev.mjs`. Pull request в каталог проверяется автоматически: валидаторы, актуальность `index.json` и все сценарии. Эмуляция повторяет API и лимиты песочницы, но окончательная проверка — `--widget-test` на Mac.
+
+**Подсказки в редакторе.** В `schemas/` лежат JSON Schema для `view.json`, `manifest.json` и `theme.json` (все узлы, поля, стили, цвета). В VS Code они подключены для `catalog/` через `.vscode/settings.json`; в своём файле достаточно первой строки `"$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/view.schema.json"`. Схемы генерируются из правил валидатора: `python3 scripts/build-schemas.py`.
+
+Во время разработки на Mac удобнее **Настройки → Виджеты → «Папка разработки…»**: сохраните файл — виджет перезагрузится на iPhone сам. Журнал `console.log` и ошибок — там же.
+
+## manifest.json
+
+```json
+{
+  "id": "com.author.mywidget",
+  "name": "Мой виджет",
+  "version": "1.0.0",
+  "author": "author",
+  "description": "Одна-две фразы для каталога.",
+  "symbol": "sparkles",
+  "refresh": 300,
+  "permissions": {
+    "network": ["api.example.com"],
+    "secrets": [{ "key": "token", "title": "API-токен" }]
+  },
+  "settings": [
+    { "key": "city", "title": "Город", "default": "Москва", "hint": "или координаты «55.75, 37.62»" },
+    { "key": "units", "title": "Единицы", "type": "choice", "default": "c",
+      "options": [{ "value": "c", "title": "°C" }, { "value": "f", "title": "°F" }] },
+    { "key": "wind", "title": "Показывать ветер", "type": "toggle", "default": "true" },
+    { "key": "days", "title": "Дней прогноза", "type": "number", "min": 1, "max": 7, "default": "3" }
+  ]
+}
+```
+
+| Поле | |
+| --- | --- |
+| `id` | обратный домен, строчные латинские буквы, цифры, точки: `com.author.widget` |
+| `name` | до 40 символов |
+| `version` | `1.2.3`; для обновления в каталоге — поднимайте |
+| `symbol` | имя SF Symbol |
+| `refresh` | секунды между вызовами `refresh()`, по умолчанию 300; минимум 30 с сетью и 5 без неё |
+| `permissions.network` | домены, куда можно `fetch` (поддомены включены). Только HTTPS, редиректы тоже проверяются. Без схемы, пути и `*` |
+| `permissions.secrets` | секреты (ключи API): пользователь вводит их в настройках, хранятся в Связке ключей Mac |
+| `permissions.files` | чтение (только чтение) файлов в домашней папке: `~/folder/` (папка целиком) или `~/folder/file`. Символические ссылки наружу не пройдут |
+| `settings` | настройки, которые пользователь меняет на Mac. `type`: `text` (поле, по умолчанию), `choice` (выпадающий список; `options` — строки или `{ "value", "title" }`, до трёх коротких — переключатель-сегменты), `toggle` (выключатель, значение `"true"` / `"false"`), `number` (ползунок, если заданы `min` и `max`, иначе поле со стрелками; ещё `step` и `unit`). `title` — короткая подпись, пояснения и примеры — в `hint`. Значения в скрипт приходят строками |
+
+Пользователь видит все разрешения до установки.
+
+## provider.js
+
+```js
+// Обязательно: вернуть данные для view.json. Можно async.
+async function refresh(ctx) {
+  const res = await fetch("https://api.example.com/v1/items", {
+    headers: { Authorization: `Bearer ${secrets.get("token")}` },
+  });
+  if (!res.ok) throw new Error(`API ответил ${res.status}`); // текст ошибки увидит пользователь
+  const items = await res.json();
+  return { count: items.length, items: items.slice(0, 5).map((i) => ({ title: i.name })) };
+}
+
+// Необязательно: нажатие кнопки { "type": "button", "action": "…" }. После него refresh() вызывается сам.
+async function action(name, ctx) {
+  if (name === "clear") storage.set("seen", []);
+}
+```
+
+Доступно в песочнице — и больше ничего (нет `require`, `import`, процессов, `XMLHttpRequest`, `WebSocket`, файлов вне `permissions.files`):
+
+| API | |
+| --- | --- |
+| `fetch(url, {method, headers, body})` | как в браузере, упрощённо: `res.ok`, `res.status`, `res.headers.get(k)`, `await res.text()`, `await res.json()`. Только хосты из `permissions.network`, ответ до 2 МБ, таймаут 15 с |
+| `secrets.get(key)` | строка или `null` (если не задан или не объявлен в манифесте) |
+| `ctx.settings.<key>` | значения из `settings` (строки) |
+| `ctx.lang` | язык виджета: `"en"`, `"ru"`… (он же `format.lang`) |
+| `t(key, vars)` | текст `key` на текущем языке из `strings.json` (см. [Языки](#языки)) |
+| `files.read("~/…")` / `files.modified("~/…")` | текст файла (до 1 МБ) или `null`; время изменения (секунды Unix) или `null`. Только пути из `permissions.files` |
+| `files.lines("~/…", {offset, length})` | целые строки начиная с байта `offset` (не больше `length`, до 1 МБ): `{ lines, next, size }`. `next` передайте в следующий вызов — так читаются большие журналы по кускам и только новые строки. Строка длиннее лимита пропускается |
+| `files.list("~/…/")` | содержимое папки: `[{ name, dir, size, modified }]` (скрытые пропускаются, до 2000) или `null` |
+| `storage.get(key)` / `storage.set(key, value)` | маленькое постоянное хранилище (JSON, до 64 КБ на виджет) — история, кэш |
+| `setTimeout(fn, ms)`, `sleep(ms)` | задержки (до 60 с) |
+| `console.log/warn/error` | в журнал виджета в настройках |
+
+Ограничения: код выполняется не дольше 2 с подряд (ожидание `fetch` не считается), весь `refresh()` — не дольше 20 с.
+
+**`format`** — готовые помощники для чисел и дат (глобальный объект, одинаковый в приложении и в `widget-dev`; код — `Mac/Widgets/prelude.js`):
+
+| | |
+| --- | --- |
+| `format.number(1234.5)` / `format.number(x, 2)` | `"1 234,5"` / ровно 2 знака после запятой |
+| `format.compact(1234567)` | `"1,2 млн"`, `"12 тыс."` |
+| `format.percent(0.421)` / `format.percent(0.421, 1)` | `"42%"` / `"42,1%"` |
+| `format.change(-1.07)` + `format.changeColor(-1.07)` | `"▼ 1,07%"` и `"red"` (для `color` в `view.json`) |
+| `format.plural(5, "день", "дня", "дней")` | `"5 дней"` |
+| `format.time(date)` / `format.date(date, "short" \| "long" \| "weekday" \| "full")` | `"14:05"` / `"27 сен"`, `"27 сентября"`, `"воскресенье, 27 сентября"`, `"27 сентября 2026"` |
+| `format.duration(7500)` / `format.relative(date)` | `"2 ч 5 мин"` / `"5 мин назад"`, `"через 2 ч"`, `"вчера"` |
+| `format.bytes(1572864)` / `format.level(0.9)` | `"1,5 МБ"` / `"red"` (зелёный → оранжевый → красный) |
+
+## Языки
+
+Приложение по умолчанию на английском, на русском — если пользователь его выбрал (настройки Mac, внизу боковой панели). Виджет говорит на языке пользователя через необязательный `strings.json`:
+
+```json
+{
+  "en": { "manifest.name": "My widget", "header": "ITEMS", "items": { "one": "{n} item", "other": "{n} items" } },
+  "ru": { "manifest.name": "Мой виджет", "header": "ЗАДАЧИ", "items": { "one": "{n} задача", "few": "{n} задачи", "many": "{n} задач", "other": "{n} задачи" } }
+}
+```
+
+- В `provider.js`: `t("header")`, с подстановкой — `t("httpError", { status: 500 })`; строка с формами выбирает форму по `n`: `t("items", { n: 3 })`. Не называйте локальную переменную `t` — она спрячет функцию.
+- В `view.json`: `"{{t.header}}"`, вперемешку с данными как обычно. Фразу с числами внутри соберите в `provider.js`.
+- Тексты манифеста: `manifest.name`, `manifest.description`, `settings.<key>.title`, `settings.<key>.hint`, `settings.<key>.unit`, `settings.<key>.options.<value>`, `secrets.<key>.title`. Сам `manifest.json` — на английском.
+- Язык, которого у виджета нет, заменяется английским; недостающий ключ берётся из английского. Отсутствующий ключ показывается как есть — пропуск видно сразу.
+- Числа, даты и длительности — через `format`, он уже учитывает язык. В API с параметром языка передавайте `format.lang`.
+- Проверка: `node scripts/widget-dev.mjs run … --lang ru`; в сценарии можно задать `"lang": "ru"`.
+
+## view.json
+
+Ключи — размеры: `full` (страница целиком), `medium` (половина страницы), `small` (четверть). Хватит одного: недостающий размер возьмётся из ближайшего. Маленькие — показывайте главное.
+
+```json
+{
+  "full": { "type": "vstack", "spacing": 12, "children": [
+    { "type": "text", "text": "Задач: {{count}}", "style": "title" },
+    { "type": "list", "items": "{{items}}", "template": { "type": "text", "text": "• {{item.title}}" } },
+    { "type": "button", "title": "Очистить", "symbol": "trash", "action": "clear" }
+  ]},
+  "small": { "type": "text", "text": "{{count}}", "style": "largeTitle" }
+}
+```
+
+**Привязки.** В любой строке — `{{путь}}` к данным из `refresh()`: `{{a.b}}`, `{{rows.0.name}}`. Если строка — только привязка (`"{{ratio}}"`), сохраняется тип значения (число, массив); иначе подставляется текстом. Внутри `list` доступны `{{item.…}}` и `{{index}}`. Нет значения — пустая строка.
+
+**`"if": "{{путь}}"`** на любом узле — узел скрывается, если значение пустое / `false` / `0` / пустой массив.
+
+| type | поля |
+| --- | --- |
+| `vstack`, `hstack` | `children`, `spacing`, `align` (vstack: `leading`/`center`/`trailing`; hstack: `top`/`center`/`bottom`/`baseline`) |
+| `text` | `text`, `style` (`largeTitle` `title` `title2` `title3` `headline` `body` `callout` `subheadline` `footnote` `caption` `caption2`), `color`, `lines`, `align`; свой шрифт: `size` (пт), `weight` (`light` `regular` `medium` `semibold` `bold` `heavy` `black`…), `design` (`rounded` `monospaced` `serif`; по умолчанию — шрифт темы) |
+| `symbol` | `name` (SF Symbol), `color`, `size` |
+| `gauge` | `value` (0…1), `label`, `color` — кольцо |
+| `progress` | `value` (0…1), `color` — полоса |
+| `chart` | `values` (массив чисел, до 200), `color`, `style` (`line` — линия, `area` — линия с заливкой-градиентом, `bar` — столбики), `height` |
+| `button` | `title`, `symbol`, `action` → `action(name)` в provider.js; нажимается пальцем и курсором Mac. В `action` можно привязку: `"tap:{{index}}"` |
+| `box` | плашка: `children` столбиком на скруглённой подложке. `padding` (12), `spacing`, `align`, `radius`; `background` + `opacity` — свой цвет, без них — подложка в стиле темы (стекло в Liquid Glass, рамка в ASCII). `fit: true` — по размеру содержимого («таблетки»), иначе на всю ширину. `action` — вся плашка кнопка (клетки игр, плитки). `aspect` — пропорции (1 — квадрат) |
+| `grid` | `children` в `columns` колонок (1–16), `spacing` |
+| `list` | `items` (массив), `template` (узел), `spacing`, `align`; `columns` — сеткой в N колонок |
+| `sprite` | пиксельная анимация: `frames` — массив кадров, кадр — массив строк одинаковой длины (до 48×48, до 16 кадров); `palette` — символ → цвет (`.` и пробел прозрачные); `fps`. Масштабируется под место. Кадры удобно рисовать кодом в provider.js |
+| `spacer`, `divider` | — |
+
+Цвета: `primary` `secondary` `tertiary` `accent` `red` `orange` `yellow` `green` `mint` `teal` `cyan` `blue` `indigo` `purple` `pink` `brown` `gray` `white`, `clear` (у `box` — без подложки) или `#RRGGBB`. Неизвестный `type` пропускается. Максимум 500 элементов и 2000 символов в тексте.
+
+### Как сделать красиво
+
+Все виджеты каталога следуют одним правилам — так страницы смотрятся цельно:
+
+- **Шапка** — маленькая: цветной символ + подпись `caption`, `weight: semibold`, `color: secondary`, заглавными (`"РЫНКИ"`). Справа — второстепенное (город, время обновления) или кнопка.
+- **Главное число** — крупно: `size` 40–84, `weight: bold`, `design: rounded`. Одно на виджет.
+- **Изменения и статусы** — «таблеткой»: `box` с `fit: true`, `padding` 5–7, `radius` 8, `background` цвета статуса, `opacity: 0.18`, внутри текст того же цвета.
+- **Группы данных** — в `box` (подложка возьмёт стиль темы), мелкие показатели — плитками: `list` с `columns: 2` и `box` в шаблоне.
+- **Графики** — `style: area` для курсов и трендов, `bar` для прогнозов по часам.
+- **Цвета** — имена (`green`, `orange`, `secondary`, `accent`), а не `#RRGGBB`: темы их перекрашивают. Hex — только для «своих» цветов (логотип, пиксельный персонаж).
+- **Три размера по-разному**: `full` — всё с подробностями; `medium` — главное число, график, 3–4 показателя; `small` — одно число и подпись крупно, остальное мелко внизу.
+
+Примеры целиком: [`widgets/com.flywalk4.markets`](widgets/com.flywalk4.markets) (сеть, плитки, график-область), [`widgets/com.flywalk4.claude-code`](widgets/com.flywalk4.claude-code) (локальные файлы, анимированный спрайт), [`widgets/com.flywalk4.focus`](widgets/com.flywalk4.focus) (кнопки и состояние), [`widgets/com.flywalk4.game2048`](widgets/com.flywalk4.game2048) и [`widgets/com.flywalk4.minesweeper`](widgets/com.flywalk4.minesweeper) (игры: поле из нажимаемых плашек).
+
+**Игры и всё интерактивное.** Каждое нажатие — `action(name)` на Mac, затем `refresh()` сам, так что подходят пошаговые игры. Состояние храните в `storage`, новую партию сохраняйте сразу при создании (иначе поле будет меняться между обновлениями). Клетки поля — `list` с `columns` и шаблоном `{"type": "box", "aspect": 1, "action": "tap:{{index}}", …}`.
+
+## Темы
+
+Тема меняет вид всего телефона: фон страниц, карточки, текст, акцент, шрифт — у встроенных виджетов и у виджетов из каталога. Выбирается на Mac: **«Темы…»** в меню. Встроенные: **Тёмная**, **Светлая**, **Liquid Glass** (стекло iOS 26; на старых iOS — матовое стекло), **ASCII** (всё как в терминале).
+
+Тема — папка с одним файлом (кода в ней нет, только цвета и настройки):
+
+```
+catalog/themes/com.author.mytheme/
+  theme.json      — стиль, цвета, фон, шрифт
+```
+
+### Как добавить тему в каталог
+
+1. Создайте папку `catalog/themes/<id>/` (имя папки = `id` из `theme.json`). Начать удобно с шаблона [`skills/phonescreen-widget/template-theme`](../skills/phonescreen-widget/template-theme/theme.json).
+2. Проверьте: `python3 scripts/validate-theme.py catalog/themes/<id>` — ошибки (✗) нужно исправить, предупреждения о контрасте (⚠) — очень желательно: текст должен читаться и на фоне, и на карточках.
+3. Посмотрите на телефоне: **Настройки → Темы → «Папка разработки…»** — сохраните `theme.json`, iPhone перекрасится сам. Проверка без телефона: `PhoneScreen --theme-test catalog/themes/<id>` — прочитает тему так же, как приложение при установке.
+4. Обновите индекс: `python3 scripts/build-catalog.py` (хеш SHA-256 `theme.json`; приложение не установит файл с другим хешем).
+5. Pull request. В каталоге тема появится с превью — у всех в **Темы → Каталог**.
+
+### theme.json
+
+```json
+{
+  "id": "com.author.paper",
+  "name": "Бумага",
+  "version": "1.0.0",
+  "author": "author",
+  "description": "Светлая, с засечками",
+  "style": "flat",
+  "appearance": "light",
+  "font": "serif",
+  "radius": 14,
+  "background": { "colors": ["#FAF7F0", "#EFE8DA"], "angle": 0 },
+  "colors": {
+    "text": "#222222",
+    "secondary": "#777777",
+    "accent": "#C0392B",
+    "card": "#FFFFFF",
+    "border": "#00000014",
+    "palette": { "green": "#2E7D32", "orange": "#C0392B" }
+  }
+}
+```
+
+| Поле | |
+| --- | --- |
+| `style` | `flat` — залитые карточки; `glass` — Liquid Glass поверх фона (красивее всего на градиенте); `ascii` — рамки `+--+`, полосы `[####....]`, графики из `*`, кнопки `[ Обновить ]` |
+| `appearance` | `dark` / `light` — системные элементы (переключатели, поля ввода) подстраиваются под неё |
+| `font` | `system`, `rounded`, `monospaced`, `serif` |
+| `radius` | скругление карточек, 0…40 |
+| `background.colors` | 1 цвет — заливка, 2–4 — линейный градиент; `angle` — направление в градусах (0 — сверху вниз) |
+| `background.animation` | живой фон (`aurora`, `stars`, `matrix`, `waves`, `bokeh`, `lava`, `snow`, `rain`, `gradient`) или `photo` — фото из «Избранного» iPhone, размытое и затемнённое (`colors` — пока фото не загрузилось) |
+| `colors.text` / `secondary` / `accent` | основной текст, второстепенный, акцент (кнопки, полосы без своего цвета) |
+| `colors.card` / `border` | заливка карточки (для `glass` — оттенок стекла) и обводка (для `ascii` — цвет рамки) |
+| `colors.palette` | замена цветов, которые называют виджеты: `{"green": "#…"}` перекрасит всё «зелёное» во всех виджетах. Не заданный цвет берётся у ближайшего родственного: `mint` → `green`, `teal` → `cyan` → `blue`, `indigo` → `blue`, `pink` → `purple`, `brown` → `orange` |
+| `layout` | необязательно: `gap` — между карточками (0…24), `margin` — поля экрана (0…24), `padding` — внутри карточек (6…24), `dots` — точки страниц (`true`/`false`), `cardOpacity` — непрозрачность карточек 0…1 (с живым фоном красиво 0.6–0.8), `textSize` — размер текста: `small`, `medium`, `large`, `xlarge`, `status` — время и дата у выреза Dynamic Island (`true` по умолчанию), `shadow` — мягкая тень под карточками, `autoPage` — листать страницы самим каждые N секунд (0 — нет), `haptics` — вибрация при нажатии (`true` по умолчанию), `loop` — листать по кругу, `homeOnConnect` — при подключении возвращаться на первую страницу |
+
+Цвета — `#RRGGBB` или `#RRGGBBAA` (с прозрачностью). Обновляя опубликованную тему, поднимайте `version` — у пользователей появится «Обновить до …».
+
+**Авторам виджетов:** чтобы виджет хорошо выглядел в любой теме, используйте имена цветов (`primary`, `secondary`, `accent`, `green`…), а не `#RRGGBB` — имена тема может заменить. `primary` и `secondary` — цвета текста темы.

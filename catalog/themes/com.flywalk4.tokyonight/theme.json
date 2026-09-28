@@ -1,9 +1,14 @@
 {
   "id": "com.flywalk4.tokyonight",
   "name": "Tokyo Night",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
-  "description": "Палитра Tokyo Night (MIT): глубокий ночной синий, неоновые голубой и фиолетовый, редкие звёзды на фоне.",
+  "description": "The Tokyo Night palette (MIT): deep night blue, neon cyan and purple, sparse stars in the background.",
+  "localized": {
+    "ru": {
+      "description": "Палитра Tokyo Night (MIT): глубокий ночной синий, неоновые голубой и фиолетовый, редкие звёзды на фоне."
+    }
+  },
   "style": "flat",
   "appearance": "dark",
   "font": "rounded",

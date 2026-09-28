@@ -1,9 +1,9 @@
 {
  "now": "2026-09-27T14:40:00Z",
  "expect": {
-  "phase": "Работа",
+  "phase": "Work",
   "time": "25:00",
-  "toggleTitle": "Старт",
+  "toggleTitle": "Start",
   "done": 0
  }
 }

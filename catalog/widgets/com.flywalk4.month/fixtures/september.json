@@ -1,13 +1,13 @@
 {
- "description": "27 сентября 2026, воскресенье",
+ "description": "Sunday, September 27, 2026",
  "now": "2026-09-27T09:00:00Z",
  "expect": {
-  "title": "Сентябрь 2026",
+  "title": "September 2026",
   "day": "27",
-  "week": "неделя 39",
+  "week": "week 39",
   "cells.0.text": " ",
   "cells.1.text": "1",
   "cells.27.background": "accent",
-  "workShort": "3 раб. дня"
+  "workShort": "3 work days"
  }
 }

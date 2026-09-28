@@ -1,5 +1,5 @@
 {
- "description": "Ход в центр; hard отвечает в угол",
+ "description": "A move to the centre; hard answers in a corner",
  "settings": {
   "level": "hard"
  },
@@ -8,7 +8,7 @@
  ],
  "expect": {
   "cells.4.mark": "✕",
-  "status": "Твой ход",
+  "status": "Your move",
   "over": false
  }
 }

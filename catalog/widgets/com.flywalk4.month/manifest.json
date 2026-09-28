@@ -1,18 +1,18 @@
 {
   "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
   "id": "com.flywalk4.month",
-  "name": "Месяц",
-  "version": "1.0.2",
+  "name": "Month",
+  "version": "1.1.0",
   "author": "flywalk4",
-  "description": "Календарь месяца сеткой: сегодня выделено, выходные и праздники РФ красным, номер недели и сколько рабочих дней осталось. Без сети.",
+  "description": "The month as a grid: today highlighted, weekends and Russian public holidays in red, the week number and how many working days are left. Works offline.",
   "symbol": "calendar",
   "refresh": 300,
   "settings": [
     {
       "key": "holidays",
-      "title": "Доп. выходные",
+      "title": "Extra days off",
       "default": "",
-      "hint": "Переносы: ММ-ДД через запятую"
+      "hint": "Moved days off: MM-DD, comma-separated"
     }
   ]
 }

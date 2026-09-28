@@ -4,7 +4,7 @@ import Foundation
 /// `{"one": "{n} day", "other": "{n} days"}` (CLDR categories: zero, one, two, few, many, other).
 ///
 /// Keys the app itself reads (all optional): `manifest.name`, `manifest.description`, `settings.<key>.title`,
-/// `settings.<key>.hint`, `settings.<key>.options.<value>`, `secrets.<key>.title`. Everything else is the widget's
+/// `settings.<key>.hint`, `settings.<key>.unit`, `settings.<key>.options.<value>`, `secrets.<key>.title`. Everything else is the widget's
 /// own: `t("key")` in provider.js, `{{t.key}}` in view.json.
 public enum WidgetStrings {
     /// The language a widget shows for `wanted`: that one if it has it, else English, else its first language.
@@ -46,6 +46,7 @@ extension WidgetManifest {
             var s = s
             s.title = text("settings.\(s.key).title") ?? s.title
             s.hint = text("settings.\(s.key).hint") ?? s.hint
+            s.unit = text("settings.\(s.key).unit") ?? s.unit
             s.options = s.options?.map { o in
                 WidgetManifest.Setting.Option(value: o.value, title: text("settings.\(s.key).options.\(o.value)") ?? o.title)
             }

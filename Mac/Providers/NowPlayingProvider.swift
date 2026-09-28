@@ -190,7 +190,7 @@ final class NowPlayingProvider: @unchecked Sendable {
         lastQueueFetch = Date()
         let result: MusicQueue
         if activePlayer == .spotify {
-            result = MusicQueue(tracks: [], note: "Spotify не даёт скриптам свою очередь")
+            result = MusicQueue(tracks: [], note: String(localized: "Spotify doesn't share its queue with scripts"))
         } else if let list = run("""
             tell application "Music"
                 if player state is stopped then return {}
@@ -215,8 +215,8 @@ final class NowPlayingProvider: @unchecked Sendable {
                                   duration: item.atIndex(3)?.doubleValue)
             }
             let shuffled = current?.shuffle == true
-            result = MusicQueue(tracks: tracks, note: tracks.isEmpty ? "Дальше ничего нет"
-                                : shuffled ? "Далее в плейлисте · перемешивание может изменить порядок" : "Далее в плейлисте")
+            result = MusicQueue(tracks: tracks, note: tracks.isEmpty ? String(localized: "Nothing up next")
+                                : shuffled ? String(localized: "Up next in the playlist · shuffle may change the order") : String(localized: "Up next in the playlist"))
         } else {
             result = MusicQueue(tracks: [], note: nil)
         }

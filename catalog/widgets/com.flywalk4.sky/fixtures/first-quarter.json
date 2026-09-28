@@ -6,7 +6,7 @@
    "body": {
     "results": [
      {
-      "name": "Москва",
+      "name": "Moscow",
       "latitude": 55.75,
       "longitude": 37.62
      }
@@ -67,6 +67,6 @@
   }
  ],
  "expect": {
-  "moon.phase": "Первая четверть"
+  "moon.phase": "First quarter"
  }
 }

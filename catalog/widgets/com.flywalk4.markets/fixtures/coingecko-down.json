@@ -1,5 +1,5 @@
 {
- "description": "CoinGecko отвечает 429 — акции всё равно показываются",
+ "description": "CoinGecko answers 429 — stocks are shown anyway",
  "now": "2026-09-27T14:40:00Z",
  "fetch": [
   {
@@ -782,6 +782,6 @@
  ],
  "expect": {
   "main.ticker": "SBER",
-  "warning": "/слишком часто/"
+  "warning": "/too often/"
  }
 }

@@ -12,7 +12,7 @@
       { "type": "text", "text": "{{value}}", "size": 72, "weight": "bold", "design": "rounded", "lines": 1 },
       { "type": "text", "text": "{{change}}", "style": "title3", "weight": "semibold", "color": "{{changeColor}}" },
       { "type": "spacer" },
-      { "type": "button", "title": "Обновить", "symbol": "arrow.clockwise", "action": "reload" }
+      { "type": "button", "title": "{{t.reload}}", "symbol": "arrow.clockwise", "action": "reload" }
     ]
   },
   "medium": {

@@ -1,15 +1,15 @@
 {
   "id": "com.flywalk4.minesweeper",
-  "name": "Сапёр",
-  "version": "1.2.0",
+  "name": "Minesweeper",
+  "version": "1.3.0",
   "author": "flywalk4",
-  "description": "Сапёр 8×8 с 10 минами: первый ход всегда безопасный, пустые области открываются сами, флажки — отдельным режимом. Лучшее время сохраняется.",
+  "description": "Minesweeper on 8×8 with 10 mines: the first move is always safe, empty areas open by themselves, flags have their own mode. The best time is kept.",
   "symbol": "flag.fill",
   "refresh": 60,
   "settings": [
     {
       "key": "mines",
-      "title": "Мин на поле 8×8",
+      "title": "Mines on the 8×8 board",
       "type": "number",
       "default": "10",
       "min": 5,

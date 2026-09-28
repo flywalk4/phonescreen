@@ -16,7 +16,7 @@
           },
           {
             "type": "text",
-            "text": "МИРОВОЕ ВРЕМЯ",
+            "text": "{{t.header}}",
             "style": "caption",
             "weight": "semibold",
             "color": "secondary"
@@ -70,7 +70,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "КОГДА СОЗВОНИТЬСЯ",
+                "text": "{{t.whenToCall}}",
                 "style": "caption",
                 "weight": "semibold",
                 "color": "secondary"
@@ -80,7 +80,7 @@
               },
               {
                 "type": "text",
-                "text": "по твоему времени",
+                "text": "{{t.yourTime}}",
                 "style": "caption2",
                 "color": "secondary"
               }

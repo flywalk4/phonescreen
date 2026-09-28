@@ -1,9 +1,9 @@
 {
   "id": "com.author.mytheme",
-  "name": "Моя тема",
+  "name": "My theme",
   "version": "1.0.0",
   "author": "author",
-  "description": "Одна строка о том, как выглядит тема.",
+  "description": "One line on how the theme looks.",
   "style": "flat",
   "appearance": "dark",
   "font": "system",

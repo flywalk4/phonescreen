@@ -5,7 +5,7 @@
   "events": ""
  },
  "expect": {
-  "bars.0.title": "Рабочий день",
+  "bars.0.title": "Workday",
   "bars.0.pct": "52%",
   "hasEvents": false
  }

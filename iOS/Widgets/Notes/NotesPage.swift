@@ -29,7 +29,7 @@ struct NotesPage: View {
     private var list: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                WidgetHeader(title: "Заметки", symbol: "note.text")
+                WidgetHeader(title: L("Notes"), symbol: "note.text")
                 if size != .small {
                     Button { startComposing() } label: {
                         Glyph(systemName: "square.and.pencil").font(size == .full ? .title2 : .body)
@@ -41,7 +41,7 @@ struct NotesPage: View {
             }
             if let notes = model.notes {
                 if notes.isEmpty {
-                    Text("Заметок нет").foregroundStyle(.secondary)
+                    Text("No notes").foregroundStyle(.secondary)
                 }
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 8) {
@@ -57,7 +57,7 @@ struct NotesPage: View {
             } else {
                 Spacer()
                 ThemedSpinner().frame(maxWidth: .infinity)
-                Text("Загружаю заметки с Mac… При первом запуске macOS спросит разрешение для «Заметок».")
+                Text("Loading notes from the Mac… The first time, macOS asks for permission to use Notes.")
                     .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                 Spacer()
@@ -82,8 +82,8 @@ private struct NoteRow: View {
     var body: some View {
         if compact {
             VStack(alignment: .leading, spacing: 1) {
-                Text(note.title.isEmpty ? "Без названия" : note.title).font(.caption.weight(.semibold)).lineLimit(1)
-                Text(note.modified.formatted(.relative(presentation: .named))).font(.caption2).foregroundStyle(.secondary)
+                Text(note.title.isEmpty ? L("Untitled") : note.title).font(.caption.weight(.semibold)).lineLimit(1)
+                Text(note.modified.relativeText).font(.caption2).foregroundStyle(.secondary)
                 if !note.snippet.isEmpty {
                     Text(note.snippet).font(.caption2).foregroundStyle(.tertiary).lineLimit(3).padding(.top, 2)
                 }
@@ -98,9 +98,9 @@ private struct NoteRow: View {
 
     private var full: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(note.title.isEmpty ? "Без названия" : note.title).font(.headline).lineLimit(1)
+            Text(note.title.isEmpty ? L("Untitled") : note.title).font(.headline).lineLimit(1)
             HStack(spacing: 6) {
-                Text(note.modified.formatted(.relative(presentation: .named)))
+                Text(note.modified.relativeText)
                     .foregroundStyle(.secondary)
                 Text(note.snippet).foregroundStyle(.tertiary).lineLimit(1)
             }
@@ -124,11 +124,11 @@ private struct NoteDetail: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Button(action: back) { Label { Text("Заметки") } icon: { Glyph("chevron.left") } }
+                Button(action: back) { Label { Text("Notes") } icon: { Glyph("chevron.left") } }
                     .buttonStyle(.plain).foregroundStyle(.yellow)
                     .pointerTarget(action: back)
                 Spacer()
-                Button(action: showOnMac) { Label { Text("Открыть на Mac") } icon: { Glyph("macbook") } }
+                Button(action: showOnMac) { Label { Text("Open on the Mac") } icon: { Glyph("macbook") } }
                     .buttonStyle(.bordered)
                     .pointerTarget(action: showOnMac)
             }
@@ -143,7 +143,7 @@ private struct NoteDetail: View {
                 }
             }
             .pointerScrollable()
-            Text("Изменено \(note.modified.formatted(date: .abbreviated, time: .shortened))")
+            Text(L("Edited %@", note.modified.text(date: .abbreviated, time: .shortened)))
                 .font(.caption).foregroundStyle(.secondary)
         }
     }
@@ -158,13 +158,13 @@ private struct NoteComposer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Button("Отмена", action: close)
+                Button("Cancel", action: close)
                     .buttonStyle(.plain).foregroundStyle(.secondary)
                     .pointerTarget(action: close)
                 Spacer()
-                Text("Новая заметка").font(.headline)
+                Text("New note").font(.headline)
                 Spacer()
-                Button("Сохранить", action: commit)
+                Button("Save", action: commit)
                     .buttonStyle(.plain).foregroundStyle(.yellow).fontWeight(.semibold)
                     .disabled(isEmpty)
                     .pointerTarget(action: commit)
@@ -177,7 +177,7 @@ private struct NoteComposer: View {
                 .pointerTarget(highlight: false) { focused = true }
                 .overlay(alignment: .topLeading) {
                     if text.isEmpty {
-                        Text("Первая строка станет заголовком. Можно печатать с клавиатуры Mac.")
+                        Text("The first line becomes the title. You can type on the Mac's keyboard.")
                             .foregroundStyle(.tertiary).padding(16).allowsHitTesting(false)
                     }
                 }

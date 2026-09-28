@@ -36,7 +36,7 @@ struct DisplayInfo: Identifiable, Equatable {
                     id: uuid.map { CFUUIDCreateString(nil, $0) as String } ?? "display-\(id)",
                     cgID: id,
                     bounds: bounds,
-                    name: names[id] ?? "Дисплей",
+                    name: names[id] ?? String(localized: "Display"),
                     isMain: CGDisplayIsMain(id) != 0,
                     // Some displays report 0 mm; assume a typical ~110 pt/inch then.
                     pointsPerMM: mm.width > 0 ? bounds.width / mm.width : 110 / 25.4

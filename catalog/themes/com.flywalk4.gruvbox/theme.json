@@ -1,9 +1,14 @@
 {
   "id": "com.flywalk4.gruvbox",
   "name": "Gruvbox",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
-  "description": "Тёплая ретро-палитра Gruvbox Dark (MIT): кремовый текст на тёмно-коричневом, оранжевый акцент, приглушённые зелёный, жёлтый и голубой.",
+  "description": "The warm retro Gruvbox Dark palette (MIT): cream text on dark brown, an orange accent, muted green, yellow and blue.",
+  "localized": {
+    "ru": {
+      "description": "Тёплая ретро-палитра Gruvbox Dark (MIT): кремовый текст на тёмно-коричневом, оранжевый акцент, приглушённые зелёный, жёлтый и голубой."
+    }
+  },
   "style": "flat",
   "appearance": "dark",
   "font": "monospaced",

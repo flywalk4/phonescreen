@@ -1,0 +1,52 @@
+{
+  "en": {
+    "manifest.name": "Time",
+    "manifest.description": "How much of the day, week, month and year has passed — as bars and percentages — and countdowns to your dates: a vacation, a deadline, a birthday. Works offline.",
+    "settings.events.title": "Countdowns",
+    "settings.events.hint": "Name=YYYY-MM-DD, comma-separated; yearly ones — MM-DD",
+    "settings.work.title": "Workday",
+    "settings.work.hint": "For example 10-19; empty — the whole day",
+    "bar.workday": "Workday",
+    "bar.day": "Day",
+    "bar.week": "Week",
+    "bar.month": "Month",
+    "bar.year": "Year",
+    "days": {
+      "one": "day",
+      "other": "days"
+    },
+    "yearLeft": "day {day} of {total} · {left} left",
+    "weekOf": "week {n} of 52",
+    "event": "Event",
+    "today": "today",
+    "header": "TIME",
+    "yearByWeeks": "THE YEAR BY WEEKS",
+    "countdowns": "Countdowns"
+  },
+  "ru": {
+    "manifest.name": "Время",
+    "manifest.description": "Сколько прошло дня, недели, месяца и года — полосами и процентами, и обратный отсчёт до твоих дат: отпуска, дедлайна, дня рождения. Без сети.",
+    "settings.events.title": "Отсчёты",
+    "settings.events.hint": "Название=ГГГГ-ММ-ДД через запятую; ежегодные — ММ-ДД",
+    "settings.work.title": "Рабочий день",
+    "settings.work.hint": "Например 10-19; пусто — весь день",
+    "bar.workday": "Рабочий день",
+    "bar.day": "День",
+    "bar.week": "Неделя",
+    "bar.month": "Месяц",
+    "bar.year": "Год",
+    "days": {
+      "one": "день",
+      "few": "дня",
+      "many": "дней",
+      "other": "дня"
+    },
+    "yearLeft": "день {day} из {total} · осталось {left}",
+    "weekOf": "неделя {n} из 52",
+    "event": "Событие",
+    "today": "сегодня",
+    "header": "ВРЕМЯ",
+    "yearByWeeks": "ГОД ПО НЕДЕЛЯМ",
+    "countdowns": "Отсчёты"
+  }
+}

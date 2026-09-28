@@ -2,11 +2,11 @@
  "now": "2026-09-27T14:40:00Z",
  "timezone": "Europe/Moscow",
  "settings": {
-  "zones": "Дели=Asia/Kolkata, Asia/Kathmandu"
+  "zones": "Delhi=Asia/Kolkata, Asia/Kathmandu"
  },
  "expect": {
-  "rows.0.diff": "+2:30 ч",
+  "rows.0.diff": "+2:30 h",
   "rows.1.name": "Kathmandu",
-  "rows.1.diff": "+2:45 ч"
+  "rows.1.diff": "+2:45 h"
  }
 }

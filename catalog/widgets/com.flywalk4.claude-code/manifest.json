@@ -1,9 +1,9 @@
 {
   "id": "com.flywalk4.claude-code",
   "name": "Claude Code",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "author": "flywalk4",
-  "description": "Что делает Claude Code и сколько потрачено: пиксельный краб бегает, когда Claude работает, машет, когда ждёт тебя, и спит в простое; токены за 5-часовое окно и за неделю. Работает сразу — читает журналы сессий Claude Code (только чтение, в сеть не ходит). С мостом (python3 scripts/claude-code-bridge.py install) — точные проценты лимитов Pro/Max и время сброса.",
+  "description": "What Claude Code is doing and how much it has used: a pixel crab runs while Claude works, waves when it's waiting for you and sleeps when idle; tokens for the 5-hour window and the week. Works right away — reads Claude Code's session logs (read-only, never goes online). With the bridge (python3 scripts/claude-code-bridge.py install): exact Pro/Max limit percentages and reset times.",
   "symbol": "sparkles",
   "refresh": 5,
   "permissions": {
@@ -16,15 +16,15 @@
   "settings": [
     {
       "key": "budget5h",
-      "title": "Бюджет на 5 часов",
+      "title": "5-hour budget",
       "default": "",
-      "hint": "Токенов — для полосы без моста; пусто — без полосы"
+      "hint": "In tokens — for a bar without the bridge; empty — no bar"
     },
     {
       "key": "budgetWeek",
-      "title": "Бюджет на неделю",
+      "title": "Weekly budget",
       "default": "",
-      "hint": "Токенов — для полосы без моста"
+      "hint": "In tokens — for a bar without the bridge"
     }
   ]
 }

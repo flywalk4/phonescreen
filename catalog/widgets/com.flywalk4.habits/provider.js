@@ -1,5 +1,5 @@
-// Привычки: список из настроек, отметка нажатием на телефоне, серия дней подряд и последние 7 дней точками.
-// Хранится только то, что отмечено: { "ГГГГ-ММ-ДД": ["Вода", …] } за последние 60 дней. Без сети.
+// Habits: a list from the settings, checked off with a tap on the phone, a streak of days in a row and the last 7 days as dots.
+// Only what's checked is stored: { "YYYY-MM-DD": ["Water", …] } for the last 60 days. No network.
 
 const KEEP_DAYS = 60;
 
@@ -9,7 +9,7 @@ function dayKey(d) {
 
 function daysAgo(n) {
   const d = new Date();
-  d.setHours(12, 0, 0, 0); // полдень: перевод часов не сдвинет дату
+  d.setHours(12, 0, 0, 0); // noon: a clock change won't move the date
   d.setDate(d.getDate() - n);
   return dayKey(d);
 }
@@ -32,7 +32,7 @@ function refresh(ctx) {
   const today = done[daysAgo(0)] || [];
   const items = names.map((name, index) => {
     const isDone = today.includes(name);
-    // Серия: дни подряд до сегодня; сегодня ещё не отмечено — считаем от вчера, серия не сгорает до полуночи.
+    // Streak: days in a row up to today; if today isn't checked yet, count from yesterday — the streak holds until midnight.
     let streak = 0;
     for (let n = isDone ? 0 : 1; n < KEEP_DAYS; n++) {
       if ((done[daysAgo(n)] || []).includes(name)) streak++;
@@ -59,7 +59,7 @@ function refresh(ctx) {
   };
 }
 
-// Нажатие на привычку — отметить или снять отметку за сегодня.
+// A tap on a habit checks or unchecks it for today.
 function action(name, ctx) {
   const m = /^toggle:(\d+)$/.exec(name);
   if (!m) return;

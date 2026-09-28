@@ -29,7 +29,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "СЧЁТ",
+                "text": "{{t.score}}",
                 "style": "caption2",
                 "weight": "semibold",
                 "color": "secondary"
@@ -52,7 +52,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "РЕКОРД",
+                "text": "{{t.best}}",
                 "style": "caption2",
                 "weight": "semibold",
                 "color": "secondary"
@@ -188,7 +188,7 @@
           },
           {
             "type": "button",
-            "title": "Новая игра",
+            "title": "{{t.newGame}}",
             "symbol": "arrow.clockwise",
             "action": "new"
           }
@@ -257,7 +257,7 @@
               },
               {
                 "type": "text",
-                "text": "рекорд {{best}}",
+                "text": "{{t.bestLower}} {{best}}",
                 "style": "caption",
                 "color": "secondary"
               },
@@ -354,7 +354,7 @@
       },
       {
         "type": "text",
-        "text": "{{score}} · рекорд {{best}}",
+        "text": "{{score}} · {{t.bestLower}} {{best}}",
         "style": "caption",
         "weight": "semibold",
         "design": "rounded"

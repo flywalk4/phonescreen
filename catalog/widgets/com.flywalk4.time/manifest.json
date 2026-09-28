@@ -1,23 +1,23 @@
 {
   "id": "com.flywalk4.time",
-  "name": "Время",
-  "version": "1.3.0",
+  "name": "Time",
+  "version": "1.4.0",
   "author": "flywalk4",
-  "description": "Сколько прошло дня, недели, месяца и года — полосами и процентами, и обратный отсчёт до твоих дат: отпуска, дедлайна, дня рождения. Без сети.",
+  "description": "How much of the day, week, month and year has passed — as bars and percentages — and countdowns to your dates: a vacation, a deadline, a birthday. Works offline.",
   "symbol": "hourglass",
   "refresh": 60,
   "settings": [
     {
       "key": "events",
-      "title": "Отсчёты",
-      "default": "Новый год=01-01, Отпуск=2026-12-20",
-      "hint": "Название=ГГГГ-ММ-ДД через запятую; ежегодные — ММ-ДД"
+      "title": "Countdowns",
+      "default": "New Year=01-01, Vacation=2026-12-20",
+      "hint": "Name=YYYY-MM-DD, comma-separated; yearly ones — MM-DD"
     },
     {
       "key": "work",
-      "title": "Рабочий день",
+      "title": "Workday",
       "default": "",
-      "hint": "Например 10-19; пусто — весь день"
+      "hint": "For example 10-19; empty — the whole day"
     }
   ]
 }

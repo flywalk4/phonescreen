@@ -5,8 +5,8 @@ options:
     macOS: "14.0"
     iOS: "18.0"
   createIntermediateGroups: true
-  # Russian UI: dates, weekdays and relative times format in Russian.
-  developmentLanguage: ru
+  # English is the base language; Russian comes from the Localizable.xcstrings catalogs.
+  developmentLanguage: en
 
 packages:
   PhoneScreenKit:
@@ -40,9 +40,9 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_CFBundleDisplayName: PhoneScreen
-        INFOPLIST_KEY_NSAppleEventsUsageDescription: "PhoneScreen читает текущий трек, заметки и команды и показывает их на iPhone."
-        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen находит iPhone в локальной сети и по прямому Wi-Fi."
-        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Запасной канал связи с iPhone, когда нет кабеля и Wi-Fi."
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "PhoneScreen reads the current track, notes and shortcuts and shows them on the iPhone."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen finds the iPhone on the local network and over direct Wi-Fi."
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "A backup link to the iPhone when there's no cable or Wi-Fi."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
     info:
@@ -70,12 +70,12 @@ targets:
         # The app stays portrait; OrientedContainer rotates the UI itself — from the accelerometer when the phone
         # is held up (MotionOrientation), from the Mac arrangement when it lies flat.
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
-        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen принимает подключение от Mac по Wi-Fi и напрямую."
-        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Запасной канал связи с Mac, когда нет кабеля и Wi-Fi."
-        INFOPLIST_KEY_NSRemindersFullAccessUsageDescription: "Показывает и отмечает ваши напоминания на экране рядом с Mac."
-        INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Показывает повестку дня из вашего календаря."
-        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Нужна для прогноза погоды там, где вы находитесь."
-        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Показывает ваши избранные фото слайд-шоу на экране рядом с Mac."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "PhoneScreen accepts the Mac's connection over Wi-Fi and directly."
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "A backup link to the Mac when there's no cable or Wi-Fi."
+        INFOPLIST_KEY_NSRemindersFullAccessUsageDescription: "Shows and checks off your reminders on the screen next to your Mac."
+        INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Shows today's agenda from your calendar."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Needed for the weather forecast where you are."
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Shows your favourite photos as a slideshow on the screen next to your Mac."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
     info:

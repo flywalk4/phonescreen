@@ -69,7 +69,7 @@ public struct WidgetManifest: Codable, Equatable, Sendable {
         public var min: Double?
         public var max: Double?
         public var step: Double?
-        /// Unit after a `number` ("мин", "%").
+        /// Unit after a `number` ("min", "%").
         public var unit: String?
 
         public init(key: String, title: String, default value: String? = nil, type: Kind? = nil, hint: String? = nil,
@@ -148,40 +148,40 @@ public struct WidgetManifest: Codable, Equatable, Sendable {
     public func validate() throws {
         let idPattern = #"^[a-z0-9]+(\.[a-z0-9-]+)+$"#
         guard id.range(of: idPattern, options: .regularExpression) != nil, id.count <= 100 else {
-            throw Invalid(description: "id должен быть вида com.author.widget (строчные буквы, цифры, точки)")
+            throw Invalid(description: "id must look like com.author.widget (lowercase letters, digits, dots)")
         }
         guard !name.trimmingCharacters(in: .whitespaces).isEmpty, name.count <= 40 else {
-            throw Invalid(description: "name обязателен, до 40 символов")
+            throw Invalid(description: "name is required, up to 40 characters")
         }
         guard version.range(of: #"^\d+\.\d+\.\d+$"#, options: .regularExpression) != nil else {
-            throw Invalid(description: "version должен быть вида 1.2.3")
+            throw Invalid(description: "version must look like 1.2.3")
         }
-        guard !author.isEmpty else { throw Invalid(description: "author обязателен") }
+        guard !author.isEmpty else { throw Invalid(description: "author is required") }
         for host in permissions?.network ?? [] {
             guard host.range(of: #"^[a-z0-9-]+(\.[a-z0-9-]+)+$"#, options: .regularExpression) != nil else {
-                throw Invalid(description: "permissions.network: «\(host)» — нужен домен (api.example.com), без схемы, пути и масок")
+                throw Invalid(description: "permissions.network: “\(host)” — a domain only (api.example.com), no scheme, path or wildcards")
             }
         }
         for path in permissions?.files ?? [] {
             guard path.hasPrefix("~/"), path.count > 2, !path.split(separator: "/").contains(".."),
                   !path.contains("*") else {
-                throw Invalid(description: "permissions.files: «\(path)» — путь внутри домашней папки вида ~/folder/ или ~/folder/file, без .. и *")
+                throw Invalid(description: "permissions.files: “\(path)” — a path inside the home folder like ~/folder/ or ~/folder/file, no .. or *")
             }
         }
         let secretKeys = (permissions?.secrets ?? []).map(\.key)
         let settingKeys = (settings ?? []).map(\.key)
         guard Set(secretKeys).count == secretKeys.count, Set(settingKeys).count == settingKeys.count else {
-            throw Invalid(description: "ключи secrets и settings не должны повторяться")
+            throw Invalid(description: "secrets and settings keys must not repeat")
         }
         for s in settings ?? [] {
             switch s.kind {
             case .choice:
                 guard let options = s.options, !options.isEmpty else {
-                    throw Invalid(description: "settings.\(s.key): для choice нужен непустой options")
+                    throw Invalid(description: "settings.\(s.key): choice needs non-empty options")
                 }
             case .number:
                 if let min = s.min, let max = s.max, min >= max {
-                    throw Invalid(description: "settings.\(s.key): min должен быть меньше max")
+                    throw Invalid(description: "settings.\(s.key): min must be less than max")
                 }
             case .text, .toggle:
                 break

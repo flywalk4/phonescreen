@@ -5,7 +5,7 @@
  ],
  "expect": {
   "running": true,
-  "toggleTitle": "Пауза",
-  "until": "/закончится в 15:0[45]/"
+  "toggleTitle": "Pause",
+  "until": "/ends at 15:0[45]/"
  }
 }

@@ -1,0 +1,34 @@
+{
+  "en": {
+    "manifest.name": "Minesweeper",
+    "manifest.description": "Minesweeper on 8×8 with 10 mines: the first move is always safe, empty areas open by themselves, flags have their own mode. The best time is kept.",
+    "settings.mines.title": "Mines on the 8×8 board",
+    "mode.flag": "Mode: flag",
+    "mode.open": "Mode: open",
+    "won": "All mines found!",
+    "lost": "Boom! Try again",
+    "careful": "Careful…",
+    "firstSafe": "The first move is safe",
+    "header": "MINESWEEPER",
+    "best": "best",
+    "minesLeft": "mines left",
+    "time": "time",
+    "restart": "Restart"
+  },
+  "ru": {
+    "manifest.name": "Сапёр",
+    "manifest.description": "Сапёр 8×8 с 10 минами: первый ход всегда безопасный, пустые области открываются сами, флажки — отдельным режимом. Лучшее время сохраняется.",
+    "settings.mines.title": "Мин на поле 8×8",
+    "mode.flag": "Режим: флажки",
+    "mode.open": "Режим: открывать",
+    "won": "Все мины найдены!",
+    "lost": "Бум! Попробуй ещё",
+    "careful": "Осторожно…",
+    "firstSafe": "Первый ход безопасен",
+    "header": "САПЁР",
+    "best": "рекорд",
+    "minesLeft": "мин осталось",
+    "time": "время",
+    "restart": "Заново"
+  }
+}

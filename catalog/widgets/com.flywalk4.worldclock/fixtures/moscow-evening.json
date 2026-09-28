@@ -1,13 +1,13 @@
 {
- "description": "Среда 23:26 в Москве",
+ "description": "Wednesday 23:26 in Moscow",
  "now": "2026-09-30T20:26:40Z",
  "timezone": "Europe/Moscow",
  "expect": {
   "local": "23:26",
   "rows.0.time": "21:26",
-  "rows.0.diff": "−2 ч",
-  "rows.1.status": "рабочий день",
-  "rows.3.day": "завтра",
-  "rows.3.status": "ночь"
+  "rows.0.diff": "−2 h",
+  "rows.1.status": "workday",
+  "rows.3.day": "tomorrow",
+  "rows.3.status": "night"
  }
 }

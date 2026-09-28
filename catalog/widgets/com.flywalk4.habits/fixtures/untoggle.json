@@ -1,14 +1,14 @@
 {
- "description": "Снять отметку повторным нажатием",
+ "description": "Uncheck with a second tap",
  "now": "2026-09-28T19:00:00Z",
  "timezone": "Europe/Moscow",
  "settings": {
-  "habits": "Вода, Спорт"
+  "habits": "Water, Workout"
  },
  "storage": {
   "done": {
    "2026-09-28": [
-    "Вода"
+    "Water"
    ]
   }
  },

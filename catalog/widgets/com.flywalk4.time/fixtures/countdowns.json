@@ -1,16 +1,16 @@
 {
  "now": "2026-09-27T14:40:00Z",
  "settings": {
-  "events": "Новый год=01-01, Релиз=2026-09-30, Прошлое=2026-01-01"
+  "events": "New Year=01-01, Release=2026-09-30, Past=2026-01-01"
  },
  "expect": {
   "year": "2026",
   "yearPct": "74%",
-  "first.name": "Релиз",
+  "first.name": "Release",
   "first.count": "3",
-  "first.unit": "дня",
+  "first.unit": "days",
   "first.color": "orange",
   "events.1.count": "96",
-  "bars.1.title": "Неделя"
+  "bars.1.title": "Week"
  }
 }

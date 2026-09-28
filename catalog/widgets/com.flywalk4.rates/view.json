@@ -16,7 +16,7 @@
      },
      {
       "type": "text",
-      "text": "КУРСЫ ВАЛЮТ",
+      "text": "{{t.header}}",
       "style": "caption",
       "weight": "semibold",
       "color": "secondary"
@@ -26,7 +26,7 @@
      },
      {
       "type": "button",
-      "title": "Обновить",
+      "title": "{{t.refresh}}",
       "symbol": "arrow.clockwise",
       "action": "reload"
      }
@@ -48,7 +48,7 @@
         "children": [
          {
           "type": "text",
-          "text": "1 {{main.code}} в {{target}}",
+          "text": "1 {{main.code}} {{t.in}} {{target}}",
           "style": "subheadline",
           "weight": "semibold",
           "color": "secondary"
@@ -96,7 +96,7 @@
      },
      {
       "type": "text",
-      "text": "за последние дни",
+      "text": "{{t.recent}}",
       "style": "caption",
       "color": "secondary",
       "if": "{{hasHistory}}"
@@ -135,7 +135,7 @@
    },
    {
     "type": "text",
-    "text": "Обновлено {{updated}} · open.er-api.com",
+    "text": "{{t.updated}} {{updated}} · open.er-api.com",
     "style": "caption2",
     "color": "secondary"
    }
@@ -157,7 +157,7 @@
       "children": [
        {
         "type": "text",
-        "text": "1 {{main.code}} в {{target}}",
+        "text": "1 {{main.code}} {{t.in}} {{target}}",
         "style": "caption",
         "weight": "semibold",
         "color": "secondary"
@@ -243,7 +243,7 @@
   "children": [
    {
     "type": "text",
-    "text": "1 {{main.code}} в {{target}}",
+    "text": "1 {{main.code}} {{t.in}} {{target}}",
     "style": "caption",
     "weight": "semibold",
     "color": "secondary"

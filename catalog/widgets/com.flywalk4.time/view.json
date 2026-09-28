@@ -16,7 +16,7 @@
           },
           {
             "type": "text",
-            "text": "ВРЕМЯ",
+            "text": "{{t.header}}",
             "style": "caption",
             "weight": "semibold",
             "color": "secondary"
@@ -128,7 +128,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "ГОД ПО НЕДЕЛЯМ",
+                "text": "{{t.yearByWeeks}}",
                 "style": "caption",
                 "weight": "semibold",
                 "color": "secondary"
@@ -166,7 +166,7 @@
       },
       {
         "type": "text",
-        "text": "Отсчёты",
+        "text": "{{t.countdowns}}",
         "style": "headline",
         "if": "{{hasEvents}}"
       },

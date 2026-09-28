@@ -1,5 +1,5 @@
 {
- "description": "Крипта и акции отвечают",
+ "description": "Crypto and stocks answer",
  "now": "2026-09-27T14:40:00Z",
  "fetch": [
   {
@@ -1955,7 +1955,7 @@
  ],
  "expect": {
   "main.ticker": "BTC",
-  "main.change": "▲ 2,41%",
+  "main.change": "▲ 2.41%",
   "hasChart": true,
   "warning": "",
   "rest.3.noTrades": true,

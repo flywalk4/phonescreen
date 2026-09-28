@@ -39,80 +39,90 @@ def contrast(a, b):
 def contrast_warnings(t) -> list:
     """Same check as Theme.contrastWarnings() in the app: text ≥ 4.5:1, secondary ≥ 3:1 on background and cards."""
     backs = [over(rgba(c), [0, 0, 0, 1]) for c in t["background"]["colors"]]
-    surfaces = [("фон", b) for b in backs]
+    surfaces = [("the background", b) for b in backs]
     card = t["colors"].get("card")
     if card and t["style"] != "glass":
-        surfaces += [("карточка", over(rgba(card), b)) for b in backs]
+        surfaces += [("a card", over(rgba(card), b)) for b in backs]
     out = []
     for name, minimum in (("text", 4.5), ("secondary", 3.0)):
         fg = rgba(t["colors"][name])
         where, worst = min(((n, contrast(over(fg, s), s)) for n, s in surfaces), key=lambda x: x[1])
         if worst < minimum:
-            out.append(f"colors.{name} плохо читается на {where}: контраст {worst:.1f}:1, нужно от {minimum:.1f}:1")
+            out.append(f"colors.{name} reads poorly on {where}: contrast {worst:.1f}:1, needs at least {minimum:.1f}:1")
     return out
 
 
 def validate(path: Path) -> list:
     file = path / "theme.json" if path.is_dir() else path
     if not file.exists():
-        return ["нет файла theme.json"]
+        return ["no theme.json file"]
     raw = file.read_bytes()
     if len(raw) > MAX_BYTES:
-        return ["theme.json больше 64 КБ"]
+        return ["theme.json is over 64 KB"]
     try:
         t = json.loads(raw)
     except json.JSONDecodeError as e:
-        return [f"theme.json: не JSON ({e})"]
+        return [f"theme.json: not JSON ({e})"]
     errors = []
     for key in ("id", "name", "version", "author", "style", "appearance", "font", "radius", "background", "colors"):
         if key not in t:
-            errors.append(f"нет поля «{key}»")
+            errors.append(f"no field “{key}”")
     if errors:
         return errors
     if not re.match(r"^[a-z0-9]+(\.[a-z0-9-]+)+$", str(t["id"])):
-        errors.append(f"id: «{t['id']}» — обратный домен строчными буквами, например com.author.theme")
+        errors.append(f"id: “{t['id']}” — a lowercase reverse domain, e.g. com.author.theme")
     if str(t["id"]).startswith("builtin."):
-        errors.append("id не может начинаться с builtin.")
+        errors.append("id can't start with builtin.")
     if path.is_dir() and path.name != t["id"]:
-        errors.append(f"папка называется {path.name}, а id — {t['id']}: они должны совпадать")
+        errors.append(f"the folder is named {path.name} but the id is {t['id']}: they must match")
     if not (1 <= len(str(t["name"])) <= 40):
-        errors.append("name: от 1 до 40 символов")
+        errors.append("name: 1 to 40 characters")
     if not re.match(r"^\d+\.\d+\.\d+$", str(t["version"])):
-        errors.append("version: вида 1.2.3")
+        errors.append("version: like 1.2.3")
+    loc = t.get("localized")
+    if loc is not None:
+        if not isinstance(loc, dict) or not all(isinstance(v, dict) for v in loc.values()):
+            errors.append('localized: an object {"ru": {"name": …, "description": …}}')
+        else:
+            for lang, table in loc.items():
+                if set(table) - {"name", "description"} or not all(isinstance(v, str) for v in table.values()):
+                    errors.append(f"localized.{lang}: only name and description, as strings")
+                elif not 0 < len(table.get("name", "x")) <= 40:
+                    errors.append(f"localized.{lang}.name: 1 to 40 characters")
     for key, allowed in (("style", STYLES), ("appearance", APPEARANCES), ("font", FONTS)):
         if t[key] not in allowed:
-            errors.append(f"{key}: одно из {', '.join(sorted(allowed))}")
+            errors.append(f"{key}: one of {', '.join(sorted(allowed))}")
     if not isinstance(t["radius"], (int, float)) or not 0 <= t["radius"] <= 40:
-        errors.append("radius: число от 0 до 40")
+        errors.append("radius: a number from 0 to 40")
     layout = t.get("layout") or {}
     for key, lo, hi in (("gap", 0, 24), ("margin", 0, 24), ("padding", 6, 24), ("cardOpacity", 0, 1), ("autoPage", 0, 600)):
         v = layout.get(key)
         if v is not None and (not isinstance(v, (int, float)) or not lo <= v <= hi):
-            errors.append(f"layout.{key}: число от {lo} до {hi}")
+            errors.append(f"layout.{key}: a number from {lo} to {hi}")
     if layout.get("textSize") not in (None, "small", "medium", "large", "xlarge"):
-        errors.append("layout.textSize: small, medium, large или xlarge")
+        errors.append("layout.textSize: small, medium, large or xlarge")
     for key in ("dots", "status", "shadow", "haptics", "loop", "homeOnConnect"):
         if key in layout and not isinstance(layout[key], bool):
-            errors.append(f"layout.{key}: true или false")
+            errors.append(f"layout.{key}: true or false")
     colors = []
     bg = t["background"]
     if not isinstance(bg, dict) or not isinstance(bg.get("colors"), list) or not 1 <= len(bg["colors"]) <= 4:
-        errors.append("background.colors: от 1 до 4 цветов")
+        errors.append("background.colors: 1 to 4 colours")
     else:
         colors += [("background.colors", c) for c in bg["colors"]]
         colors += [("background.tints", c) for c in bg.get("tints") or []]
         if "animation" in bg and bg["animation"] not in ANIMATIONS + ["photo"]:
-            errors.append(f"background.animation: одна из {', '.join(ANIMATIONS)} или photo (фото из «Избранного» iPhone)")
+            errors.append(f"background.animation: one of {', '.join(ANIMATIONS)} or photo (a photo from the iPhone's Favorites)")
         if "speed" in bg and not (isinstance(bg["speed"], (int, float)) and 0.1 <= bg["speed"] <= 5):
-            errors.append("background.speed: число от 0.1 до 5")
+            errors.append("background.speed: a number from 0.1 to 5")
         if len(bg.get("tints") or []) > 6:
-            errors.append("background.tints: не больше 6 цветов")
+            errors.append("background.tints: at most 6 colours")
         if "angle" in bg and not isinstance(bg["angle"], (int, float)):
-            errors.append("background.angle: число (градусы)")
+            errors.append("background.angle: a number (degrees)")
     c = t["colors"]
     for key in ("text", "secondary", "accent"):
         if key not in c:
-            errors.append(f"нет поля «colors.{key}»")
+            errors.append(f"no field “colors.{key}”")
         else:
             colors.append((f"colors.{key}", c[key]))
     for key in ("card", "border"):
@@ -122,7 +132,7 @@ def validate(path: Path) -> list:
         colors.append((f"colors.palette.{key}", value))
     for key, value in colors:
         if not isinstance(value, str) or not HEX.match(value):
-            errors.append(f"{key}: «{value}» — цвет вида #RRGGBB или #RRGGBBAA")
+            errors.append(f"{key}: “{value}” — a colour like #RRGGBB or #RRGGBBAA")
     return errors
 
 
@@ -143,7 +153,7 @@ def palette_warnings(t: dict) -> list:
             key = RELATIVES.get(key)
         if not key:
             missing.append(name)
-    return [f"палитра не задаёт {', '.join(missing)} — эти цвета останутся системными (яркими)"] if missing else []
+    return [f"the palette doesn't set {', '.join(missing)} — these colours stay system (bright) ones"] if missing else []
 
 
 def warnings(path: Path) -> list:
@@ -161,5 +171,5 @@ if __name__ == "__main__":
     if not problems:
         for w in warnings(Path(sys.argv[1])):
             print("⚠", w)
-    print("OK" if not problems else f"{len(problems)} проблем(ы)")
+    print("OK" if not problems else f"{len(problems)} problem(s)")
     sys.exit(1 if problems else 0)

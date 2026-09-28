@@ -10,13 +10,13 @@ struct LauncherPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            WidgetHeader(title: "Команды", symbol: "square.grid.3x3.fill")
+            WidgetHeader(title: L("Shortcuts"), symbol: "square.grid.3x3.fill")
             ScrollView {
                 if size == .full {
                     VStack(alignment: .leading, spacing: 18) {
-                        section("Система", items: model.launcher.filter { $0.kind == .system })
+                        section(L("System"), items: model.launcher.filter { $0.kind == .system })
                         section("Dock", items: model.launcher.filter { $0.kind == .app })
-                        section("Команды", items: model.launcher.filter { $0.kind == .shortcut })
+                        section(L("Shortcuts"), items: model.launcher.filter { $0.kind == .shortcut })
                     }
                 } else {
                     // Card: one dense grid, no section titles.

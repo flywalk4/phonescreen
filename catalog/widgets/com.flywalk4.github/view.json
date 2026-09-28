@@ -42,7 +42,7 @@
               },
               {
                 "type": "text",
-                "text": "ждут ревью",
+                "text": "{{t.awaiting}}",
                 "style": "caption",
                 "color": "secondary"
               }
@@ -62,7 +62,7 @@
               },
               {
                 "type": "text",
-                "text": "моих PR",
+                "text": "{{t.myPRs}}",
                 "style": "caption",
                 "color": "secondary"
               }
@@ -83,7 +83,7 @@
               },
               {
                 "type": "text",
-                "text": "уведомлений",
+                "text": "{{t.notifications}}",
                 "style": "caption",
                 "color": "secondary"
               }
@@ -93,13 +93,13 @@
       },
       {
         "type": "text",
-        "text": "Ждут твоего ревью",
+        "text": "{{t.awaitingTitle}}",
         "style": "headline",
         "if": "{{hasReview}}"
       },
       {
         "type": "text",
-        "text": "🎉 Ревью никто не ждёт",
+        "text": "{{t.noReviews}}",
         "style": "headline",
         "color": "green",
         "if": "{{allClear}}"
@@ -147,7 +147,7 @@
       },
       {
         "type": "text",
-        "text": "Мои открытые",
+        "text": "{{t.mineTitle}}",
         "style": "headline",
         "if": "{{hasMine}}"
       },
@@ -226,7 +226,7 @@
               },
               {
                 "type": "text",
-                "text": "на ревью",
+                "text": "{{t.toReview}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -246,7 +246,7 @@
               },
               {
                 "type": "text",
-                "text": "моих",
+                "text": "{{t.mine}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -270,7 +270,7 @@
               },
               {
                 "type": "text",
-                "text": "уведомл.",
+                "text": "{{t.notifShort}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -283,7 +283,7 @@
       },
       {
         "type": "text",
-        "text": "🎉 Ревью никто не ждёт",
+        "text": "{{t.noReviews}}",
         "style": "subheadline",
         "color": "green",
         "if": "{{allClear}}"
@@ -337,7 +337,7 @@
       },
       {
         "type": "text",
-        "text": "ждут ревью",
+        "text": "{{t.awaiting}}",
         "style": "caption",
         "weight": "semibold"
       },
@@ -359,13 +359,13 @@
       },
       {
         "type": "text",
-        "text": "{{mineCount}} моих PR",
+        "text": "{{mineCount}} {{t.myPRs}}",
         "style": "caption",
         "color": "secondary"
       },
       {
         "type": "text",
-        "text": "{{unread}} уведомлений",
+        "text": "{{unread}} {{t.notifications}}",
         "style": "caption",
         "color": "blue"
       }

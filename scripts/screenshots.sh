@@ -40,12 +40,12 @@ cat build/bundle.txt
 mkdir -p "$OUT/crashes"
 shot() { # shot <file> <launch args…>
   local file=$1; shift
-  xcrun simctl launch --terminate-running-process "$DEV" "$BUNDLE_ID" --demo --demo-orientation "$ORIENT" "$@" >/dev/null
+  xcrun simctl launch --terminate-running-process "$DEV" "$BUNDLE_ID" --demo --demo-orientation "$ORIENT" -language "${LANG_CODE:-en}" "$@" >/dev/null
   sleep 6
   xcrun simctl io "$DEV" screenshot "$file" >/dev/null 2>&1
   # The app hides the status bar; if it is gone from the process list, it crashed — keep the report.
   if ! xcrun simctl spawn "$DEV" launchctl list | grep -q "$BUNDLE_ID"; then
-    echo "  ✗ $file: приложение не работает"
+    echo "  ✗ $file: the app isn't running"
     find ~/Library/Logs/DiagnosticReports -name 'PhoneScreen*' -newer build/bundle.txt -exec cp {} "$OUT/crashes/" \; 2>/dev/null || true
   else
     echo "  $file"
@@ -77,11 +77,13 @@ for n in $MIXED; do
   ORIENT=landscapeIslandLeft shot "$OUT/landscape/$theme-$n.png" --demo-bundle "$DATA/Documents/demo.json" --demo-theme "builtin.$theme" --page "$n"
 done
 
-# Catalog themes on the first mixed page.
-FIRST=$(echo "$MIXED" | head -1)
+# Catalog themes, each on the next mixed page, so the picture shows many widgets rather than one page over and over.
+PAGES=($MIXED)
+i=0
 for theme in catalog/themes/*/; do
   id=$(basename "$theme")
   node scripts/widget-dev.mjs bundle "$DATA/Documents/theme.json" --theme "$theme" >/dev/null
-  shot "$OUT/catalog-themes/$id.png" --demo-bundle "$DATA/Documents/theme.json" --page "$FIRST"
+  shot "$OUT/catalog-themes/$id.png" --demo-bundle "$DATA/Documents/theme.json" --page "${PAGES[$((i % ${#PAGES[@]}))]}"
+  i=$((i + 1))
 done
-echo "готово: $(find "$OUT" -name '*.png' | wc -l | tr -d ' ') снимков в $OUT"
+echo "done: $(find "$OUT" -name '*.png' | wc -l | tr -d ' ') screenshots in $OUT"

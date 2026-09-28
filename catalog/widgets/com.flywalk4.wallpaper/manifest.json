@@ -1,109 +1,109 @@
 {
   "id": "com.flywalk4.wallpaper",
-  "name": "Живые обои",
-  "version": "1.1.2",
+  "name": "Live wallpaper",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Анимированные обои на всю плитку: северное сияние, звёзды, «матрица», волны, огоньки или лавовая лампа — в цветах темы или своей палитре. По желанию с часами поверх. Без сети.",
+  "description": "Animated wallpaper across the whole tile: northern lights, stars, “Matrix” rain, waves, bokeh or a lava lamp — in the theme's colours or a palette of your own. An optional clock on top. Works offline.",
   "symbol": "sparkles",
   "refresh": 30,
   "settings": [
     {
       "key": "style",
-      "title": "Анимация",
+      "title": "Animation",
       "type": "choice",
       "default": "aurora",
       "options": [
         {
           "value": "aurora",
-          "title": "Северное сияние"
+          "title": "Northern lights"
         },
         {
           "value": "stars",
-          "title": "Звёзды"
+          "title": "Stars"
         },
         {
           "value": "matrix",
-          "title": "Матрица"
+          "title": "Matrix"
         },
         {
           "value": "waves",
-          "title": "Волны"
+          "title": "Waves"
         },
         {
           "value": "bokeh",
-          "title": "Огоньки"
+          "title": "Bokeh"
         },
         {
           "value": "lava",
-          "title": "Лавовая лампа"
+          "title": "Lava lamp"
         },
         {
           "value": "snow",
-          "title": "Снег"
+          "title": "Snow"
         },
         {
           "value": "rain",
-          "title": "Дождь"
+          "title": "Rain"
         },
         {
           "value": "gradient",
-          "title": "Градиент"
+          "title": "Gradient"
         }
       ]
     },
     {
       "key": "palette",
-      "title": "Цвета",
+      "title": "Colours",
       "type": "choice",
       "default": "auto",
       "options": [
         {
           "value": "auto",
-          "title": "Авто"
+          "title": "Auto"
         },
         {
           "value": "theme",
-          "title": "Как в теме"
+          "title": "Theme's"
         },
         {
           "value": "sunset",
-          "title": "Закат"
+          "title": "Sunset"
         },
         {
           "value": "ocean",
-          "title": "Океан"
+          "title": "Ocean"
         },
         {
           "value": "forest",
-          "title": "Лес"
+          "title": "Forest"
         },
         {
           "value": "neon",
-          "title": "Неон"
+          "title": "Neon"
         },
         {
           "value": "mono",
-          "title": "Монохром"
+          "title": "Monochrome"
         },
         {
           "value": "winter",
-          "title": "Зима"
+          "title": "Winter"
         },
         {
           "value": "storm",
-          "title": "Гроза"
+          "title": "Storm"
         }
       ]
     },
     {
       "key": "clock",
-      "title": "Часы поверх",
+      "title": "Clock on top",
       "type": "toggle",
       "default": "true"
     },
     {
       "key": "speed",
-      "title": "Скорость",
+      "title": "Speed",
       "type": "number",
       "default": "1",
       "min": 0.2,

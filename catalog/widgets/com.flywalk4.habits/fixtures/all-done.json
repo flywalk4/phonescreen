@@ -1,21 +1,21 @@
 {
- "description": "Всё отмечено: зелёное кольцо",
+ "description": "All checked: a green ring",
  "now": "2026-09-28T19:00:00Z",
  "timezone": "Europe/Moscow",
  "settings": {
-  "habits": "Вода, Спорт"
+  "habits": "Water, Workout"
  },
  "storage": {
   "done": {
    "2026-09-28": [
-    "Вода",
-    "Спорт"
+    "Water",
+    "Workout"
    ]
   }
  },
  "expect": {
   "ratio": "2/2",
   "color": "green",
-  "summary": "/сделано/"
+  "summary": "/done/"
  }
 }

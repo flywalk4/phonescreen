@@ -28,7 +28,7 @@ struct CustomWidgetView: View {
             } else {
                 VStack(spacing: 8) {
                     Image(systemName: "puzzlepiece.extension").font(.largeTitle).foregroundStyle(.secondary)
-                    Text(model.status.active == nil ? "Нет связи с Mac" : "Виджет не установлен на Mac")
+                    Text(model.status.active == nil ? L("No connection to the Mac") : L("The widget isn't installed on the Mac"))
                         .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -139,7 +139,7 @@ struct CustomWidgetView: View {
     private func failure(_ state: CustomWidgetState) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Label(state.name, systemImage: state.symbol).font(.headline)
-            Text(state.error ?? "Нет данных").font(.caption).foregroundStyle(.red)
+            Text(state.error ?? L("No data")).font(.caption).foregroundStyle(.red)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .widgetPadding()

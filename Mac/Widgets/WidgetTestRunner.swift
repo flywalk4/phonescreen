@@ -10,7 +10,7 @@ enum WidgetTestRunner {
         do {
             widget = try WidgetStore.read(package: folder)
         } catch {
-            fail("пакет: \(error)")
+            fail("package: \(error)")
         }
         let manifest = widget.manifest
         // WIDGET_LANG=en: the widget in that language (default: the app's).
@@ -73,12 +73,12 @@ enum WidgetTestRunner {
                 }
                 for entry in catalog.themes ?? [] {
                     let theme = try await ThemeStore.download(entry, indexURL: url).theme
-                    print("✓ тема \(entry.id) \(theme.version)")
+                    print("✓ theme \(entry.id) \(theme.version)")
                 }
                 print("OK")
                 exit(0)
             } catch {
-                fail("каталог: \(error)")
+                fail("catalog: \(error)")
             }
         }
     }

@@ -1,5 +1,5 @@
 {
- "description": "Открыли угол — рядом нет мин, область открылась",
+ "description": "Opened a corner: no mines nearby, the area opened",
  "storage": {
   "game": {
    "count": 10,
@@ -162,7 +162,7 @@
  "expect": {
   "cells.7.text": "",
   "cells.15.text": "",
-  "status": "Осторожно…",
+  "status": "Careful…",
   "minesLeft": "10"
  }
 }

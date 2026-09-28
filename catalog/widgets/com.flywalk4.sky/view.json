@@ -59,7 +59,7 @@
         "children": [
          {
           "type": "text",
-          "text": "Восход",
+          "text": "{{t.sunrise}}",
           "style": "caption",
           "color": "secondary"
          },
@@ -82,7 +82,7 @@
         "children": [
          {
           "type": "text",
-          "text": "Закат",
+          "text": "{{t.sunset}}",
           "style": "caption",
           "color": "secondary"
          },
@@ -107,7 +107,7 @@
       "children": [
        {
         "type": "text",
-        "text": "День {{length}}",
+        "text": "{{t.day}} {{length}}",
         "style": "subheadline",
         "weight": "semibold"
        },
@@ -156,7 +156,7 @@
          },
          {
           "type": "text",
-          "text": "освещено {{moon.lit}}",
+          "text": "{{t.lit}} {{moon.lit}}",
           "style": "subheadline",
           "color": "secondary"
          },
@@ -189,7 +189,7 @@
     "children": [
      {
       "type": "text",
-      "text": "Неделя вперёд",
+      "text": "{{t.weekAhead}}",
       "style": "caption",
       "weight": "semibold",
       "color": "secondary"
@@ -240,7 +240,7 @@
    },
    {
     "type": "text",
-    "text": "Open-Meteo · фаза Луны рассчитана",
+    "text": "{{t.credit}}",
     "style": "caption2",
     "color": "secondary"
    }
@@ -261,7 +261,7 @@
       "children": [
        {
         "type": "text",
-        "text": "Восход",
+        "text": "{{t.sunrise}}",
         "style": "caption",
         "color": "secondary"
        },
@@ -284,7 +284,7 @@
       "children": [
        {
         "type": "text",
-        "text": "Закат",
+        "text": "{{t.sunset}}",
         "style": "caption",
         "color": "secondary"
        },
@@ -306,7 +306,7 @@
    },
    {
     "type": "text",
-    "text": "{{status}} · день {{length}}",
+    "text": "{{status}} · {{t.dayLower}} {{length}}",
     "style": "caption",
     "color": "secondary"
    },
@@ -395,7 +395,7 @@
    },
    {
     "type": "text",
-    "text": "день {{length}}",
+    "text": "{{t.dayLower}} {{length}}",
     "style": "caption2",
     "color": "secondary"
    }

@@ -1,18 +1,18 @@
 {
   "$schema": "https://raw.githubusercontent.com/flywalk4/phonescreen/main/schemas/manifest.schema.json",
   "id": "com.flywalk4.habits",
-  "name": "Привычки",
-  "version": "1.1.0",
+  "name": "Habits",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Трекер привычек: отмечай нажатием на телефоне, смотри серию дней подряд и последнюю неделю точками. Без сети.",
+  "description": "A habit tracker: tap on the phone to check off, see your streak and the last week as dots. Works offline.",
   "symbol": "checklist.checked",
   "refresh": 60,
   "settings": [
     {
       "key": "habits",
-      "title": "Привычки",
+      "title": "Habits",
       "default": "",
-      "hint": "Через запятую, до 8; эмодзи в начале — по желанию"
+      "hint": "Comma-separated, up to 8; an emoji in front is optional. Empty — the default set"
     }
   ]
 }

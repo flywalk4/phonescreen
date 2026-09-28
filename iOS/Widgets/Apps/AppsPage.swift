@@ -13,7 +13,7 @@ struct AppsPage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: size == .full ? 14 : 10) {
-            WidgetHeader(title: "Программы", symbol: "macwindow.on.rectangle",
+            WidgetHeader(title: L("Apps"), symbol: "macwindow.on.rectangle",
                          subtitle: model.runningApps.isEmpty ? nil : Self.openCount(model.runningApps.count))
             if model.runningApps.isEmpty {
                 EmptyApps()
@@ -56,17 +56,9 @@ struct AppsPage: View {
         }
     }
 
-    static func openCount(_ n: Int) -> String {
-        let (m10, m100) = (n % 10, n % 100)
-        let word = m10 == 1 && m100 != 11 ? "программа" : (2...4).contains(m10) && !(12...14).contains(m100) ? "программы" : "программ"
-        return "\(n) \(word)"
-    }
+    static func openCount(_ n: Int) -> String { L("%lld apps", n) }
 
-    static func windowCount(_ n: Int) -> String {
-        let (m10, m100) = (n % 10, n % 100)
-        let word = m10 == 1 && m100 != 11 ? "окно" : (2...4).contains(m10) && !(12...14).contains(m100) ? "окна" : "окон"
-        return "\(n) \(word)"
-    }
+    static func windowCount(_ n: Int) -> String { L("%lld windows", n) }
 }
 
 // MARK: - Tile
@@ -110,9 +102,9 @@ private struct AppTile: View {
     }
 
     private var subtitle: String? {
-        if app.hidden { return "Скрыта" }
+        if app.hidden { return L("Hidden") }
         if let title = app.window, title != app.name { return title }
-        if app.windows == 0 { return "Нет окон" }
+        if app.windows == 0 { return L("No windows") }
         return app.windows.map(AppsPage.windowCount)
     }
 }
@@ -226,9 +218,9 @@ private struct AppMenu: View {
     @EnvironmentObject private var model: PhoneModel
 
     var body: some View {
-        Button { model.appAction(app, .activate) } label: { Label("Открыть", systemImage: "arrow.up.forward.app") }
-        Button { model.appAction(app, .hide) } label: { Label("Скрыть", systemImage: "eye.slash") }
-        Button(role: .destructive) { model.appAction(app, .quit) } label: { Label("Завершить", systemImage: "xmark.circle") }
+        Button { model.appAction(app, .activate) } label: { Label("Open", systemImage: "arrow.up.forward.app") }
+        Button { model.appAction(app, .hide) } label: { Label("Hide", systemImage: "eye.slash") }
+        Button(role: .destructive) { model.appAction(app, .quit) } label: { Label("Quit", systemImage: "xmark.circle") }
     }
 }
 
@@ -236,7 +228,7 @@ private struct EmptyApps: View {
     var body: some View {
         VStack(spacing: 10) {
             Glyph("macwindow.on.rectangle").font(.system(size: 34)).foregroundStyle(.tertiary)
-            Text("Нет связи с Mac").font(.subheadline).foregroundStyle(.secondary)
+            Text("No connection to the Mac").font(.subheadline).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

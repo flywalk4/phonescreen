@@ -88,7 +88,7 @@ struct RemindersPage: View {
             if kit.remindersAccess == .fullAccess {
                 content
             } else {
-                AccessPrompt(symbol: "checklist", title: "Напоминания", status: kit.remindersAccess) {
+                AccessPrompt(symbol: "checklist", title: L("Reminders"), status: kit.remindersAccess) {
                     await kit.requestReminders()
                     model.reload()
                 }
@@ -100,8 +100,8 @@ struct RemindersPage: View {
 
     private var content: some View {
         VStack(alignment: .leading, spacing: 12) {
-            WidgetHeader(title: "Напоминания", symbol: "checklist",
-                         subtitle: model.items.isEmpty ? nil : "\(model.items.filter { !$0.isCompleted }.count) осталось")
+            WidgetHeader(title: L("Reminders"), symbol: "checklist",
+                         subtitle: model.items.isEmpty ? nil : L("%lld left", model.items.filter { !$0.isCompleted }.count))
             if size == .full { listChips }
             if model.items.isEmpty {
                 // Nothing left: a calm "all done" instead of an empty list.
@@ -110,9 +110,9 @@ struct RemindersPage: View {
                         .font(.system(size: size == .small ? 34 : 64, weight: .light))
                         .foregroundStyle(Color.green.gradient)
                         .symbolEffect(.bounce, value: model.items.count)
-                    Text("Всё сделано").font(size == .small ? .subheadline.weight(.semibold) : .title3.weight(.semibold))
+                    Text("All done").font(size == .small ? .subheadline.weight(.semibold) : .title3.weight(.semibold))
                     if size != .small {
-                        Text("Добавьте новое внизу или на Mac").font(.caption).foregroundStyle(.secondary)
+                        Text("Add a new one below or on the Mac").font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -156,7 +156,7 @@ struct RemindersPage: View {
     private var addField: some View {
         HStack {
             Glyph(systemName: "plus.circle.fill").foregroundStyle(.secondary)
-            TextField("Новое напоминание", text: $draft)
+            TextField("New reminder", text: $draft)
                 .focused($adding)
                 .submitLabel(.done)
                 .onSubmit {
@@ -191,7 +191,7 @@ private struct ReminderRow: View {
                     .strikethrough(done)
                     .foregroundStyle(done ? .secondary : .primary)
                 if let due = reminder.dueDateComponents?.date {
-                    Text(due.formatted(.relative(presentation: .named)))
+                    Text(due.relativeText)
                         .font(.caption)
                         .foregroundStyle(due < Date() && !done ? .red : .secondary)
                 }

@@ -88,7 +88,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "сейчас",
+                "text": "{{t.now}}",
                 "style": "caption2",
                 "color": "secondary"
               },
@@ -97,7 +97,7 @@
               },
               {
                 "type": "text",
-                "text": "+1,5 ч",
+                "text": "{{t.plus90}}",
                 "style": "caption2",
                 "color": "secondary"
               },
@@ -106,7 +106,7 @@
               },
               {
                 "type": "text",
-                "text": "+3 ч",
+                "text": "{{t.plus180}}",
                 "style": "caption2",
                 "color": "secondary"
               }
@@ -116,7 +116,7 @@
       },
       {
         "type": "text",
-        "text": "Вероятность по часам",
+        "text": "{{t.hourly}}",
         "style": "caption",
         "weight": "semibold",
         "color": "secondary"
@@ -161,7 +161,7 @@
       },
       {
         "type": "text",
-        "text": "Обновлено {{updated}} · Open-Meteo",
+        "text": "{{t.updated}} {{updated}} · Open-Meteo",
         "style": "caption2",
         "color": "secondary"
       }

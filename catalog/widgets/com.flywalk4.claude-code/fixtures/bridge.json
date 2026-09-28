@@ -1,5 +1,5 @@
 {
- "description": "Мост установлен: официальные проценты и состояние из хуков, день работы в журналах",
+ "description": "Bridge installed: official percentages and state from hooks, a day of work in the logs",
  "now": "2026-09-27T14:40:00Z",
  "files": {
   "~/.claude/phonescreen/status.json": "{\"at\": 1790520000, \"model\": \"Opus 5.5\", \"rate_limits\": {\"five_hour\": {\"used_percentage\": 62.4, \"resets_at\": 1790525400}, \"seven_day\": {\"used_percentage\": 23, \"resets_at\": 1790820000}}}",
@@ -30,7 +30,7 @@
   "mood": "waiting",
   "five.pct": "62%",
   "five.color": "orange",
-  "five.reset": "/^сброс через 1 ч (29|30) мин$/",
+  "five.reset": "/^resets in 1 h (29|30) min$/",
   "week.pct": "23%",
   "hasActivity": true
  }

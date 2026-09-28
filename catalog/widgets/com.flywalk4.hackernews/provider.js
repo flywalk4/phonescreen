@@ -1,4 +1,4 @@
-// Hacker News: истории из официального API (hacker-news.firebaseio.com, без ключа).
+// Hacker News: stories from the official API (hacker-news.firebaseio.com, no key).
 
 const LISTS = { top: "topstories", best: "beststories", new: "newstories", ask: "askstories", show: "showstories" };
 
@@ -8,7 +8,7 @@ async function refresh(ctx) {
   const ids = await get(`https://hacker-news.firebaseio.com/v0/${list}.json`);
   const items = (await Promise.all(ids.slice(0, count).map((id) => get(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).catch(() => null))))
     .filter((i) => i && i.title);
-  if (items.length === 0) throw new Error("Hacker News не вернул истории");
+  if (items.length === 0) throw new Error(t("empty"));
   const now = Date.now() / 1000;
   const stories = items.map((i, n) => ({
     rank: String(n + 1),
@@ -25,7 +25,7 @@ async function refresh(ctx) {
 
 async function get(url) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Hacker News ответил ${res.status}`);
+  if (!res.ok) throw new Error(t("httpError", { status: res.status }));
   return res.json();
 }
 
@@ -35,7 +35,7 @@ function site(url) {
 }
 
 function age(sec) {
-  if (sec < 3600) return `${Math.max(1, Math.round(sec / 60))} мин`;
-  if (sec < 86400) return `${Math.round(sec / 3600)} ч`;
-  return `${Math.round(sec / 86400)} д`;
+  if (sec < 3600) return t("age.min", { n: Math.max(1, Math.round(sec / 60)) });
+  if (sec < 86400) return t("age.h", { n: Math.round(sec / 3600) });
+  return t("age.d", { n: Math.round(sec / 86400) });
 }

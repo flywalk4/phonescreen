@@ -1,6 +1,6 @@
-// 2048 на поле 4×4. Кнопки: left, right, up, down, new. Рекорд и партия хранятся в storage.
+// 2048 on a 4×4 board. Buttons: left, right, up, down, new. The best score and the game live in storage.
 
-const COLORS = { // значение → [фон, текст]
+const COLORS = { // value → [background, text]
   2: ["#EEE4DA", "#776E65"], 4: ["#EDE0C8", "#776E65"], 8: ["#F2B179", "#FFFFFF"], 16: ["#F59563", "#FFFFFF"],
   32: ["#F67C5F", "#FFFFFF"], 64: ["#F65E3B", "#FFFFFF"], 128: ["#EDCF72", "#FFFFFF"], 256: ["#EDCC61", "#FFFFFF"],
   512: ["#EDC850", "#FFFFFF"], 1024: ["#EDC53F", "#FFFFFF"], 2048: ["#EDC22E", "#FFFFFF"],
@@ -19,7 +19,7 @@ async function refresh() {
     })),
     score: String(g.score), best: String(g.best),
     over: g.over, won: g.won && !g.over,
-    status: g.over ? "Ходов нет — начни заново" : g.won ? "2048! Можно играть дальше" : `Лучшая плитка: ${Math.max(...g.grid)}`,
+    status: g.over ? t("over") : g.won ? t("won") : t("bestTile", { n: Math.max(...g.grid) }),
     statusColor: g.over ? "red" : g.won ? "orange" : "secondary",
   };
 }
@@ -35,7 +35,7 @@ async function action(name) {
   storage.set("game", g);
 }
 
-// Новую партию сохраняем сразу: иначе на экране одно случайное поле, а первый ход сделан бы на другом.
+// A new game is saved at once: otherwise the screen shows one random board and the first move lands on another.
 function load() {
   let g = storage.get("game");
   if (!g) { g = fresh(0); storage.set("game", g); }
@@ -53,7 +53,7 @@ function addTile(grid) {
   if (empty.length) grid[empty[Math.floor(Math.random() * empty.length)]] = Math.random() < 0.9 ? 2 : 4;
 }
 
-// Индексы клеток каждой линии в порядке, в котором к ним сдвигаются плитки.
+// Cell indices of each line in the order tiles slide towards them.
 function lines(dir) {
   const out = [];
   for (let k = 0; k < 4; k++) {

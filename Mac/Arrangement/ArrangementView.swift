@@ -9,15 +9,15 @@ struct ArrangementView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Расположение").font(.system(size: 26, weight: .bold))
-                Text("Где iPhone стоит относительно экрана — отсюда курсор перейдёт на телефон.")
+                Text("Arrangement").font(.system(size: 26, weight: .bold))
+                Text("Where the iPhone sits next to the screen — the cursor crosses to the phone from here.")
                     .font(.callout).foregroundStyle(.secondary)
             }
             ArrangementCanvas()
                 .frame(minWidth: 560, minHeight: 340)
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .underPageBackgroundColor)))
             controls
-            Text("Перетащите iPhone к нужной стороне экрана — он прилипнет к краю. Зелёная линия — участок края, через который курсор будет переходить на телефон. Ориентацию телефон применит сам, даже лёжа на столе.")
+            Text("Drag the iPhone to a side of the screen and it snaps to the edge. The green line is the part of the edge the cursor crosses to the phone through. The phone applies the orientation by itself, even lying on the desk.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -31,22 +31,22 @@ struct ArrangementView: View {
         HStack(spacing: 14) {
             ControlGroup {
                 Button { model.rotatePhone(clockwise: false) } label: { Image(systemName: "rotate.left") }
-                    .help("Повернуть против часовой (⇧R)")
+                    .help("Rotate counterclockwise (⇧R)")
                     .keyboardShortcut("r", modifiers: .shift)
                 Button { model.rotatePhone(clockwise: true) } label: { Image(systemName: "rotate.right") }
-                    .help("Повернуть по часовой (R)")
+                    .help("Rotate clockwise (R)")
                     .keyboardShortcut("r", modifiers: [])
             }
             .fixedSize()
 
-            Picker("Положение", selection: Binding(get: { model.arrangement.orientation }, set: { model.setOrientation($0) })) {
+            Picker("Orientation", selection: Binding(get: { model.arrangement.orientation }, set: { model.setOrientation($0) })) {
                 ForEach(PhoneOrientation.allCases, id: \.self) { o in
                     Text(o.title).tag(o)
                 }
             }
             .fixedSize()
 
-            Picker("Край", selection: Binding(
+            Picker("Edge", selection: Binding(
                 get: { model.arrangement.edge },
                 set: { edge in model.arrangedDisplay.map { model.attach(to: $0, edge: edge) } }
             )) {
@@ -55,7 +55,7 @@ struct ArrangementView: View {
             .fixedSize()
 
             if model.displays.count > 1 {
-                Picker("Экран", selection: Binding(
+                Picker("Screen", selection: Binding(
                     get: { model.arrangedDisplay?.id ?? "" },
                     set: { id in
                         if let d = model.displays.first(where: { $0.id == id }) { model.attach(to: d, edge: model.arrangement.edge) }
@@ -67,7 +67,7 @@ struct ArrangementView: View {
             }
 
             Spacer()
-            Button("По центру") {
+            Button("Centre") {
                 model.arrangedDisplay.map { model.attach(to: $0, edge: model.arrangement.edge) }
             }
         }
@@ -203,17 +203,17 @@ private struct PhoneTile: View {
         .shadow(color: .black.opacity(dragging ? 0.45 : 0.25), radius: dragging ? 10 : 4, y: dragging ? 6 : 2)
         .scaleEffect(dragging ? 1.04 : 1)
         .contentShape(Rectangle())
-        .help("Перетащите к нужному краю экрана")
+        .help("Drag to an edge of the screen")
     }
 }
 
 extension PhoneOrientation {
     var title: String {
         switch self {
-        case .portrait: "Вертикально"
-        case .landscapeIslandRight: "Горизонтально, верх справа"
-        case .upsideDown: "Вверх ногами"
-        case .landscapeIslandLeft: "Горизонтально, верх слева"
+        case .portrait: String(localized: "Portrait")
+        case .landscapeIslandRight: String(localized: "Landscape, top on the right")
+        case .upsideDown: String(localized: "Upside down")
+        case .landscapeIslandLeft: String(localized: "Landscape, top on the left")
         }
     }
 }
@@ -221,10 +221,10 @@ extension PhoneOrientation {
 extension ScreenEdge {
     var title: String {
         switch self {
-        case .left: "Слева"
-        case .right: "Справа"
-        case .top: "Сверху"
-        case .bottom: "Снизу"
+        case .left: String(localized: "Left")
+        case .right: String(localized: "Right")
+        case .top: String(localized: "Top")
+        case .bottom: String(localized: "Bottom")
         }
     }
 }

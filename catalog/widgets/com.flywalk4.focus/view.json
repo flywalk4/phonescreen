@@ -16,7 +16,7 @@
           },
           {
             "type": "text",
-            "text": "ФОКУС",
+            "text": "{{t.header}}",
             "style": "caption",
             "weight": "semibold",
             "color": "secondary"
@@ -85,7 +85,7 @@
           },
           {
             "type": "button",
-            "title": "Сброс",
+            "title": "{{t.reset}}",
             "symbol": "arrow.uturn.backward",
             "action": "reset"
           },
@@ -94,7 +94,7 @@
           },
           {
             "type": "button",
-            "title": "Пропустить",
+            "title": "{{t.skip}}",
             "symbol": "forward.fill",
             "action": "skip"
           }
@@ -113,7 +113,7 @@
             "children": [
               {
                 "type": "text",
-                "text": "Сегодня",
+                "text": "{{t.todayTitle}}",
                 "style": "headline"
               },
               {
@@ -121,7 +121,7 @@
               },
               {
                 "type": "text",
-                "text": "{{focusTime}} работы",
+                "text": "{{focusLine}}",
                 "style": "subheadline",
                 "color": "secondary"
               }
@@ -141,7 +141,7 @@
               },
               {
                 "type": "text",
-                "text": "из {{goal}} помидоров",
+                "text": "{{goalLine}}",
                 "style": "subheadline",
                 "color": "secondary"
               }
@@ -247,7 +247,7 @@
           },
           {
             "type": "text",
-            "text": "сегодня: {{focusTime}}",
+            "text": "{{todayLine}}",
             "style": "caption",
             "color": "secondary"
           }
@@ -268,7 +268,7 @@
           },
           {
             "type": "button",
-            "title": "Сброс",
+            "title": "{{t.reset}}",
             "symbol": "arrow.uturn.backward",
             "action": "reset"
           },
@@ -277,7 +277,7 @@
           },
           {
             "type": "button",
-            "title": "Дальше",
+            "title": "{{t.skipShort}}",
             "symbol": "forward.fill",
             "action": "skip"
           }
@@ -319,7 +319,7 @@
       },
       {
         "type": "text",
-        "text": "{{done}} из {{goal}} 🍅",
+        "text": "{{done}} {{t.of}} {{goal}} 🍅",
         "style": "caption",
         "color": "secondary",
         "align": "center"

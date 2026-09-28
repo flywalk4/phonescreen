@@ -2,6 +2,6 @@
  "now": "2026-09-27T14:40:00Z",
  "expect": {
   "mood": "idle",
-  "note": "Сессий Claude Code за неделю не найдено."
+  "note": "No Claude Code sessions in the last week."
  }
 }

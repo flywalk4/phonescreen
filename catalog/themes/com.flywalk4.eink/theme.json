@@ -1,9 +1,14 @@
 {
   "id": "com.flywalk4.eink",
   "name": "E-ink",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "flywalk4",
-  "description": "Как электронная бумага: чёрное на сером, без цвета, тонкие рамки.",
+  "description": "Like e-paper: black on grey, no colour, thin borders.",
+  "localized": {
+    "ru": {
+      "description": "Как электронная бумага: чёрное на сером, без цвета, тонкие рамки."
+    }
+  },
   "style": "flat",
   "appearance": "light",
   "font": "serif",

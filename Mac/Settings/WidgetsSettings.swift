@@ -31,8 +31,8 @@ struct WidgetsSettings: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Виджеты").font(.system(size: 26, weight: .bold))
-                    Label("Работают на Mac в песочнице: только объявленные сайты и (для чтения) файлы — их видно перед установкой.",
+                    Text("Widgets").font(.system(size: 26, weight: .bold))
+                    Label("They run on the Mac in a sandbox: only the sites and (read-only) files they declare, which you see before installing.",
                           systemImage: "lock.shield")
                         .font(.callout).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -54,19 +54,19 @@ struct WidgetsSettings: View {
     private var installedSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Установленные").font(.headline)
+                Text("Installed").font(.headline)
                 Spacer()
                 Menu {
-                    Button("Установить из папки…") { chooseFolder(development: false) }
-                    Button("Подключить папку разработки…") { chooseFolder(development: true) }
+                    Button("Install from a folder…") { chooseFolder(development: false) }
+                    Button("Connect a development folder…") { chooseFolder(development: true) }
                 } label: {
                     Image(systemName: "plus")
                 }
                 .menuStyle(.borderlessButton).fixedSize()
-                .help("Установить виджет из папки или подключить папку разработки (живая перезагрузка)")
+                .help("Install a widget from a folder or connect a development folder (live reload)")
             }
             if widgets.installed.isEmpty {
-                Text("Пока ничего. Возьмите виджет из каталога ниже или установите из папки.")
+                Text("Nothing yet. Pick a widget from the catalog below or install one from a folder.")
                     .foregroundStyle(.secondary).font(.callout)
             }
             ForEach(widgets.installed) { widget in
@@ -84,12 +84,12 @@ struct WidgetsSettings: View {
     private var catalogSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Каталог").font(.headline)
+                Text("Catalog").font(.headline)
                 Spacer()
-                Button { Task { await loadCatalog() } } label: { Label("Обновить", systemImage: "arrow.clockwise") }
+                Button { Task { await loadCatalog() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                     .disabled(loadingCatalog)
             }
-            TextField("Адрес index.json", text: $catalogURL)
+            TextField("index.json address", text: $catalogURL)
                 .textFieldStyle(.roundedBorder).font(.caption.monospaced())
             if loadingCatalog { ProgressView().controlSize(.small) }
             if let catalogError { Text(catalogError).font(.caption).foregroundStyle(.red) }
@@ -107,7 +107,7 @@ struct WidgetsSettings: View {
     // MARK: - Actions
 
     private func loadCatalog() async {
-        guard let url = URL(string: catalogURL) else { catalogError = "Неверный адрес"; return }
+        guard let url = URL(string: catalogURL) else { catalogError = String(localized: "Invalid address"); return }
         loadingCatalog = true
         defer { loadingCatalog = false }
         do {
@@ -115,7 +115,7 @@ struct WidgetsSettings: View {
             catalogError = nil
         } catch {
             catalog = nil
-            catalogError = "Каталог недоступен: \(error.localizedDescription)"
+            catalogError = String(localized: "The catalog is unavailable: \(error.localizedDescription)")
         }
     }
 
@@ -125,7 +125,7 @@ struct WidgetsSettings: View {
             let folder = try await WidgetStore.download(entry, indexURL: url)
             pending = Pending(folder: folder, widget: try WidgetStore.read(package: folder))
         } catch {
-            message = "Не удалось скачать «\(entry.name)»: \(error)"
+            message = String(localized: "Couldn't download “\(entry.text(in: AppLanguage.current).name)”: \(String(describing: error))")
         }
     }
 
@@ -135,9 +135,9 @@ struct WidgetsSettings: View {
             try WidgetStore.install(folder: p.folder, development: false)
             try? FileManager.default.removeItem(at: p.folder)
             widgets.reloadAll()
-            message = "«\(p.widget.manifest.name)» установлен. Добавьте его на страницу во вкладке «Страницы»."
+            message = String(localized: "“\(p.widget.manifest.localized(WidgetStrings.table(p.widget.strings, wanted: AppLanguage.current).table).name)” is installed. Add it to a page on the Pages tab.")
         } catch {
-            message = "Не удалось установить: \(error)"
+            message = String(localized: "Couldn't install: \(String(describing: error))")
         }
     }
 
@@ -145,20 +145,20 @@ struct WidgetsSettings: View {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.prompt = development ? "Подключить" : "Установить"
-        panel.message = "Папка виджета: manifest.json, view.json, provider.js"
+        panel.prompt = development ? String(localized: "Connect") : String(localized: "Install")
+        panel.message = String(localized: "A widget folder: manifest.json, view.json, provider.js")
         guard panel.runModal() == .OK, let folder = panel.url else { return }
         do {
             let widget = try WidgetStore.read(package: folder)
             if development {
                 try WidgetStore.install(folder: folder, development: true)
                 widgets.reloadAll()
-                message = "«\(widget.manifest.name)» подключён для разработки: сохраняйте файлы — виджет перезагрузится сам."
+                message = String(localized: "“\(widget.manifest.localized(WidgetStrings.table(widget.strings, wanted: AppLanguage.current).table).name)” is connected for development: save the files and the widget reloads itself.")
             } else {
                 pending = Pending(folder: folder, widget: widget)
             }
         } catch {
-            message = "Это не виджет: \(error)"
+            message = String(localized: "This isn't a widget: \(String(describing: error))")
         }
     }
 }
@@ -187,10 +187,10 @@ private struct InstalledRow: View {
                         GridRow {
                             label(secret.title)
                             HStack {
-                                SecureField(WidgetSecrets.get(widget: m.id, key: secret.key) == nil ? "не задан" : "сохранён в Связке ключей",
+                                SecureField(WidgetSecrets.get(widget: m.id, key: secret.key) == nil ? String(localized: "not set") : String(localized: "saved in the Keychain"),
                                             text: Binding(get: { secrets[secret.key] ?? "" }, set: { secrets[secret.key] = $0 }))
                                     .textFieldStyle(.roundedBorder)
-                                Button("Сохранить") {
+                                Button("Save") {
                                     WidgetSecrets.set(widget: m.id, key: secret.key, value: secrets[secret.key])
                                     secrets[secret.key] = ""
                                     reloadSettings()
@@ -209,7 +209,7 @@ private struct InstalledRow: View {
             }
             DisclosureGroup(isExpanded: $showLog) {
                 ScrollView {
-                    Text(log.isEmpty ? "пусто" : log.joined(separator: "\n"))
+                    Text(log.isEmpty ? String(localized: "empty") : log.joined(separator: "\n"))
                         .font(.caption.monospaced()).textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
@@ -217,16 +217,16 @@ private struct InstalledRow: View {
                 .frame(height: 120)
                 .background(RoundedRectangle(cornerRadius: 6).fill(Color.black.opacity(0.15)))
             } label: {
-                Text("Журнал").font(.caption).foregroundStyle(.secondary)
+                Text("Log").font(.caption).foregroundStyle(.secondary)
             }
         }
         .padding(16)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.07)))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.secondary.opacity(0.12)))
-        .confirmationDialog("Удалить «\(m.name)»?", isPresented: $confirmRemove) {
-            Button("Удалить", role: .destructive, action: remove)
+        .confirmationDialog("Delete “\(m.name)”?", isPresented: $confirmRemove) {
+            Button("Delete", role: .destructive, action: remove)
         } message: {
-            Text("Виджет пропадёт со страниц iPhone.")
+            Text("The widget disappears from the iPhone's pages.")
         }
     }
 
@@ -243,7 +243,7 @@ private struct InstalledRow: View {
                     Text(m.name).font(.headline)
                     Text("\(m.version) · \(m.author)").font(.caption).foregroundStyle(.tertiary)
                     if widget.isDevelopment {
-                        Text("разработка").font(.caption2.weight(.semibold)).padding(.horizontal, 6).padding(.vertical, 1)
+                        Text("development").font(.caption2.weight(.semibold)).padding(.horizontal, 6).padding(.vertical, 1)
                             .background(Capsule().fill(Color.orange.opacity(0.25)))
                     }
                 }
@@ -259,9 +259,9 @@ private struct InstalledRow: View {
             Spacer(minLength: 8)
             HStack(spacing: 2) {
                 Button { refresh() } label: { Image(systemName: "arrow.clockwise").frame(width: 24, height: 22) }
-                    .help("Обновить сейчас")
+                    .help("Refresh now")
                 Button { confirmRemove = true } label: { Image(systemName: "trash").frame(width: 24, height: 22) }
-                    .help("Удалить")
+                    .help("Delete")
             }
             .buttonStyle(.borderless)
             .foregroundStyle(.secondary)
@@ -273,7 +273,7 @@ private struct InstalledRow: View {
             Label { Text(error).lineLimit(2) } icon: { Circle().fill(.red).frame(width: 7, height: 7) }
                 .font(.caption).foregroundStyle(.red)
         } else if let updated = state?.updated {
-            Label { Text("обновлён \(updated.formatted(date: .omitted, time: .shortened))") } icon: {
+            Label { Text("updated \(updated.formatted(date: .omitted, time: .shortened))") } icon: {
                 Circle().fill(.green).frame(width: 7, height: 7)
             }
             .font(.caption).foregroundStyle(.secondary)
@@ -289,9 +289,9 @@ private struct InstalledRow: View {
     private func permissionsLine(_ m: WidgetManifest) -> String {
         let hosts = m.permissions?.network ?? []
         let secrets = m.permissions?.secrets?.map(\.title) ?? []
-        var parts = [hosts.isEmpty ? "без сети" : "сеть: " + hosts.joined(separator: ", ")]
-        if !secrets.isEmpty { parts.append("секреты: " + secrets.joined(separator: ", ")) }
-        if let files = m.permissions?.files, !files.isEmpty { parts.append("файлы: " + files.joined(separator: ", ")) }
+        var parts = [hosts.isEmpty ? String(localized: "no network") : String(localized: "network: \(hosts.joined(separator: ", "))")]
+        if !secrets.isEmpty { parts.append(String(localized: "secrets: \(secrets.joined(separator: ", "))")) }
+        if let files = m.permissions?.files, !files.isEmpty { parts.append(String(localized: "files: \(files.joined(separator: ", "))")) }
         return parts.joined(separator: " · ")
     }
 }
@@ -400,10 +400,10 @@ private struct CatalogCard: View {
                         .fill(LinearGradient(colors: [.accentColor, .accentColor.opacity(0.6)], startPoint: .top, endPoint: .bottom)))
                 Spacer()
                 if let installedVersion, installedVersion == entry.version {
-                    Label("Установлен", systemImage: "checkmark.circle.fill")
+                    Label("Installed", systemImage: "checkmark.circle.fill")
                         .font(.caption.weight(.medium)).foregroundStyle(.green)
                 } else {
-                    Button(installedVersion == nil ? "Установить" : "Обновить", action: install)
+                    Button(installedVersion == nil ? String(localized: "Install") : String(localized: "Update"), action: install)
                         .buttonStyle(.borderedProminent).controlSize(.small)
                 }
             }
@@ -431,31 +431,31 @@ private struct PermissionsSheet: View {
     let cancel: () -> Void
 
     var body: some View {
-        let m = widget.manifest
+        let m = widget.manifest.localized(WidgetStrings.table(widget.strings, wanted: AppLanguage.current).table)
         VStack(alignment: .leading, spacing: 14) {
-            Label("Установить «\(m.name)»?", systemImage: m.symbol ?? "puzzlepiece.extension").font(.title3.weight(.semibold))
-            Text("\(m.author) · версия \(m.version)").foregroundStyle(.secondary)
+            Label("Install “\(m.name)”?", systemImage: m.symbol ?? "puzzlepiece.extension").font(.title3.weight(.semibold))
+            Text("\(m.author) · version \(m.version)").foregroundStyle(.secondary)
             if let d = m.description { Text(d) }
             Divider()
-            Text("Виджету будет разрешено:").font(.headline)
+            Text("The widget will be allowed to:").font(.headline)
             if let hosts = m.permissions?.network, !hosts.isEmpty {
-                Label("Обращаться по HTTPS к: \(hosts.joined(separator: ", "))", systemImage: "network")
+                Label("Reach over HTTPS: \(hosts.joined(separator: ", "))", systemImage: "network")
             } else {
-                Label("Ничего не загружать из сети", systemImage: "network.slash")
+                Label("Load nothing from the network", systemImage: "network.slash")
             }
             ForEach(m.permissions?.secrets ?? [], id: \.key) { s in
-                Label("Читать секрет «\(s.title)», который вы введёте в настройках", systemImage: "key")
+                Label("Read the secret “\(s.title)” that you enter in the settings", systemImage: "key")
             }
             if let files = m.permissions?.files, !files.isEmpty {
-                Label("Читать файлы: \(files.joined(separator: ", "))", systemImage: "doc.text.magnifyingglass")
+                Label("Read files: \(files.joined(separator: ", "))", systemImage: "doc.text.magnifyingglass")
             }
-            Label(m.permissions?.files?.isEmpty == false ? "Остальные файлы, программы и сайты — недоступны"
-                                                          : "Файлы, программы и другие сайты — недоступны", systemImage: "lock")
+            Label(m.permissions?.files?.isEmpty == false ? String(localized: "Other files, apps and sites are off limits")
+                                                          : String(localized: "Files, apps and other sites are off limits"), systemImage: "lock")
                 .foregroundStyle(.secondary)
             HStack {
                 Spacer()
-                Button("Отмена", role: .cancel, action: cancel).keyboardShortcut(.cancelAction)
-                Button("Установить", action: install).keyboardShortcut(.defaultAction)
+                Button("Cancel", role: .cancel, action: cancel).keyboardShortcut(.cancelAction)
+                Button("Install", action: install).keyboardShortcut(.defaultAction)
             }
         }
         .padding(24)

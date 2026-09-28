@@ -37,21 +37,30 @@ public struct Hello: Codable, Equatable, Sendable {
     }
 }
 
+/// The texts this package shows (widget and layout names) are English; each app sets `translate` to its own
+/// lookup (the keys are in its Localizable.xcstrings), so page titles and menus come out in the user's language.
+public enum Localization {
+    nonisolated(unsafe) public static var translate: (String) -> String = { $0 }
+}
+
 public enum WidgetKind: String, Codable, CaseIterable, Sendable {
     case music, monitor, notes, reminders, calendar, weather, launcher, photos, apps, display
 
-    public var title: String {
+    /// In the app's language (see `Localization`).
+    public var title: String { Localization.translate(englishTitle) }
+
+    public var englishTitle: String {
         switch self {
-        case .music: "Музыка"
-        case .monitor: "Мониторинг"
-        case .notes: "Заметки"
-        case .reminders: "Напоминания"
-        case .calendar: "Календарь"
-        case .weather: "Погода"
-        case .launcher: "Команды"
-        case .photos: "Фото"
-        case .apps: "Программы"
-        case .display: "Второй экран"
+        case .music: "Music"
+        case .monitor: "Monitor"
+        case .notes: "Notes"
+        case .reminders: "Reminders"
+        case .calendar: "Calendar"
+        case .weather: "Weather"
+        case .launcher: "Shortcuts"
+        case .photos: "Photos"
+        case .apps: "Apps"
+        case .display: "Second screen"
         }
     }
 
@@ -97,14 +106,17 @@ public enum PageLayout: String, Codable, CaseIterable, Sendable {
         }
     }
 
-    public var title: String {
+    /// In the app's language (see `Localization`).
+    public var title: String { Localization.translate(englishTitle) }
+
+    public var englishTitle: String {
         switch self {
-        case .single: "Один"
-        case .split: "Два"
-        case .trio: "Один + два"
-        case .grid: "Сетка 2×2"
-        case .stack: "Три в столбик"
-        case .six: "Сетка 2×3"
+        case .single: "One"
+        case .split: "Two"
+        case .trio: "One + two"
+        case .grid: "Grid 2×2"
+        case .stack: "Three stacked"
+        case .six: "Grid 2×3"
         }
     }
 }

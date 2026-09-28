@@ -144,7 +144,7 @@ final class WidgetManager: ObservableObject {
         for widget in installed where widget.isDevelopment {
             guard let fresh = try? WidgetStore.read(package: widget.folder, development: true) else { continue }
             if fresh.modified > widget.modified {
-                appendLog(widget.id, "файлы изменились — перезагрузка")
+                appendLog(widget.id, "files changed — reloading")
                 reload(widget.id)
             }
         }

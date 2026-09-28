@@ -159,7 +159,7 @@
   "tap:9"
  ],
  "expect": {
-  "status": "Бум! Попробуй ещё",
+  "status": "Boom! Try again",
   "cells.9.text": "💥",
   "cells.10.text": "💣",
   "face": "😵"

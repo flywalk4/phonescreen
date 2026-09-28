@@ -1,9 +1,9 @@
 {
   "id": "com.author.example",
-  "name": "Пример",
+  "name": "Example",
   "version": "1.0.0",
   "author": "author",
-  "description": "Что показывает виджет — одной фразой.",
+  "description": "What the widget shows, in one sentence.",
   "symbol": "sparkles",
   "refresh": 300,
   "permissions": {

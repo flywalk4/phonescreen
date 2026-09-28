@@ -1,11 +1,11 @@
 {
- "description": "Сияние в цветах темы, с часами",
+ "description": "Aurora in the theme's colours, with a clock",
  "now": "2026-09-27T14:40:00Z",
  "expect": {
   "kind": "aurora",
   "colors": null,
   "clock": true,
   "time": "14:40",
-  "date": "воскресенье, 27 сентября"
+  "date": "Sunday, September 27"
  }
 }

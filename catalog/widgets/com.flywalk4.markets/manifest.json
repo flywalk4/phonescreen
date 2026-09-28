@@ -1,9 +1,9 @@
 {
   "id": "com.flywalk4.markets",
-  "name": "Крипта и акции",
-  "version": "1.2.1",
+  "name": "Crypto & stocks",
+  "version": "1.3.0",
   "author": "flywalk4",
-  "description": "Цены криптовалют (CoinGecko) и акций Московской биржи (ISS MOEX) с изменением за день и графиком. Без ключей. Акции — с задержкой биржи для бесплатных данных (около 15 минут).",
+  "description": "Crypto prices (CoinGecko) and Moscow Exchange stocks (ISS MOEX) with the day's change and a chart. No keys. Stocks come with the exchange's delay for free data (about 15 minutes).",
   "symbol": "chart.line.uptrend.xyaxis",
   "refresh": 300,
   "permissions": {
@@ -15,13 +15,13 @@
   "settings": [
     {
       "key": "crypto",
-      "title": "Криптовалюты",
+      "title": "Cryptocurrencies",
       "default": "BTC, ETH, TON",
-      "hint": "Тикеры или id CoinGecko через запятую"
+      "hint": "Tickers or CoinGecko ids, comma-separated"
     },
     {
       "key": "currency",
-      "title": "Валюта для крипты",
+      "title": "Crypto currency",
       "type": "choice",
       "default": "usd",
       "options": [
@@ -45,15 +45,15 @@
     },
     {
       "key": "stocks",
-      "title": "Акции Мосбиржи",
+      "title": "MOEX stocks",
       "default": "SBER, GAZP, YDEX",
-      "hint": "Тикеры через запятую"
+      "hint": "Tickers, comma-separated"
     },
     {
       "key": "chart",
-      "title": "График",
+      "title": "Chart",
       "default": "",
-      "hint": "Тикер; пусто — первый в списке"
+      "hint": "A ticker; empty — the first in the list"
     }
   ]
 }

@@ -1,9 +1,15 @@
 {
   "id": "com.flywalk4.pastel",
-  "name": "Пастель",
-  "version": "1.1.0",
+  "name": "Pastel",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "Светлые бенто-карточки на медленно плывущем пастельном градиенте: персик, лаванда и мята. Карточки полупрозрачные, углы мягкие.",
+  "description": "Light bento cards over a slowly drifting pastel gradient: peach, lavender and mint. The cards are translucent, the corners soft.",
+  "localized": {
+    "ru": {
+      "name": "Пастель",
+      "description": "Светлые бенто-карточки на медленно плывущем пастельном градиенте: персик, лаванда и мята. Карточки полупрозрачные, углы мягкие."
+    }
+  },
   "style": "flat",
   "appearance": "light",
   "font": "rounded",

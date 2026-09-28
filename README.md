@@ -92,11 +92,11 @@ Add the **Second screen** widget and macOS gets a new display right where the ph
 | | Widget | What it shows |
 | :-: | --- | --- |
 | 🦀 | **Claude Code** | A pixel crab that reacts to your session, with token use for the 5-hour block and the week |
-| 📈 | **Markets** | Crypto and Moscow Exchange stocks, with sparklines |
-| 💱 | **Rates** | Currency rates with a 30-day chart |
+| 📈 | **Crypto & stocks** | Crypto and Moscow Exchange stocks, with sparklines |
+| 💱 | **Exchange rates** | Currency rates with a 30-day chart |
 | 🌧️ | **Rain** | "Rain in 35 min": minute-by-minute nowcast and hourly odds |
 | 🌫️ | **Air** | Air quality index, pollutants and a 24-hour forecast |
-| 🌅 | **Sky** | Sunrise and sunset, day length and the moon phase |
+| 🌅 | **Sun & Moon** | Sunrise and sunset, day length and the moon phase |
 | 🌍 | **World clock** | Your cities, who is at work and who is asleep |
 | ⏳ | **Time** | Progress of the day, week, month and year, plus countdowns |
 | 🗓️ | **Month** | Month calendar with weekends, Russian public holidays and working days left |
@@ -131,7 +131,7 @@ A theme is one `theme.json` with colours, font, corner radius, card style (`flat
 <summary><b>🎛️ Fine-tuning: make any theme yours</b></summary>
 <br>
 
-In the Mac app under **Темы…** (Themes), **Тонкая настройка** (fine-tuning) adjusts whichever theme you picked:
+In the Mac app under **Themes**, **Fine-tuning** adjusts whichever theme you picked:
 
 - accent colour, card style (fill, glass, ASCII), font and corner radius
 - the animated background and its speed, or a blurred photo from the phone's Favorites
@@ -157,12 +157,12 @@ open PhoneScreen.xcodeproj
 
 1. **Mac:** run the `PhoneScreenMac` scheme. A menu bar icon appears. The first time it fetches a track, macOS asks for permission to control Music or Spotify.
 2. **iPhone:** run the `PhoneScreeniOS` scheme on your phone. Set your team in Xcode → Signing, or run `DEVELOPMENT_TEAM=XXXXXXXXXX xcodegen generate`. Allow **Local Network** access when iOS asks (USB works without it).
-3. **Place the phone:** menu bar → **Расположение iPhone…** (iPhone position). Drag the phone to any edge of any screen. The cursor crosses over the green segment. Press `R` to rotate it.
-4. **Add widgets and themes:** menu bar → **Виджеты…** / **Темы…** (Widgets / Themes).
-5. **Second screen (optional):** put the **Второй экран** (Second screen) widget on a single-widget page. The first time, macOS asks for **Screen Recording** (to stream the display) and **Accessibility** (to turn taps into clicks). The display appears while that page is on the phone and goes away 5 s after you leave it; windows on it move back and return next time.
+3. **Place the phone:** menu bar → **Arrangement**. Drag the phone to any edge of any screen. The cursor crosses over the green segment. Press `R` to rotate it.
+4. **Add widgets and themes:** menu bar → **Widgets** / **Themes**.
+5. **Second screen (optional):** put the **Second screen** widget on a single-widget page. The first time, macOS asks for **Screen Recording** (to stream the display) and **Accessibility** (to turn taps into clicks). The display appears while that page is on the phone and goes away 5 s after you leave it; windows on it move back and return next time.
 
 > [!NOTE]
-> The Mac interface is in Russian for now. With a free Apple ID the iPhone build lasts 7 days; after that, build again.
+> The apps and catalog widgets speak English and Russian: pick the language at the foot of the settings sidebar, and the phone switches with the Mac. With a free Apple ID the iPhone build lasts 7 days; after that, build again.
 
 | Hotkey | Action |
 | --- | --- |
@@ -223,12 +223,13 @@ async function refresh(ctx) {
 - **Typed settings:** `text`, `choice` (a drop-down with `options`), `toggle` (a switch) or `number` (a slider or stepper with `min`/`max`/`step`/`unit`). The Mac app draws them and changes reach the phone at once.
 - **Sandbox:** `fetch` (declared hosts only), Keychain secrets, settings, 64 KB of storage, read-only access to declared files, and number and date helpers in `format`.
 - **Autocomplete:** JSON Schemas in [`schemas/`](schemas) cover `view.json`, `manifest.json` and `theme.json` in VS Code.
-- **Live reload:** in the Mac app, **Виджеты → Папка разработки…** (development folder) reloads a widget on the phone every time you save.
+- **Any language:** texts go in `strings.json` (`t("key")` in code, `{{t.key}}` in the view) with plural forms; numbers and dates from `format` follow the user's language.
+- **Live reload:** in the Mac app, **Widgets → Development folder…** reloads a widget on the phone every time you save.
 - **CI:** validates every catalog widget and theme, runs its fixtures, builds both apps and takes real Simulator screenshots.
 
 </details>
 
-📖 Full reference: [`catalog/README.md`](catalog/README.md) (in Russian) · 🤖 Skill for AI agents: [`skills/phonescreen-widget`](skills/phonescreen-widget/SKILL.md)
+📖 Full reference: [`catalog/README.md`](catalog/README.md) · 🤖 Skill for AI agents: [`skills/phonescreen-widget`](skills/phonescreen-widget/SKILL.md)
 
 ## 🔍 How it works
 

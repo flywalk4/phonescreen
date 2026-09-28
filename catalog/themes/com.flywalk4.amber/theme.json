@@ -1,9 +1,15 @@
 {
   "id": "com.flywalk4.amber",
-  "name": "Янтарный терминал",
-  "version": "1.1.0",
+  "name": "Amber terminal",
+  "version": "1.2.0",
   "author": "flywalk4",
-  "description": "ASCII в духе старых мониторов: янтарные символы на чёрном.",
+  "description": "ASCII in the spirit of old monitors: amber characters on black.",
+  "localized": {
+    "ru": {
+      "name": "Янтарный терминал",
+      "description": "ASCII в духе старых мониторов: янтарные символы на чёрном."
+    }
+  },
   "style": "ascii",
   "appearance": "dark",
   "font": "monospaced",

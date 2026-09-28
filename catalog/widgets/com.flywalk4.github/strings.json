@@ -1,0 +1,42 @@
+{
+  "en": {
+    "manifest.description": "Pull requests waiting for your review, your open PRs and unread GitHub notifications. Needs a token (Settings → Developer settings → Personal access tokens; read-only access is enough for public repositories).",
+    "secrets.token.title": "GitHub token",
+    "age.min": "{n} min",
+    "age.h": "{n} h",
+    "age.d": "{n} d",
+    "noToken": "Add a GitHub token in the widget's settings",
+    "badToken": "GitHub didn't accept the token — check it in the settings",
+    "forbidden": "GitHub: rate limit hit or the token lacks access",
+    "httpError": "GitHub answered {status}",
+    "awaiting": "to review",
+    "myPRs": "my PRs",
+    "notifications": "notifications",
+    "awaitingTitle": "Waiting for your review",
+    "noReviews": "🎉 No reviews waiting",
+    "mineTitle": "My open PRs",
+    "toReview": "to review",
+    "mine": "mine",
+    "notifShort": "notifs"
+  },
+  "ru": {
+    "manifest.description": "Пул-реквесты, которые ждут твоего ревью, твои открытые PR и непрочитанные уведомления GitHub. Нужен токен (Settings → Developer settings → Personal access tokens; для публичных репозиториев хватит прав только на чтение).",
+    "secrets.token.title": "GitHub токен",
+    "age.min": "{n} мин",
+    "age.h": "{n} ч",
+    "age.d": "{n} д",
+    "noToken": "Добавьте GitHub токен в настройках виджета",
+    "badToken": "GitHub не принял токен — проверьте его в настройках",
+    "forbidden": "GitHub: лимит запросов или у токена нет прав",
+    "httpError": "GitHub ответил {status}",
+    "awaiting": "ждут ревью",
+    "myPRs": "моих PR",
+    "notifications": "уведомлений",
+    "awaitingTitle": "Ждут твоего ревью",
+    "noReviews": "🎉 Ревью никто не ждёт",
+    "mineTitle": "Мои открытые",
+    "toReview": "на ревью",
+    "mine": "моих",
+    "notifShort": "уведомл."
+  }
+}

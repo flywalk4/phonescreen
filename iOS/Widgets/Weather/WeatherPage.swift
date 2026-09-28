@@ -64,7 +64,7 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        MainActor.assumeIsolated { self.error = "Не удалось определить место" }
+        MainActor.assumeIsolated { self.error = "Couldn't find your location" }
     }
 
     private func fetch(_ location: CLLocation) async {
@@ -99,7 +99,7 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
                     ($0, r.daily.temperature_2m_min[i], r.daily.temperature_2m_max[i], r.daily.weather_code[i])
                 }
             }
-            let place = try? await CLGeocoder().reverseGeocodeLocation(location, preferredLocale: Locale(identifier: "ru_RU")).first?.locality // the UI is Russian
+            let place = try? await CLGeocoder().reverseGeocodeLocation(location, preferredLocale: Lang.locale).first?.locality
             forecast = Forecast(place: place, temperature: r.current.temperature_2m, feelsLike: r.current.apparent_temperature,
                                 wind: r.current.wind_speed_10m, code: r.current.weather_code, isDay: r.current.is_day == 1,
                                 hourly: hourly.map { (time: $0.0, temp: $0.1, code: $0.2) },
@@ -107,7 +107,7 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
                                 fetched: Date())
             error = nil
         } catch {
-            self.error = "Нет данных о погоде"
+            self.error = "No weather data"
         }
     }
 
@@ -118,7 +118,7 @@ final class WeatherModel: NSObject, ObservableObject, CLLocationManagerDelegate 
         let day = Calendar.current.startOfDay(for: Date())
         let temps: [Double] = [10, 11, 12, 12, 13, 12, 11, 10, 9, 8, 8, 7]
         let codes = [2, 2, 1, 1, 2, 3, 3, 61, 61, 3, 2, 2]
-        return Forecast(place: "Москва", temperature: 10.4, feelsLike: 8.1, wind: 3.2, code: 2, isDay: true,
+        return Forecast(place: "Moscow", temperature: 10.4, feelsLike: 8.1, wind: 3.2, code: 2, isDay: true,
                         hourly: temps.indices.map { (time: hour.addingTimeInterval(Double($0) * 3600), temp: temps[$0], code: codes[$0]) },
                         daily: ([(7, 13, 2), (6, 11, 61), (4, 9, 3), (5, 12, 1), (6, 14, 0)] as [(Double, Double, Int)]).enumerated().map {
                             (day: day.addingTimeInterval(Double($0.offset) * 86400), min: $0.element.0, max: $0.element.1, code: $0.element.2)
@@ -171,17 +171,17 @@ enum WeatherCode {
 
     static func text(_ code: Int) -> String {
         switch code {
-        case 0: "Ясно"
-        case 1: "Преимущественно ясно"
-        case 2: "Переменная облачность"
-        case 3: "Пасмурно"
-        case 45, 48: "Туман"
-        case 51...57: "Морось"
-        case 61...67: "Дождь"
-        case 71...77: "Снег"
-        case 80...82: "Ливень"
-        case 85, 86: "Снегопад"
-        case 95...99: "Гроза"
+        case 0: L("Clear")
+        case 1: L("Mostly clear")
+        case 2: L("Partly cloudy")
+        case 3: L("Overcast")
+        case 45, 48: L("Fog")
+        case 51...57: L("Drizzle")
+        case 61...67: L("Rain")
+        case 71...77: L("Snow")
+        case 80...82: L("Showers")
+        case 85, 86: L("Snowfall")
+        case 95...99: L("Thunderstorm")
         default: "—"
         }
     }
@@ -198,8 +198,8 @@ struct WeatherPage: View {
             } else if model.authorization == .denied || model.authorization == .restricted {
                 VStack(spacing: 12) {
                     Glyph(systemName: "location.slash").font(.system(size: 40)).foregroundStyle(.secondary)
-                    Text("Нет доступа к геопозиции").font(.headline)
-                    Button("Открыть Настройки") {
+                    Text("No access to location").font(.headline)
+                    Button("Open Settings") {
                         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                     }
                 }
@@ -207,11 +207,11 @@ struct WeatherPage: View {
                 VStack(spacing: 12) {
                     if let error = model.error {
                         Glyph(systemName: "cloud.fill").font(.system(size: 36)).foregroundStyle(.secondary)
-                        Text(error).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                        Button("Повторить") { model.start() }.buttonStyle(.bordered)
+                        Text(L(error)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        Button("Retry") { model.start() }.buttonStyle(.bordered)
                     } else {
                         ThemedSpinner()
-                        Text("Загружаю погоду…").foregroundStyle(.secondary)
+                        Text("Loading weather…").foregroundStyle(.secondary)
                     }
                 }
                 .padding()
@@ -229,7 +229,7 @@ struct WeatherPage: View {
 
     private func now(_ f: WeatherModel.Forecast) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(f.place ?? "Здесь").font(.subheadline.weight(.semibold)).lineLimit(1)
+            Text(f.place ?? L("Here")).font(.subheadline.weight(.semibold)).lineLimit(1)
             HStack(spacing: 6) {
                 Glyph(WeatherCode.symbol(f.code, day: f.isDay), multicolor: true)
                     .font(size == .small ? .title2 : .largeTitle)
@@ -246,12 +246,12 @@ struct WeatherPage: View {
         VStack(spacing: 6) {
             ForEach(Array(f.daily.dropFirst().prefix(count).enumerated()), id: \.offset) { _, d in
                 HStack(spacing: 8) {
-                    Text(d.day.formatted(.dateTime.weekday(.abbreviated)).capitalizedFirst)
-                        .foregroundStyle(.secondary).frame(width: 28, alignment: .leading)
+                    Text(d.day.text(.dateTime.weekday(.abbreviated)).capitalizedFirst)
+                        .foregroundStyle(.secondary).lineLimit(1).fixedSize().frame(minWidth: 28, alignment: .leading)
                     Glyph(WeatherCode.symbol(d.code), multicolor: true).frame(width: 22)
                     Spacer(minLength: 0)
                     Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary)
-                    Text("\(Int(d.max.rounded()))°").fontWeight(.medium).frame(width: 30, alignment: .trailing)
+                    Text("\(Int(d.max.rounded()))°").fontWeight(.medium).lineLimit(1).fixedSize().frame(minWidth: 30, alignment: .trailing)
                 }
                 .font(.callout.monospacedDigit())
             }
@@ -277,7 +277,7 @@ struct WeatherPage: View {
                     VStack(spacing: 5) {
                         ForEach(Array(f.hourly.dropFirst().prefix(count).enumerated()), id: \.offset) { _, h in
                             HStack(spacing: 6) {
-                                Text(h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)))).foregroundStyle(.secondary)
+                                Text(h.time.hour24).foregroundStyle(.secondary)
                                     .lineLimit(1).fixedSize()
                                 Glyph(WeatherCode.symbol(h.code), multicolor: true).frame(width: 20)
                                 Spacer(minLength: 0)
@@ -298,12 +298,12 @@ struct WeatherPage: View {
                     VStack(spacing: 6) {
                         ForEach(Array(f.daily.dropFirst().prefix(days).enumerated()), id: \.offset) { _, d in
                             HStack(spacing: 8) {
-                                Text(d.day.formatted(.dateTime.weekday(.abbreviated)).capitalizedFirst)
-                                    .foregroundStyle(.secondary).frame(width: 28, alignment: .leading)
+                                Text(d.day.text(.dateTime.weekday(.abbreviated)).capitalizedFirst)
+                                    .foregroundStyle(.secondary).lineLimit(1).fixedSize().frame(minWidth: 28, alignment: .leading)
                                 Glyph(WeatherCode.symbol(d.code), multicolor: true).frame(width: 22)
                                 Spacer(minLength: 0)
                                 Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary)
-                                Text("\(Int(d.max.rounded()))°").fontWeight(.medium).frame(width: 30, alignment: .trailing)
+                                Text("\(Int(d.max.rounded()))°").fontWeight(.medium).lineLimit(1).fixedSize().frame(minWidth: 30, alignment: .trailing)
                             }
                             .font(.callout.monospacedDigit())
                         }
@@ -317,7 +317,7 @@ struct WeatherPage: View {
                 HStack(spacing: 0) {
                     ForEach(Array(f.hourly.prefix(6).enumerated()), id: \.offset) { i, h in
                         VStack(spacing: 3) {
-                            Text(i == 0 ? "Сейч." : h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted))))
+                            Text(i == 0 ? L("Now") : h.time.hour24)
                                 .font(.caption2).foregroundStyle(.secondary)
                             Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.caption)
                             Text("\(Int(h.temp.rounded()))°").font(.caption.weight(.medium))
@@ -361,14 +361,14 @@ struct WeatherPage: View {
 
     private func hero(_ f: WeatherModel.Forecast, big: Bool) -> some View {
         VStack(spacing: 4) {
-            Text(f.place ?? "Здесь").font(.title3.weight(.medium))
+            Text(f.place ?? L("Here")).font(.title3.weight(.medium))
             HStack(alignment: .top, spacing: 8) {
                 Glyph(WeatherCode.symbol(f.code, day: f.isDay), multicolor: true).font(.system(size: big ? 48 : 34))
                 Text("\(Int(f.temperature.rounded()))°").font(.system(size: big ? 80 : 56, weight: .thin))
                     .contentTransition(.numericText())
             }
             Text(WeatherCode.text(f.code)).font(.headline)
-            Text("Ощущается как \(Int(f.feelsLike.rounded()))° · ветер \(Int(f.wind.rounded())) м/с")
+            Text("Feels like \(Int(f.feelsLike.rounded()))° · wind \(Int(f.wind.rounded())) m/s")
                 .font(.subheadline).foregroundStyle(.secondary)
         }
         .padding(.top, big ? 12 : 0)
@@ -379,7 +379,7 @@ struct WeatherPage: View {
             HStack(spacing: 18) {
                 ForEach(Array(f.hourly.enumerated()), id: \.offset) { i, h in
                     VStack(spacing: 6) {
-                        Text(i == 0 ? "Сейчас" : h.time.formatted(.dateTime.hour(.twoDigits(amPM: .omitted))))
+                        Text(i == 0 ? L("Now") : h.time.hour24)
                             .font(.caption).foregroundStyle(.secondary)
                         Glyph(WeatherCode.symbol(h.code), multicolor: true).font(.title3)
                         Text("\(Int(h.temp.rounded()))°").font(.callout.weight(.medium))
@@ -402,7 +402,7 @@ private struct TemperatureCurve: View {
         let lo = temps.min() ?? 0, hi = temps.max() ?? 1
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Ближайшие часы").font(.subheadline.weight(.semibold))
+                Text("Next hours").font(.subheadline.weight(.semibold))
                 Spacer()
                 Text("↓\(Int(lo.rounded()))°  ↑\(Int(hi.rounded()))°").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
             }
@@ -449,7 +449,7 @@ private struct DailyList: View {
         VStack(spacing: 10) {
             ForEach(Array(daily.enumerated()), id: \.offset) { i, d in
                 HStack(spacing: 10) {
-                    Text(i == 0 ? "Сегодня" : d.day.formatted(.dateTime.weekday(.abbreviated)).capitalizedFirst)
+                    Text(i == 0 ? L("Today") : d.day.text(.dateTime.weekday(.abbreviated)).capitalizedFirst)
                         .frame(width: 70, alignment: .leading)
                     Glyph(WeatherCode.symbol(d.code), multicolor: true).frame(width: 28)
                     Text("\(Int(d.min.rounded()))°").foregroundStyle(.secondary).frame(width: 34, alignment: .trailing)

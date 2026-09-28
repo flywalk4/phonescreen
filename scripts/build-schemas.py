@@ -63,7 +63,7 @@ manifest={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https:
     "type":{"enum":["text","choice","toggle","number"],"description":"Control in Settings (default text): choice → drop-down, toggle → switch, number → slider (min+max) or stepper"},
     "hint":{"type":"string","description":"Grey line under the control: format, examples"},
     "options":{"type":"array","minItems":1,"items":{"anyOf":[{"type":"string"},{"type":"object","required":["value"],"additionalProperties":False,"properties":{"value":{"type":"string"},"title":{"type":"string"}}}]},"description":"For choice: \"value\" or {\"value\", \"title\"}"},
-    "min":{"type":"number"},"max":{"type":"number"},"step":{"type":"number","exclusiveMinimum":0},"unit":{"type":"string","description":"Shown after a number: мин, %"}}}}},
+    "min":{"type":"number"},"max":{"type":"number"},"step":{"type":"number","exclusiveMinimum":0},"unit":{"type":"string","description":"Shown after a number: min, %"}}}}},
  "additionalProperties":False}
 OUT["manifest"]=manifest
 hexc={"type":"string","pattern":"^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"}
@@ -71,6 +71,8 @@ theme={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://r
  "title":"PhoneScreen theme.json","type":"object","required":["id","name","version","author","style","appearance","font","radius","background","colors"],
  "properties":{"$schema":{"type":"string"},"id":{"type":"string","pattern":"^[a-z0-9]+(\\.[a-z0-9-]+)+$"},"name":{"type":"string","maxLength":40},
   "version":{"type":"string","pattern":"^\\d+\\.\\d+\\.\\d+$"},"author":{"type":"string"},"description":{"type":"string"},
+  "localized":{"type":"object","description":"Name and description in other languages: {\"ru\": {\"name\": …, \"description\": …}}",
+   "additionalProperties":{"type":"object","additionalProperties":False,"properties":{"name":{"type":"string","maxLength":40},"description":{"type":"string"}}}},
   "style":{"enum":["flat","glass","ascii"]},"appearance":{"enum":["dark","light"]},"font":{"enum":["system","rounded","monospaced","serif"]},
   "radius":{"type":"number","minimum":0,"maximum":40},
   "background":{"type":"object","required":["colors"],"additionalProperties":False,"properties":{
@@ -102,5 +104,5 @@ for name, schema in OUT.items():
         if not path.is_file() or path.read_text() != text: stale.append(path.name)
     else:
         path.parent.mkdir(exist_ok=True); path.write_text(text)
-if stale: sys.exit(f"устарели: {', '.join(stale)} — запустите python3 scripts/build-schemas.py")
+if stale: sys.exit(f"stale: {', '.join(stale)} — run python3 scripts/build-schemas.py")
 print(f"schemas: {len(nodes)} node kinds" + (" — OK" if "--check" in sys.argv else " written"))

@@ -4,7 +4,7 @@
 // fallback language's keys underneath) before loading this file.
 "use strict";
 
-const LANG = typeof globalThis.__lang === "string" ? globalThis.__lang : "ru";
+const LANG = typeof globalThis.__lang === "string" ? globalThis.__lang : "en";
 const STRINGS = globalThis.__strings && typeof globalThis.__strings === "object" ? globalThis.__strings : {};
 const LOCALE = { ru: "ru-RU", en: "en-US", uk: "uk-UA", de: "de-DE", es: "es-ES", fr: "fr-FR", it: "it-IT", pt: "pt-BR",
                  zh: "zh-CN", ja: "ja-JP", ko: "ko-KR", tr: "tr-TR", pl: "pl-PL", kk: "kk-KZ" }[LANG] || LANG;

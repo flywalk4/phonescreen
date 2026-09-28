@@ -80,7 +80,7 @@ if previous:
 else:
     try:
         rl = (json.loads(raw).get("rate_limits") or {})
-        parts = [f"{k}: {int(v.get('used_percentage', 0))}%" for k, v in (("5ч", rl.get("five_hour") or {}), ("неделя", rl.get("seven_day") or {})) if v]
+        parts = [f"{k}: {int(v.get('used_percentage', 0))}%" for k, v in (("5h", rl.get("five_hour") or {}), ("week", rl.get("seven_day") or {})) if v]
         print(" · ".join(parts))
     except Exception:
         print("")
@@ -147,14 +147,14 @@ def install():
     if os.path.exists(SETTINGS):
         backup = os.path.join(DIR, f"settings.backup-{time.strftime('%Y%m%d-%H%M%S')}.json")
         shutil.copy2(SETTINGS, backup)
-        print(f"резервная копия: {backup}")
+        print(f"backup: {backup}")
 
     wrapper = f'python3 "{os.path.join(DIR, "statusline.py")}"'
     current = s.get("statusLine")
     if current and not ours(current.get("command")):
         with open(PREVIOUS, "w") as f:
             json.dump(current, f)
-        print(f"ваша статусная строка сохранена и будет показываться как раньше: {current.get('command')}")
+        print(f"your status line is kept and will show as before: {current.get('command')}")
     s["statusLine"] = {**(current if current and not ours(current.get('command')) else {}), "type": "command", "command": wrapper}
 
     hooks = s.setdefault("hooks", {})
@@ -167,7 +167,7 @@ def install():
             entry["matcher"] = "*"
         entries.append(entry)
     save_settings(s)
-    print("готово: мост установлен. Лимиты появятся после первого ответа Claude в сессии (планы Pro/Max).")
+    print("done: the bridge is installed. Limits appear after Claude's first reply in a session (Pro/Max plans).")
 
 
 def uninstall():
@@ -176,7 +176,7 @@ def uninstall():
         try:
             with open(PREVIOUS) as f:
                 s["statusLine"] = json.load(f)
-            print("статусная строка возвращена как была")
+            print("the status line is back as it was")
         except FileNotFoundError:
             s.pop("statusLine", None)
     hooks = s.get("hooks", {})
@@ -193,21 +193,21 @@ def uninstall():
     if not hooks:
         s.pop("hooks", None)
     save_settings(s)
-    print("мост удалён из ~/.claude/settings.json (файлы в ~/.claude/phonescreen/ можно удалить вручную)")
+    print("the bridge is removed from ~/.claude/settings.json (files in ~/.claude/phonescreen/ can be deleted by hand)")
 
 
 def status():
     s = load_settings()
-    print("статусная строка:", "мост" if ours((s.get("statusLine") or {}).get("command")) else "не подключена")
-    print("хуки:", ", ".join(e for e, en in s.get("hooks", {}).items() if any(ours(h.get("command")) for x in en for h in x.get("hooks", []))) or "нет")
+    print("status line:", "bridge" if ours((s.get("statusLine") or {}).get("command")) else "not connected")
+    print("hooks:", ", ".join(e for e, en in s.get("hooks", {}).items() if any(ours(h.get("command")) for x in en for h in x.get("hooks", []))) or "none")
     for name in ("status.json", "state.json"):
         p = os.path.join(DIR, name)
         if os.path.exists(p):
             age = time.time() - os.path.getmtime(p)
-            print(f"{name}: обновлён {int(age)} с назад")
+            print(f"{name}: updated {int(age)} s ago")
             print("  ", open(p).read()[:400])
         else:
-            print(f"{name}: нет")
+            print(f"{name}: missing")
 
 
 if __name__ == "__main__":

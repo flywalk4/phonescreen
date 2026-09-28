@@ -1,4 +1,4 @@
-// Крестики-нолики: ты — ✕, Mac — ◯. Ходы приходят кнопками-клетками (action "tap:<0…8>").
+// Tic-tac-toe: you are ✕, the Mac is ◯. Moves come as cell buttons (action "tap:<0…8>").
 
 const LINES = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
 
@@ -6,7 +6,7 @@ async function refresh(ctx) {
   const g = load();
   const win = winner(g.board);
   const line = win ? win.line : [];
-  const status = !win ? (g.board.includes("") ? "Твой ход" : "Ничья") : win.who === "x" ? "Ты победил!" : win.who === "o" ? "Mac победил" : "Ничья";
+  const status = t(!win ? (g.board.includes("") ? "yourMove" : "draw") : win.who === "x" ? "youWon" : win.who === "o" ? "macWon" : "draw");
   const over = Boolean(win) || !g.board.includes("");
   return {
     cells: g.board.map((c, i) => ({
@@ -16,11 +16,11 @@ async function refresh(ctx) {
       opacity: line.includes(i) ? 0.3 : 0.07,
       action: `tap:${i}`,
     })),
-    status: over && !win ? "Ничья" : status,
+    status: over && !win ? t("draw") : status,
     statusColor: !over ? "primary" : win && win.who === "x" ? "green" : win && win.who === "o" ? "red" : "secondary",
     over,
     you: String(g.score.x), mac: String(g.score.o), draws: String(g.score.d),
-    level: { easy: "лёгкий", normal: "обычный", hard: "непобедимый" }[level(ctx)],
+    level: t(`level.${level(ctx)}`),
   };
 }
 
@@ -62,7 +62,7 @@ function winner(b) {
   return null;
 }
 
-// Ход Mac: easy — случайно, normal — иногда ошибается, hard — минимакс без ошибок.
+// The Mac's move: easy is random, normal sometimes slips, hard is a flawless minimax.
 function macMove(b, lvl) {
   const free = b.map((c, i) => (c ? -1 : i)).filter((i) => i >= 0);
   const random = () => free[Math.floor(Math.random() * free.length)];
