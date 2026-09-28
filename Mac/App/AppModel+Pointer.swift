@@ -22,11 +22,12 @@ extension AppModel {
         pollAccessibility()
     }
 
-    /// Bring the cursor back to the Mac where it left (Esc, ⌃⌥⌘P, disconnect, arrangement change).
-    func releasePointer() {
+    /// Bring the cursor back to the Mac: to `point` (the middle of a window just switched to from the phone),
+    /// or where it left (Esc, ⌃⌥⌘P, disconnect, arrangement change).
+    func releasePointer(to point: CGPoint? = nil) {
         guard pointerCapture.isCaptured else { return }
         pool.send(.pointerExit(along: 0))
-        finishCapture(at: captureEntry.map(inset))
+        finishCapture(at: point ?? captureEntry.map(inset))
     }
 
     func updatePortal() {

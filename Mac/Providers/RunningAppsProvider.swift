@@ -105,6 +105,26 @@ final class RunningAppsProvider: @unchecked Sendable {
         }
     }
 
+    /// Where to put the cursor after switching to an app: the middle of its front window. A hidden app or one
+    /// that opens a new window takes a moment to show it, so this tries for about a second; nil if none shows up.
+    func frontWindowCenter(id: String, completion: @escaping @MainActor (CGPoint?) -> Void) {
+        queue.async { [self] in
+            guard let pid = running[id]?.processIdentifier, AXIsProcessTrusted() else {
+                DispatchQueue.main.async { MainActor.assumeIsolated { completion(nil) } }
+                return
+            }
+            func attempt(_ left: Int) {
+                let center = Self.frontWindowCenter(of: pid)
+                if center == nil, left > 0 {
+                    queue.asyncAfter(deadline: .now() + 0.2) { attempt(left - 1) }
+                } else {
+                    DispatchQueue.main.async { MainActor.assumeIsolated { completion(center) } }
+                }
+            }
+            attempt(5)
+        }
+    }
+
     private static func id(of app: NSRunningApplication) -> String {
         app.bundleIdentifier ?? "pid:\(app.processIdentifier)"
     }
@@ -126,6 +146,50 @@ final class RunningAppsProvider: @unchecked Sendable {
         }
         if title?.isEmpty ?? true { title = standard.lazy.compactMap { string($0, kAXTitleAttribute) }.first { !$0.isEmpty } }
         return (title?.isEmpty == false ? title : nil, standard.count)
+    }
+
+    /// Centre of the app's focused (or main, or first) window that isn't minimised, in global top-left coordinates.
+    private static func frontWindowCenter(of pid: pid_t) -> CGPoint? {
+        let app = AXUIElementCreateApplication(pid)
+        AXUIElementSetMessagingTimeout(app, 0.15)
+        var candidates: [AXUIElement] = []
+        for attribute in [kAXFocusedWindowAttribute, kAXMainWindowAttribute] {
+            var value: CFTypeRef?
+            if AXUIElementCopyAttributeValue(app, attribute as CFString, &value) == .success,
+               let value, CFGetTypeID(value) == AXUIElementGetTypeID() { candidates.append(value as! AXUIElement) }
+        }
+        var windows: CFTypeRef?
+        if AXUIElementCopyAttributeValue(app, kAXWindowsAttribute as CFString, &windows) == .success {
+            candidates += (windows as? [AXUIElement] ?? []).filter { string($0, kAXSubroleAttribute) == kAXStandardWindowSubrole as String }
+        }
+        for window in candidates {
+            var minimized: CFTypeRef?
+            if AXUIElementCopyAttributeValue(window, kAXMinimizedAttribute as CFString, &minimized) == .success,
+               minimized as? Bool == true { continue }
+            var position: CFTypeRef?, size: CFTypeRef?
+            guard AXUIElementCopyAttributeValue(window, kAXPositionAttribute as CFString, &position) == .success,
+                  AXUIElementCopyAttributeValue(window, kAXSizeAttribute as CFString, &size) == .success,
+                  let position, let size else { continue }
+            var origin = CGPoint.zero, extent = CGSize.zero
+            guard AXValueGetValue(position as! AXValue, .cgPoint, &origin), AXValueGetValue(size as! AXValue, .cgSize, &extent)
+            else { continue }
+            // Some apps keep an invisible 1×1 "window" far off screen (Steam): only a real window on a display counts.
+            let frame = CGRect(origin: origin, size: extent)
+            guard extent.width >= 60, extent.height >= 40,
+                  let visible = displayBounds().lazy.map({ $0.intersection(frame) }).first(where: { !$0.isNull && $0.width >= 20 && $0.height >= 20 })
+            else { continue }
+            // The middle of the part that is on screen, so a window hanging off the edge still gets the cursor.
+            return CGPoint(x: visible.midX, y: visible.midY)
+        }
+        return nil
+    }
+
+    private static func displayBounds() -> [CGRect] {
+        var count: UInt32 = 0
+        guard CGGetActiveDisplayList(0, nil, &count) == .success, count > 0 else { return [] }
+        var ids = [CGDirectDisplayID](repeating: 0, count: Int(count))
+        guard CGGetActiveDisplayList(count, &ids, &count) == .success else { return [] }
+        return ids.prefix(Int(count)).map(CGDisplayBounds)
     }
 
     private static func string(_ element: AXUIElement, _ attribute: String) -> String? {
