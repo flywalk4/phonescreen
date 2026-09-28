@@ -6,9 +6,15 @@ import UIKit
 final class PhoneModel: ObservableObject {
     @Published private(set) var status = ChannelPool.Status(active: nil, available: [])
     @Published private(set) var pages: [PageInfo] = []
-    @Published var currentPage = 0
+    /// Remembered, so the phone reopens where it was (the Mac then confirms or moves it).
+    @Published var currentPage = UserDefaults.standard.integer(forKey: "currentPage") {
+        didSet { UserDefaults.standard.set(currentPage, forKey: "currentPage") }
+    }
+    var loopsPages: Bool { theme.layout?.loop == true }
     /// All pages as tiles (pinch in on the phone or the trackpad).
     @Published var overview = false
+    /// A card shown as its full version over the page: opened with a tap, or peeked at while a finger holds it.
+    @Published private(set) var focused: FocusedWidget?
     @Published var nowPlaying: NowPlaying? {
         didSet {
             // Decode the cover once per change, not on every render of the music page.
@@ -150,7 +156,16 @@ final class PhoneModel: ObservableObject {
             audio = AudioState(systemVolume: 0.45, muted: false,
                                airPlay: [AirPlayDevice(name: "Колонки MacBook Pro", kind: "computer", selected: true),
                                          AirPlayDevice(name: "HomePod", kind: "HomePod", selected: false)])
-            nowPlaying = NowPlaying(title: "Тем кто с нами", artist: "Кино", album: "Группа крови", duration: 240, elapsed: 70, playing: true)
+            // A drawn cover, so screenshots show the artwork path too.
+            let cover = UIGraphicsImageRenderer(size: CGSize(width: 300, height: 300)).jpegData(withCompressionQuality: 0.9) { ctx in
+                let colors = [UIColor.systemOrange.cgColor, UIColor.systemPink.cgColor, UIColor.systemPurple.cgColor] as CFArray
+                let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 0.5, 1])!
+                ctx.cgContext.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: 300, y: 300), options: [])
+                UIColor.black.withAlphaComponent(0.85).setFill()
+                ctx.cgContext.fillEllipse(in: CGRect(x: 90, y: 90, width: 120, height: 120))
+            }
+            nowPlaying = NowPlaying(title: "Тем кто с нами", artist: "Кино", album: "Группа крови", artwork: cover,
+                                    duration: 240, elapsed: 70, playing: true)
             nowPlaying?.player = "Music"; nowPlaying?.volume = 0.7; nowPlaying?.shuffle = true; nowPlaying?.repeatMode = "all"; nowPlaying?.liked = true
             notes = [NoteSummary(id: "1", title: "Покупки", snippet: "молоко, хлеб, кофе", folder: "Заметки", modified: Date().addingTimeInterval(-600)),
                      NoteSummary(id: "2", title: "Идеи для PhoneScreen", snippet: "дашборд 2×2, клавиатура на телефон", folder: "Проекты", modified: Date().addingTimeInterval(-86_400))]
@@ -230,6 +245,7 @@ final class PhoneModel: ObservableObject {
     }
 
     func userChangedPage(to index: Int) {
+        focus(nil)
         keyboard.endEditing() // a field on the page we left must not keep focus (or the keyboard)
         requestDataIfNeeded(for: index)
         guard !applyingRemotePage else { return }
@@ -380,8 +396,16 @@ final class PhoneModel: ObservableObject {
 
     func setOverview(_ on: Bool) {
         guard on != overview else { return }
-        if on { keyboard.endEditing() }
+        if on { keyboard.endEditing(); focus(nil) }
         withAnimation(.snappy(duration: 0.35)) { overview = on }
+    }
+
+    /// Show a widget's full version over the page (`held`: only until the finger lets go), or close it (nil).
+    /// `from`: where the card sits (0…1 of the screen), so the full version grows out of it and shrinks back into it.
+    func focus(_ ref: WidgetRef?, held: Bool = false, from anchor: UnitPoint = .center) {
+        let new = ref.map { FocusedWidget(ref: $0, held: held, anchor: anchor) }
+        guard new != focused else { return }
+        withAnimation(.spring(duration: 0.35, bounce: 0.2)) { focused = new }
     }
 
     /// Open a page from the overview.
@@ -393,7 +417,9 @@ final class PhoneModel: ObservableObject {
 
     /// A trackpad swipe ended: settle on the neighbouring page (or back on this one).
     private func finishSwipe(_ step: Int) {
-        let target = min(max(currentPage + step, 0), max(pages.count - 1, 0))
+        let count = max(pages.count, 1)
+        let target = loopsPages ? ((currentPage + step) % count + count) % count
+                                : min(max(currentPage + step, 0), count - 1)
         withAnimation(.snappy(duration: 0.3)) {
             currentPage = target
             pointer.swipe.offset = 0
@@ -415,4 +441,11 @@ final class PhoneModel: ObservableObject {
         withAnimation(.snappy) { currentPage = index }
         DispatchQueue.main.async { self.applyingRemotePage = false }
     }
+}
+
+struct FocusedWidget: Equatable {
+    let ref: WidgetRef
+    /// Peeking: closes when the finger that holds the card lifts.
+    let held: Bool
+    var anchor: UnitPoint = .center
 }

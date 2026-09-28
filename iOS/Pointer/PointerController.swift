@@ -52,6 +52,11 @@ final class PointerController: ObservableObject {
     /// Controls that follow a pressed pointer (sliders): get the horizontal position 0…1 within their frame.
     private var draggers: [UUID: (frame: CGRect, drag: (Double) -> Void)] = [:]
     private var activeDrag: UUID?
+    /// Targets that also answer a press held down (a card peeks at its full version).
+    private var holders: [UUID: (PointerHold) -> Void] = [:]
+    /// The press in progress on such a target; kept even if the target unregisters meanwhile.
+    private var hold: (id: UUID, handler: (PointerHold) -> Void, timer: Task<Void, Never>?, held: Bool)?
+    static let holdDelay: Duration = .milliseconds(300)
     private enum Axis { case horizontal, vertical }
     /// Locked on the first real movement of a trackpad gesture, kept for its momentum.
     private var gestureAxis: Axis?
@@ -70,6 +75,9 @@ final class PointerController: ObservableObject {
     var onPinch: ((Bool) -> Void)?
     /// Two-finger double tap on the trackpad.
     var onSmartZoom: (() -> Void)?
+
+    /// The upright content area (the pointer's coordinate space).
+    var areaSize: CGSize { model.size }
 
     func configure(size: CGSize, macSide: ScreenEdge) {
         guard size != model.size || macSide != model.macSide else { return }
@@ -112,7 +120,14 @@ final class PointerController: ObservableObject {
                 return
             }
             pressed = hit(model.position)
+            if let id = pressed, let handler = holders[id] { beginHold(id, handler) }
         } else {
+            // A press held long enough is not a click: it only ends the peek.
+            if endHold() {
+                pressed = nil
+                layerView?.setPressed(false)
+                return
+            }
             if activeDrag != nil {
                 activeDrag = nil
                 layerView?.setPressed(false)
@@ -200,8 +215,31 @@ final class PointerController: ObservableObject {
         return true
     }
 
+    private func beginHold(_ id: UUID, _ handler: @escaping (PointerHold) -> Void) {
+        endHold()
+        handler(.pressed)
+        let timer = Task { [weak self] in
+            try? await Task.sleep(for: Self.holdDelay)
+            guard !Task.isCancelled, let self, self.hold?.id == id else { return }
+            self.hold?.held = true
+            handler(.held)
+        }
+        hold = (id, handler, timer, false)
+    }
+
+    /// Finishes a press on a hold target; true if it had been held (so the release is no click).
+    @discardableResult
+    private func endHold() -> Bool {
+        guard let current = hold else { return false }
+        hold = nil
+        current.timer?.cancel()
+        current.handler(.released)
+        return current.held
+    }
+
     /// The Mac took the cursor back (Esc, hotkey, disconnect).
     func hide() {
+        endHold()
         model.deactivate()
         isVisible = false
         hovered = nil
@@ -212,12 +250,14 @@ final class PointerController: ObservableObject {
 
     // MARK: - Targets
 
-    func register(_ id: UUID, frame: CGRect, action: @escaping () -> Void) {
+    func register(_ id: UUID, frame: CGRect, action: @escaping () -> Void, hold: ((PointerHold) -> Void)? = nil) {
         targets[id] = (frame, action)
+        holders[id] = hold
     }
 
     func unregister(_ id: UUID) {
         targets[id] = nil
+        holders[id] = nil
         scrollers[id] = nil
         draggers[id] = nil
         if activeDrag == id { activeDrag = nil }
@@ -259,12 +299,18 @@ final class PointerController: ObservableObject {
     }
 }
 
+/// A Mac click held down on a target: pressed, then (if still down after `holdDelay`) held, then released.
+enum PointerHold {
+    case pressed, held, released
+}
+
 /// Makes a control reachable with the Mac pointer: hover highlight, press feedback, click = `action`.
 struct PointerTarget: ViewModifier {
     @EnvironmentObject private var pointer: PointerController
     @Environment(\.pointerInteractive) private var interactive
     @State private var id = UUID()
     var highlight = true
+    var hold: ((PointerHold) -> Void)?
     let action: () -> Void
 
     func body(content: Content) -> some View {
@@ -272,8 +318,11 @@ struct PointerTarget: ViewModifier {
             .background(GeometryReader { geo in
                 let frame = geo.frame(in: .named(pointerSpace))
                 Color.clear
-                    .onAppear { if interactive { pointer.register(id, frame: frame, action: action) } }
-                    .onChange(of: frame) { _, new in if interactive { pointer.register(id, frame: new, action: action) } }
+                    .onAppear { if interactive { pointer.register(id, frame: frame, action: action, hold: hold) } }
+                    .onChange(of: frame) { _, new in if interactive { pointer.register(id, frame: new, action: action, hold: hold) } }
+                    .onChange(of: interactive) { _, on in
+                        if on { pointer.register(id, frame: frame, action: action, hold: hold) } else { pointer.unregister(id) }
+                    }
             })
             .onDisappear { pointer.unregister(id) }
             .scaleEffect(!highlight ? 1 : pointer.pressed == id ? 0.92 : pointer.hovered == id ? 1.08 : 1)
@@ -306,6 +355,7 @@ struct PointerScrollable: ViewModifier {
                 Color.clear
                     .onAppear { register(frame) }
                     .onChange(of: frame) { _, new in register(new) }
+                    .onChange(of: interactive) { _, on in if on { register(frame) } else { pointer.unregister(id) } }
             })
             .onDisappear { pointer.unregister(id) }
     }
@@ -336,6 +386,7 @@ struct PointerDraggable: ViewModifier {
                 Color.clear
                     .onAppear { register(frame) }
                     .onChange(of: frame) { _, new in register(new) }
+                    .onChange(of: interactive) { _, on in if on { register(frame) } else { pointer.unregister(id) } }
                     .onChange(of: value) { register(frame) }
             })
             .onDisappear { pointer.unregister(id) }
@@ -354,8 +405,8 @@ extension View {
         modifier(PointerDraggable(value: value, onChange: onChange))
     }
 
-    func pointerTarget(highlight: Bool = true, action: @escaping () -> Void) -> some View {
-        modifier(PointerTarget(highlight: highlight, action: action))
+    func pointerTarget(highlight: Bool = true, hold: ((PointerHold) -> Void)? = nil, action: @escaping () -> Void) -> some View {
+        modifier(PointerTarget(highlight: highlight, hold: hold, action: action))
     }
 
     func pointerScrollable() -> some View {

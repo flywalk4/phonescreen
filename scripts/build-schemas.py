@@ -89,7 +89,9 @@ theme={"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://r
     "status":{"type":"boolean","description":"Time and date beside the Dynamic Island (default true)"},
     "shadow":{"type":"boolean","description":"Soft shadow under cards"},
     "autoPage":{"type":"number","minimum":0,"maximum":600,"description":"Turn pages by themselves every N seconds (0 = off)"},
-    "haptics":{"type":"boolean","description":"Light vibration on taps (default true)"}}}},
+    "haptics":{"type":"boolean","description":"Light vibration on taps (default true)"},
+    "loop":{"type":"boolean","description":"Pages go round: after the last comes the first"},
+    "homeOnConnect":{"type":"boolean","description":"Back to the first page on every (re)connection"}}}},
  "additionalProperties":False}
 OUT["theme"]=theme
 stale=[]

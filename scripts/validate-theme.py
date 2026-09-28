@@ -91,7 +91,7 @@ def validate(path: Path) -> list:
             errors.append(f"layout.{key}: число от {lo} до {hi}")
     if layout.get("textSize") not in (None, "small", "medium", "large", "xlarge"):
         errors.append("layout.textSize: small, medium, large или xlarge")
-    for key in ("dots", "status", "shadow", "haptics"):
+    for key in ("dots", "status", "shadow", "haptics", "loop", "homeOnConnect"):
         if key in layout and not isinstance(layout[key], bool):
             errors.append(f"layout.{key}: true или false")
     colors = []

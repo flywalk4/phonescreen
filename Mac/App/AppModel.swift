@@ -8,7 +8,10 @@ final class AppModel: ObservableObject {
     static let log = Logger(subsystem: "com.flywalk4.phonescreen", category: "connection")
 
     @Published private(set) var status = ChannelPool.Status(active: nil, available: [])
-    @Published private(set) var currentPage = 0
+    /// Remembered across launches, so restarting the Mac app doesn't send the phone back to the first page.
+    @Published private(set) var currentPage = UserDefaults.standard.integer(forKey: "currentPage") {
+        didSet { UserDefaults.standard.set(currentPage, forKey: "currentPage") }
+    }
     @Published private(set) var nowPlaying: NowPlaying?
     @Published private(set) var displays: [DisplayInfo] = DisplayInfo.current() {
         didSet { updatePortal() }
@@ -247,8 +250,8 @@ final class AppModel: ObservableObject {
         hotKeys.onAction = { [weak self] action in
             guard let self else { return }
             switch action {
-            case .nextPage: self.show(page: (self.currentPage + 1) % self.pages.count)
-            case .previousPage: self.show(page: (self.currentPage - 1 + self.pages.count) % self.pages.count)
+            case .nextPage: self.step(+1)
+            case .previousPage: self.step(-1)
             case .page(let i) where i < self.pages.count: self.show(page: i)
             case .page: break
             case .releasePointer: self.releasePointer()
@@ -331,6 +334,18 @@ final class AppModel: ObservableObject {
         pool.send(.runningApps(list))
     }
 
+    /// Next / previous page: round the ends when the "loop" setting is on, otherwise stop at them.
+    private func step(_ delta: Int) {
+        let count = pages.count
+        guard count > 0 else { return }
+        let target = currentPage + delta
+        if themes.current.layout?.loop == true {
+            show(page: (target % count + count) % count)
+        } else if (0..<count).contains(target) {
+            show(page: target)
+        }
+    }
+
     func show(page index: Int) {
         currentPage = index
         pool.send(.setPage(index: index))
@@ -391,6 +406,8 @@ final class AppModel: ObservableObject {
     }
 
     private func sendFullState() {
+        if themes.current.layout?.homeOnConnect == true { currentPage = 0 }
+        if !pages.indices.contains(currentPage) { currentPage = 0 }
         pool.send(.layout(arrangement.layout))
         pool.send(.language(AppLanguage.current))
         themes.sendCurrent()

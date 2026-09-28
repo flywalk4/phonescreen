@@ -138,6 +138,8 @@ struct ThemeTweaks: Codable, Equatable {
         if let v = layout.shadow { l.shadow = v }
         if let v = layout.autoPage { l.autoPage = v }
         if let v = layout.haptics { l.haptics = v }
+        if let v = layout.loop { l.loop = v }
+        if let v = layout.homeOnConnect { l.homeOnConnect = v }
         t.layout = l == Theme.Layout() ? nil : l
         return t
     }

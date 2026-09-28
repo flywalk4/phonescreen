@@ -209,6 +209,14 @@
     "haptics": {
      "type": "boolean",
      "description": "Light vibration on taps (default true)"
+    },
+    "loop": {
+     "type": "boolean",
+     "description": "Pages go round: after the last comes the first"
+    },
+    "homeOnConnect": {
+     "type": "boolean",
+     "description": "Back to the first page on every (re)connection"
     }
    }
   }

@@ -17,16 +17,24 @@ struct PagerView: View {
             ThemeBackground()
             OrientedContainer(orientation: model.layout.orientation) { island in
                 ZStack {
-                    content
+                    content(island: island)
                         // Keep content clear of the Dynamic Island and the rounded corners, whichever way the phone lies.
                         .padding(Edge.Set(island), PageMetrics.island)
                         .padding(PageMetrics(model.theme).edge)
                     // The band beside the Dynamic Island: time on one side, date on the other (upright or upside down).
                     if (island == .top || island == .bottom), model.theme.layout?.status ?? true, !model.overview {
-                        IslandStatus()
+                        IslandStatus(showsDate: !(island == .top && model.focused?.held == false))
                             .frame(height: PageMetrics.island)
                             .frame(maxHeight: .infinity, alignment: island == .top ? .top : .bottom)
                             .allowsHitTesting(false)
+                    }
+                    // An opened widget's close button, top right: beside the island when it is there, else in the corner.
+                    if let focused = model.focused, !focused.held, !model.overview {
+                        CloseFocusedButton { model.focus(nil) }
+                            .padding(.top, island == .top ? (PageMetrics.island - CloseFocusedButton.side) / 2 + 3 : 14)
+                            .padding(.trailing, island == .top ? 24 : 18)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                            .transition(.scale(scale: 0.5).combined(with: .opacity))
                     }
                     PointerOverlay()
                 }
@@ -55,7 +63,7 @@ struct PagerView: View {
         }
     }
 
-    @ViewBuilder private var content: some View {
+    @ViewBuilder private func content(island: Edge) -> some View {
         if model.status.active == nil && model.pages.isEmpty {
             WaitingView()
         } else {
@@ -71,8 +79,25 @@ struct PagerView: View {
                         })
                 } else {
                     PinchablePager()
+                        // Under an opened widget the page fades away; its cards stop answering the Mac pointer.
+                        .opacity(model.focused == nil ? 1 : 0)
+                        .scaleEffect(model.focused == nil ? 1 : 0.94)
+                        .environment(\.pointerInteractive, model.focused == nil)
                         .transition(.asymmetric(insertion: .opacity.combined(with: .scale(scale: 0.4)),
                                                 removal: .opacity.combined(with: .scale(scale: 0.4))))
+                    if let focused = model.focused {
+                        FocusedWidgetView(focused: focused)
+                            // Room for the close button when there is no island band beside it.
+                            .padding(.top, focused.held || island == .top ? 0 : CloseFocusedButton.side + 4)
+                            .padding(.bottom, PageMetrics(model.theme).dots)
+                            // Grows out of the card it came from and shrinks back into it.
+                            .transition(.scale(scale: 0.3, anchor: focused.anchor).combined(with: .opacity))
+                            .zIndex(1)
+                            // Pinch in to put it back.
+                            .simultaneousGesture(MagnifyGesture().onEnded { value in
+                                if value.magnification < 0.8 { model.focus(nil) }
+                            })
+                    }
                 }
 
             }
@@ -83,7 +108,7 @@ struct PagerView: View {
                     // Only when something is wrong: a connected phone shows nothing but the widgets.
                     if !Self.demo, model.status.active == nil { ConnectionBadge(status: model.status) }
                     Spacer()
-                    if !model.overview, PageMetrics(model.theme).showsDots {
+                    if model.focused == nil, !model.overview, PageMetrics(model.theme).showsDots {
                         PageDots(count: model.pages.count, current: model.currentPage) { index in
                             withAnimation(.snappy) { model.currentPage = index }
                         }
@@ -97,7 +122,10 @@ struct PagerView: View {
                 guard let every = autoPage, model.pages.count > 1, !model.overview else { return }
                 try? await Task.sleep(for: .seconds(every))
                 guard !Task.isCancelled else { return }
-                withAnimation(.smooth(duration: 0.6)) { model.currentPage = (model.currentPage + 1) % model.pages.count }
+                // Past the last page: round to the first with "loop", otherwise stay there.
+                let next = model.currentPage + 1
+                guard next < model.pages.count || model.loopsPages else { return }
+                withAnimation(.smooth(duration: 0.6)) { model.currentPage = next % model.pages.count }
             }
             .simultaneousGesture(TapGesture().onEnded { model.interactions += 1 })
             .simultaneousGesture(DragGesture(minimumDistance: 0).onEnded { _ in model.interactions += 1 })
@@ -120,7 +148,7 @@ private struct PinchablePagerContent: View {
     @GestureState private var touchScale: CGFloat = 1
 
     var body: some View {
-        Pager(count: model.pages.count, current: $model.currentPage, swipe: model.pointer.swipe) { index in
+        Pager(count: model.pages.count, current: $model.currentPage, swipe: model.pointer.swipe, loops: model.loopsPages) { index in
             PageView(page: model.pages[index])
         }
         .scaleEffect(min(pinch.scale, touchScale))
@@ -139,6 +167,8 @@ struct Pager<Page: View>: View {
     let count: Int
     @Binding var current: Int
     @ObservedObject var swipe: PagerSwipe
+    /// Swiping past either end goes round to the other.
+    var loops = false
     @ViewBuilder var page: (Int) -> Page
     @GestureState private var drag: CGFloat = 0
 
@@ -167,8 +197,8 @@ struct Pager<Page: View>: View {
                     .updating($drag) { value, state, _ in state = value.translation.width }
                     .onEnded { value in
                         let predicted = value.predictedEndTranslation.width
-                        if predicted < -width / 3, current < count - 1 { current += 1 }
-                        if predicted > width / 3, current > 0 { current -= 1 }
+                        if predicted < -width / 3 { if current < count - 1 { current += 1 } else if loops { current = 0 } }
+                        if predicted > width / 3 { if current > 0 { current -= 1 } else if loops { current = count - 1 } }
                     }
             )
             .animation(.interactiveSpring, value: drag)
@@ -180,7 +210,7 @@ struct Pager<Page: View>: View {
     private func rubberBand(_ x: CGFloat, width: CGFloat) -> CGFloat {
         let atStart = current == 0 && x > 0
         let atEnd = current == count - 1 && x < 0
-        return atStart || atEnd ? x / 3 : x
+        return (atStart || atEnd) && !loops ? x / 3 : x
     }
 }
 
@@ -245,6 +275,9 @@ private struct WaitingView: View {
 
 /// Time and date either side of the Dynamic Island, like a status bar for the Mac's side screen.
 private struct IslandStatus: View {
+    /// Off while an opened widget's close button takes the date's place.
+    var showsDate = true
+
     var body: some View {
         TimelineView(.everyMinute) { context in
             // Two equal halves around a gap the island's width, so nothing slides under it whatever the font.
@@ -255,6 +288,8 @@ private struct IslandStatus: View {
                 Color.clear.frame(width: 150) // the island
                 Text(context.date.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
                     .frame(maxWidth: .infinity, alignment: .trailing)
+                    .opacity(showsDate ? 1 : 0)
+                    .animation(.easeOut(duration: 0.2), value: showsDate)
             }
             .lineLimit(1)
             .minimumScaleFactor(0.7)

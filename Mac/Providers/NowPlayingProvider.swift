@@ -326,10 +326,31 @@ final class NowPlayingProvider: @unchecked Sendable {
             apply(run("tell application \"Music\" to get data of artwork 1 of current track")?.data)
         case .spotify:
             guard let url = s.artworkURL.flatMap(URL.init(string:)) else { return }
-            URLSession.shared.dataTask(with: url) { [queue] data, _, _ in
-                queue.async { apply(data) }
-            }.resume()
+            // i.scdn.co is unreachable on some networks; the same image lives on Spotify's other CDN hosts.
+            var candidates = [url]
+            if url.host == "i.scdn.co" {
+                for host in ["image-cdn-ak.spotifycdn.com", "image-cdn-fa.spotifycdn.com"] {
+                    var c = URLComponents(url: url, resolvingAgainstBaseURL: false)
+                    c?.host = host
+                    if let alt = c?.url { candidates.append(alt) }
+                }
+            }
+            Self.firstImage(candidates) { [queue] data in queue.async { apply(data) } }
         }
+    }
+
+    /// Tries each URL in turn (6 s each) and hands back the first image data, or nil.
+    private static func firstImage(_ urls: [URL], _ done: @escaping @Sendable (Data?) -> Void) {
+        guard let url = urls.first else { return done(nil) }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 6
+        URLSession.shared.dataTask(with: request) { data, response, _ in
+            if let data, (response as? HTTPURLResponse)?.statusCode == 200, !data.isEmpty {
+                done(data)
+            } else {
+                firstImage(Array(urls.dropFirst()), done)
+            }
+        }.resume()
     }
 
     static func thumbnail(_ data: Data, side: CGFloat = 300) -> Data? {

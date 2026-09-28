@@ -89,11 +89,16 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
         public var autoPage: Double?
         /// A light vibration on taps (default on).
         public var haptics: Bool?
+        /// Pages go round: after the last comes the first (swipes, the trackpad, hotkeys, auto-turning).
+        public var loop: Bool?
+        /// Back to the first page whenever the phone (re)connects (default: stay where it was).
+        public var homeOnConnect: Bool?
 
         public static let textSizes = ["small", "medium", "large", "xlarge"]
 
         public init(gap: Double? = nil, margin: Double? = nil, padding: Double? = nil, dots: Bool? = nil, cardOpacity: Double? = nil,
-                    textSize: String? = nil, status: Bool? = nil, shadow: Bool? = nil, autoPage: Double? = nil, haptics: Bool? = nil) {
+                    textSize: String? = nil, status: Bool? = nil, shadow: Bool? = nil, autoPage: Double? = nil, haptics: Bool? = nil,
+                    loop: Bool? = nil, homeOnConnect: Bool? = nil) {
             self.gap = gap
             self.margin = margin
             self.padding = padding
@@ -104,6 +109,8 @@ public struct Theme: Codable, Equatable, Sendable, Identifiable {
             self.shadow = shadow
             self.autoPage = autoPage
             self.haptics = haptics
+            self.loop = loop
+            self.homeOnConnect = homeOnConnect
         }
     }
 

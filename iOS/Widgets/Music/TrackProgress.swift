@@ -21,7 +21,9 @@ struct TrackProgress<Content: View>: View {
 
     var body: some View {
         let playing = track?.playing == true
-        TimelineView(.animation(minimumInterval: 1 / 30, paused: !playing && glide == nil)) { context in
+        // 30 fps only while gliding after a seek; otherwise 4 ticks a second (the bar moves ~1 pt a tick) — the
+        // phone's main thread also draws the Mac pointer, so a constantly redrawing bar would make it stutter.
+        TimelineView(.animation(minimumInterval: glide == nil ? 0.25 : 1 / 30, paused: !playing && glide == nil)) { context in
             let now = context.date
             let duration = track?.duration ?? 0
             let target = min(elapsed(at: now), duration)

@@ -453,6 +453,16 @@ private struct ThemeTweaksPanel: View {
                                              set: { themes.tweaks.layout.haptics = $0 }))
                         .labelsHidden().toggleStyle(.switch).controlSize(.small)
                 }
+                row("Листать по кругу") {
+                    Toggle("", isOn: Binding(get: { themes.tweaks.layout.loop ?? base.layout?.loop ?? false },
+                                             set: { themes.tweaks.layout.loop = $0 }))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.small)
+                }
+                row("При подключении — на первую страницу") {
+                    Toggle("", isOn: Binding(get: { themes.tweaks.layout.homeOnConnect ?? base.layout?.homeOnConnect ?? false },
+                                             set: { themes.tweaks.layout.homeOnConnect = $0 }))
+                        .labelsHidden().toggleStyle(.switch).controlSize(.small)
+                }
                 row("Точки страниц") {
                     Toggle("", isOn: Binding(get: { themes.tweaks.layout.dots ?? base.layout?.dots ?? true },
                                              set: { themes.tweaks.layout.dots = $0 }))
