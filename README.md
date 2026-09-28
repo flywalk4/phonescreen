@@ -235,9 +235,9 @@ xcodegen generate
 open Qwovi.xcodeproj
 ```
 
-1. **Mac:** run the `QwoviMac` scheme. A menu bar icon appears. The first time it fetches a track, macOS asks for permission to control Music or Spotify.
+1. **Mac:** run the `QwoviMac` scheme. A menu bar icon appears. The first time it fetches a track, macOS asks for permission to control Music or Spotify. The first launch opens the [welcome tour](#-welcome-tour): keep it open while you do step 2 — it waits for the phone, lets you try the cursor and touch on it, and ends in Arrangement.
 2. **iPhone:** run the `QwoviiOS` scheme on your phone. Set your team in Xcode → Signing, or run `DEVELOPMENT_TEAM=XXXXXXXXXX xcodegen generate`. Allow **Local Network** access when iOS asks (USB works without it).
-3. **Place the phone:** menu bar → **Arrangement**. Drag the phone to any edge of any screen. The cursor crosses over the green segment. Press `R` to rotate it.
+3. **Place the phone:** the tour's last step opens it; later, menu bar → **Arrangement**. Drag the phone to any edge of any screen. The cursor crosses over the green segment. Press `R` to rotate it.
 4. **Add widgets and themes:** menu bar → **Widgets** / **Themes**.
 5. **Second screen (optional):** put the **Second screen** widget on a single-widget page. The first time, macOS asks for **Screen Recording** (to stream the display) and **Accessibility** (to turn taps into clicks). The display appears while that page is on the phone and goes away 5 s after you leave it; windows on it move back and return next time.
 

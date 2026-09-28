@@ -5,7 +5,7 @@
 # Needs Xcode and xcodegen. Usage: scripts/package.sh [version] [out-dir]
 set -euo pipefail
 cd "$(dirname "$0")/.."
-VERSION=${1:-0.1.0}
+VERSION=${1:-1.1.0}
 mkdir -p "${2:-dist}"
 OUT=$(cd "${2:-dist}" && pwd)
 WORK=$(mktemp -d)

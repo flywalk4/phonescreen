@@ -43,8 +43,8 @@ targets:
         INFOPLIST_KEY_NSAppleEventsUsageDescription: "Qwovi reads the current track, notes and shortcuts and shows them on the iPhone."
         INFOPLIST_KEY_NSLocalNetworkUsageDescription: "Qwovi finds the iPhone on the local network and over direct Wi-Fi."
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "A backup link to the iPhone when there's no cable or Wi-Fi."
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.1.0"
+        CURRENT_PROJECT_VERSION: "2"
     info:
       path: Mac/Info.plist
       properties:
@@ -76,8 +76,8 @@ targets:
         INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Shows today's agenda from your calendar."
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Needed for the weather forecast where you are."
         INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Shows your favourite photos as a slideshow on the screen next to your Mac."
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.1.0"
+        CURRENT_PROJECT_VERSION: "2"
     info:
       path: iOS/Info.plist
       properties:
