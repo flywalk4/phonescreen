@@ -84,7 +84,7 @@ await render("widgets.png", phones(widgets, { width: 230 }), { columns: Math.min
 
 // Pages: each mixed page, cycling through the themes.
 const mixed = numbers.map((n, i) => ({ file: page(THEMES[i % 4][0], n) || page("dark", n), label: "" }));
-await render("pages.png", phones(mixed, { width: 260, caption: false }), { columns: Math.min(4, mixed.length), width: 260 });
+await render("pages.png", phones(mixed, { width: 260, caption: false }), { columns: Math.min(3, mixed.length), width: 260 });
 
 // Lying sideways: mixed pages in landscape.
 const sideways = list("landscape").map((f) => ({ file: `landscape/${f}`, label: "" }));

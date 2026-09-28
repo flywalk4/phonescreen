@@ -1224,6 +1224,26 @@
           }
         }
       }
+    },
+    "Photo frame": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фото-рамка"
+          }
+        }
+      }
+    },
+    "Shows your favourite photos as a slideshow. They never leave the iPhone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показывает избранные фото слайд-шоу. Снимки не покидают iPhone."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

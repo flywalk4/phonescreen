@@ -226,7 +226,7 @@ struct NodeView: View {
                 .frame(minHeight: height.map { CGFloat($0) } ?? 60, maxHeight: height.map { CGFloat($0) * 3 } ?? 240)
         case .button(let title, let symbol, let action, _) where ascii:
             Button { model.customAction(widgetID, action) } label: {
-                Text("[ \(title.isEmpty ? AsciiGlyphs.text(for: symbol ?? "") : title) ]").font(Ascii.font)
+                Text("[ \(title.isEmpty ? AsciiGlyphs.text(for: symbol ?? "") : title) ]").font(Ascii.font).lineLimit(1).minimumScaleFactor(0.7)
             }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.accent)
